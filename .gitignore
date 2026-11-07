@@ -1,0 +1,16 @@
+.venv/
+.env
+.venv_paddleocr/
+.venv_mlx/
+.cf_clearance
+data/pilot/
+data/models/
+data/vl/
+__pycache__/
+*.pyc
+papers/**/*.pdf
+papers/**/*.mp3
+site/
+data/reviews.json
+data/coverage.json
+data/specimen_fetch.json

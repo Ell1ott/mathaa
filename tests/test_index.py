@@ -1,0 +1,387 @@
+import subprocess
+import sys
+import unittest
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+
+from catalog import build_catalog  # noqa: E402
+from serve import question_bank  # noqa: E402
+from transcribe import (  # noqa: E402
+    diagram_rects,
+    job_id,
+    line_y,
+    markdown_from,
+    splice_figures,
+    stitch,
+    strip_page_furniture,
+    tidy_question,
+)
+from extract import (  # noqa: E402
+    apply_folder_session,
+    clean_question,
+    merge_signals,
+    page_kind,
+    questions_from_pages,
+    resolve_paper,
+    signals_from_name,
+    split_papers,
+    text_layer_ok,
+)
+from match import lacks_overlap  # noqa: E402
+from sync_refs import parse_topic_page, robots_allows, topic_urls  # noqa: E402
+
+PAGE = """
+<h1>1.10 Counting &amp; binomial (HL only)</h1>
+<h2>Questions on 1.10, by exam session</h2>
+<p class="font-black">November 2025</p>
+<span class="font-bold whitespace-nowrap">P2 TZ1</span><span class="truncate opacity-70">Q2</span>
+<p class="font-black">November 2024</p>
+<span class="font-bold whitespace-nowrap">P2</span><span>Q7</span>
+Frequently asked
+"""
+
+
+class CatalogTest(unittest.TestCase):
+    def test_sixty_three(self):
+        papers = build_catalog()
+        self.assertEqual(len(papers), 63)
+        ids = [paper["id"] for paper in papers]
+        self.assertEqual(len(ids), len(set(ids)))
+        self.assertIn("2025-11-p2-tz1", ids)
+        self.assertIn("specimen-2021-p1", ids)
+        self.assertIn("2024-11-p2", ids)
+        self.assertNotIn("2024-05-p1-tz3", ids)
+
+
+class RefsTest(unittest.TestCase):
+    def test_robots_allows_public_index(self):
+        robots = "User-agent: *\nDisallow: /api/\nDisallow: /papers/\nDisallow: /*opengraph-image\n"
+        self.assertTrue(robots_allows(robots, "/ib-math-aa/past-papers-hl"))
+        self.assertFalse(robots_allows(robots, "/papers/secret"))
+        self.assertFalse(robots_allows(robots, "/ib-math-aa/past-papers-hl/opengraph-image"))
+
+    def test_parse_citations(self):
+        url = "https://www.aimnova.app/ib-math-aa/past-papers-hl/unit-1-number-algebra/counting-binomial"
+        refs = parse_topic_page(PAGE, url)
+        self.assertEqual(
+            [(ref["session"], ref["tz"], ref["question"]) for ref in refs],
+            [("November", "TZ1", 2), ("November", None, 7)],
+        )
+        self.assertEqual(refs[0]["code"], "1.10")
+        self.assertEqual(refs[0]["area"], "Number and algebra")
+
+    def test_topic_urls_skip_unit_indexes(self):
+        sitemap = """
+        <loc>https://www.aimnova.app/ib-math-aa/past-papers-hl/unit-1-number-algebra</loc>
+        <loc>https://www.aimnova.app/ib-math-aa/past-papers-hl/unit-1-number-algebra/counting-binomial</loc>
+        <loc>https://www.aimnova.app/ib-math-aa/past-papers-hl/november-2025-tz1-paper-2</loc>
+        """
+        self.assertEqual(
+            topic_urls(sitemap),
+            ["https://www.aimnova.app/ib-math-aa/past-papers-hl/unit-1-number-algebra/counting-binomial"],
+        )
+
+
+class ExtractTest(unittest.TestCase):
+    def test_pymupdf_text_layer_roundtrip(self):
+        import pymupdf
+
+        from catalog import ROOT
+        from extract import extract_file
+
+        path = ROOT / "papers" / "inbox" / "specimen-2021-p1.pdf"
+        document = pymupdf.open()
+        first = document.new_page()
+        first.insert_text(
+            (72, 72),
+            "Higher level\nPaper 1\nSpecimen paper\nInstructions to candidates\n"
+            + ("working " * 20)
+            + "\n1. [Maximum mark: 5]\nFind the mean.\n",
+            fontsize=11,
+        )
+        second = document.new_page()
+        second.insert_text(
+            (72, 72),
+            "(b) The rest continues on this page.\n\n2. [Maximum mark: 4]\nNext question only.\n",
+            fontsize=11,
+        )
+        document.save(path)
+        document.close()
+        try:
+            papers, report = extract_file(path, build_catalog())
+        finally:
+            path.unlink(missing_ok=True)
+        self.assertTrue(report["text_layer"])
+        self.assertEqual(report["status"], "present")
+        self.assertEqual(papers[0]["id"], "specimen-2021-p1")
+        self.assertEqual([q["number"] for q in papers[0]["questions"]], [1, 2])
+        self.assertEqual(papers[0]["questions"][0]["page_end"], 2)
+        self.assertIn("continues on this page", papers[0]["questions"][0]["text"])
+
+    def test_scan_is_needs_ocr(self):
+        import pymupdf
+
+        from catalog import ROOT
+        from extract import extract_file
+
+        path = ROOT / "papers" / "inbox" / "2024-11-p2.pdf"
+        document = pymupdf.open()
+        document.new_page()
+        document.save(path)
+        document.close()
+        try:
+            papers, report = extract_file(path, build_catalog())
+        finally:
+            path.unlink(missing_ok=True)
+        self.assertEqual(report["status"], "needs_ocr")
+        self.assertEqual(papers[0]["id"], "2024-11-p2")
+        self.assertEqual(papers[0]["questions"], [])
+
+    def test_filenames(self):
+        self.assertEqual(
+            signals_from_name("2025-11-p2-tz1.pdf"),
+            {"year": 2025, "session": "November", "paper": 2, "tz": "TZ1"},
+        )
+        self.assertEqual(signals_from_name("n25-p2-tz1.pdf")["year"], 2025)
+        named = signals_from_name("Mathematics_analysis_and_approaches_paper_2_TZ1_HL.pdf")
+        self.assertEqual(named["paper"], 2)
+        self.assertEqual(named["tz"], "TZ1")
+        self.assertIsNone(named["year"])
+
+    def test_split_and_span(self):
+        pages = [
+            "Mathematics\nHigher level\nPaper 1\nSpecimen\nInstructions to candidates\n",
+            "1. [Maximum mark: 5]\nFind the mean.\n",
+            "(b) The rest of the question continues here.\n\n2. [Maximum mark: 4]\nNext question.\n",
+            "Markscheme\nInstructions to examiners\n",
+            "Standard level\nPaper 1\nInstructions to candidates\n",
+        ]
+        chunks = split_papers(pages)
+        self.assertEqual(len(chunks), 1)
+        self.assertEqual(page_kind(pages[0]), "cover")
+        self.assertEqual(page_kind(pages[3]), "ms")
+        questions = questions_from_pages(chunks[0]["pages"])
+        self.assertEqual([q["number"] for q in questions], [1, 2])
+        self.assertIn("continues here", questions[0]["text"])
+        self.assertEqual(questions[0]["page_start"], 2)
+        self.assertEqual(questions[0]["page_end"], 3)
+        self.assertNotIn("Next question", questions[0]["text"])
+        self.assertEqual(clean_question("Turn over\n16EP02\nFind x."), "Find x.")
+        plural = questions_from_pages([(4, "1.\n[Maximum marks: 28]\nExplore polynomials.\n")])
+        self.assertEqual(plural[0]["number"], 1)
+        self.assertIn("Explore polynomials", plural[0]["text"])
+
+    def test_resolve(self):
+        catalog = build_catalog()
+        signals, conflicts = merge_signals(
+            "dp-mathematics-analysis-and-approaches-specimen-papers-en.pdf",
+            "Higher level\nPaper 2\nSpecimen\nInstructions to candidates\n",
+        )
+        resolved = resolve_paper(signals, conflicts, catalog)
+        self.assertEqual(resolved["id"], "specimen-2021-p2")
+        missing_tz, conflicts = merge_signals("2025-05-p1.pdf", "Higher level\nPaper 1\nMay 2025\n")
+        self.assertTrue(resolve_paper({**missing_tz, "hl": True}, conflicts, catalog)["ambiguous"])
+        sitting, conflicts = merge_signals(
+            "p1-tz1.pdf",
+            "Higher level\nPaper 1\n30 October 2023\nZone A afternoon\nZone B afternoon\nZone C afternoon\n"
+            "Instructions to candidates\n",
+        )
+        sitting, conflicts = apply_folder_session(
+            Path("hl/2023-11/en/p1-tz1.pdf"), sitting, conflicts
+        )
+        self.assertEqual(conflicts, [])
+        self.assertEqual(resolve_paper({**sitting, "hl": True}, conflicts, catalog)["id"], "2023-11-p1")
+        may, conflicts = merge_signals(
+            "p1-tz1.pdf",
+            "Higher level\nPaper 1\nMay 2023\nZone A afternoon\nZone B afternoon\nZone C afternoon\n"
+            "Instructions to candidates\n",
+        )
+        self.assertEqual(may["tz"], "TZ1")
+        self.assertEqual(resolve_paper({**may, "hl": True}, conflicts, catalog)["id"], "2023-05-p1-tz1")
+
+    def test_question_line(self):
+        import pymupdf
+
+        document = pymupdf.open()
+        page = document.new_page()
+        page.insert_text((72, 200), "12.")
+        page.insert_text((72, 220), "[Maximum mark: 20]")
+        page.insert_text((72, 480), "13.")
+        self.assertLess(line_y(page, 12), line_y(page, 13))
+        self.assertIsNone(line_y(page, 4))
+        document.close()
+
+    def test_text_layer(self):
+        self.assertFalse(text_layer_ok(["", "hi"]))
+        self.assertTrue(text_layer_ok(["word " * 40]))
+
+    def test_overlap_flag(self):
+        self.assertTrue(lacks_overlap("Counting & binomial", "Find the derivative of x squared."))
+        self.assertFalse(lacks_overlap("Counting & binomial", "Use the binomial theorem."))
+
+
+class OpenParserTest(unittest.TestCase):
+    def test_tidy_keeps_one_question(self):
+        raw = Path("/Users/elliottfriedrich/github/mathaa/data/vl/2026-05-p2-tz1-q1.md").read_text()
+        cleaned = tidy_question(raw, 1)
+        self.assertIn("Maximum mark: 7", cleaned)
+        self.assertNotIn("Maximum mark: 4", cleaned)
+        self.assertNotIn("<table", cleaned)
+        self.assertNotIn("Turn over", cleaned)
+        self.assertIn("155 ≤ h < 160", cleaned)
+        self.assertNotIn("&lt;", cleaned)
+        self.assertNotIn("100000", cleaned)
+        self.assertEqual(tidy_question(cleaned, 1), cleaned)
+
+    def test_tidy_splits_when_the_mark_is_wrapped(self):
+        raw = "3. \\([Maximum mark: 5]\\)\nSolve.\n\n4. [Maximum mark: 7]\nNext question.\n"
+        cleaned = tidy_question(raw, 3)
+        self.assertIn("Solve.", cleaned)
+        self.assertNotIn("Next question", cleaned)
+
+    def test_strip_blank_page_notices_anywhere(self):
+        raw = (
+            "10. [Maximum mark: 15]\n"
+            "Find q.\n\n"
+            "Do not write solutions on this page.\n\n"
+            "(Question 10 continued)\n\n"
+            "(c) Find q - p.\n\n"
+            "Please do not write on this page.\n"
+            "Answers written on this page\n"
+            "will not be marked.\n\n"
+            "1\n\n"
+            "Please do not write on this page.\n"
+            "Answers written on this page will not be marked.\n"
+        )
+        cleaned = strip_page_furniture(raw)
+        self.assertIn("Find q.\n\n(c) Find q - p.", cleaned)
+        self.assertIn("(c) Find q - p.", cleaned)
+        self.assertNotIn("do not write", cleaned.lower())
+        self.assertNotIn("will not be marked", cleaned.lower())
+        self.assertNotIn("\n1\n", f"\n{cleaned}\n")
+        self.assertEqual(strip_page_furniture(cleaned), cleaned)
+
+    def test_tidy_keeps_a_paper_3_continuation(self):
+        raw = Path("/Users/elliottfriedrich/github/mathaa/data/vl/2025-05-p3-tz2-q1.md").read_text()
+        cleaned = tidy_question(raw, 1)
+        self.assertIn("homogeneous differential", cleaned)
+        self.assertIn("partial fractions", cleaned)
+        self.assertNotIn("Maximum mark: 27", cleaned)
+        self.assertNotIn("Turn over", cleaned)
+
+    def test_markdown_and_job_id(self):
+        self.assertEqual(markdown_from({"markdown": " # Q \n"}), "# Q")
+        self.assertEqual(markdown_from({"result": {"text": "Hello"}}), "Hello")
+        self.assertEqual(job_id({"id": "opj_1"}, None), "opj_1")
+        self.assertEqual(job_id({}, "https://api.openparser.dev/jobs/opj_2"), "opj_2")
+
+
+class FigureTest(unittest.TestCase):
+    def test_splice_replaces_placeholders_in_order(self):
+        raw = "See.\n\n[Figure: <div></div>]\n\nThen.\n\n[Figure: ]\n\n[Figure: ]\n"
+        got = splice_figures(raw, ["/fig/q-1.png", "/fig/q-2.png"])
+        self.assertEqual(got, "See.\n\n![](/fig/q-1.png)\n\nThen.\n\n![](/fig/q-2.png)\n\n\n")
+        cleaned = tidy_question("6. [Maximum mark: 4]\n" + got, 6)
+        self.assertIn("![](/fig/q-1.png)", cleaned)
+        self.assertIn("![](/fig/q-2.png)", cleaned)
+        self.assertNotIn("[Figure:", cleaned)
+
+    def test_diagram_rect_ignores_a_hairline(self):
+        import pymupdf
+
+        document = pymupdf.open()
+        page = document.new_page()
+        page.draw_circle((200, 220), 70, color=(0, 0, 0), width=1.2)
+        page.draw_line((40, 700), (500, 700), width=0.4)
+        found = diagram_rects(page, 50, 780)
+        document.close()
+        self.assertEqual(len(found), 1)
+        self.assertGreater(found[0].height, 55)
+
+
+class CutTest(unittest.TestCase):
+    def test_stitch_stacks_pages(self):
+        import pymupdf
+
+        top = pymupdf.Pixmap(pymupdf.csRGB, pymupdf.IRect(0, 0, 4, 2))
+        top.clear_with(0)
+        bottom = pymupdf.Pixmap(pymupdf.csRGB, pymupdf.IRect(0, 0, 4, 3))
+        bottom.clear_with(255)
+        raw = stitch([top, bottom])
+        self.assertTrue(raw.startswith(b"\x89PNG"))
+        got = pymupdf.Pixmap(raw)
+        self.assertEqual((got.width, got.height), (4, 21))
+        self.assertEqual(got.pixel(0, 0), (0, 0, 0))
+        self.assertEqual(got.pixel(0, 20), (255, 255, 255))
+
+
+class BankTest(unittest.TestCase):
+    def test_slices_sorts_and_maps_topics(self):
+        bank = question_bank(
+            [
+                {
+                    "id": "2024-11-p1-q1",
+                    "text": "1. [Maximum mark: 5]\nFind it.\n\n2. [Maximum mark: 6]\nNext.\n",
+                    "number": 1,
+                    "year": 2024,
+                    "session": "November",
+                    "paper": 1,
+                    "tz": None,
+                    "topics": [{"code": "5.5", "topic": "Integration", "area": "Calculus"}],
+                    "status": "matched",
+                    "page_start": 3,
+                    "page_end": 3,
+                },
+                {
+                    "id": "2025-05-p2-tz1-q2",
+                    "text": "2. [Maximum marks: 8]\nLater.\n",
+                    "number": 2,
+                    "year": 2025,
+                    "session": "May",
+                    "paper": 2,
+                    "tz": "TZ1",
+                    "topics": [{"code": "1.6", "topic": "Proof", "area": "Number and algebra"}],
+                    "status": "review",
+                    "page_start": 4,
+                    "page_end": 5,
+                },
+            ]
+        )
+        self.assertEqual([item["i"] for item in bank["qs"]], ["2025-05-p2-tz1-q2", "2024-11-p1-q1"])
+        older = bank["qs"][1]
+        self.assertEqual(older["t"], "Find it.")
+        self.assertEqual(older["m"], 5)
+        self.assertTrue(older["v"])
+        self.assertFalse(bank["qs"][0]["v"])
+        self.assertEqual(bank["qs"][0]["m"], 8)
+        self.assertEqual(bank["topics"]["5.5"], ["Integration", "Calculus"])
+
+
+class TemplateTableTest(unittest.TestCase):
+    def test_pipe_tables_become_html(self):
+        src = Path(__file__).resolve().parents[1].joinpath("template.html").read_text()
+        fmt = src[src.index("function fmt") : src.index("function tags")]
+        script = (
+            "const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');\n"
+            + fmt
+            + r"""
+const spaced = "| x | y |\n\n| --- | --- |\n\n| 0 | 4 |\n\n| π | 3.2 |\n\n| 2π | 2 |";
+const html = fmt(spaced);
+if (!html.includes("<th>x</th>") || !html.includes("<th>y</th>")) process.exit(1);
+if (!html.includes("<td>π</td>") || !html.includes("<td>2π</td>") || !html.includes("<td>3.2</td>")) process.exit(2);
+if ((html.match(/<table>/g) || []).length !== 1) process.exit(3);
+const math = fmt("| eq | roots |\n| --- | --- |\n| \\(x^2 + 1 = 0\\) | \\(\\{1, 0, 1\\}\\) |\n\nNext line.");
+if (!math.includes("<td>\\(x^2 + 1 = 0\\)</td>")) process.exit(4);
+if (!math.includes("<p>Next line.</p>")) process.exit(5);
+const open = fmt("| Score | Frequency\n| --- | ---\n| 1 | 1 |");
+if (!open.includes("<th>Frequency</th>") || !open.includes("<td>1</td>")) process.exit(6);
+if (fmt("Use |x| here.\n\nNot a table.").includes("<table>")) process.exit(7);
+"""
+        )
+        run = subprocess.run(["node", "-e", script], capture_output=True, text=True)
+        self.assertEqual(run.returncode, 0, run.stderr or run.stdout)
+
+
+if __name__ == "__main__":
+    unittest.main()

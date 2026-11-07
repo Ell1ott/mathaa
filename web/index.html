@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AA HL question browser</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,520;9..144,680&family=Literata:opsz,wght@7..72,420;7..72,650&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #f4efe4;
+      --sheet: #fbf7ef;
+      --ink: #1c1915;
+      --faint: #6d6458;
+      --line: #ddd4c4;
+      --mark: #8d2b2b;
+      --side: #231f1b;
+      --side-ink: #f3ecdf;
+      --flag: #8a5a12;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 0%, #efe4cf 0, transparent 28rem),
+        var(--paper);
+      font-family: Literata, "Iowan Old Style", Palatino, serif;
+      font-optical-sizing: auto;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: baseline;
+      padding: 1.4rem 1.6rem 0.8rem;
+    }
+    header h1 {
+      margin: 0;
+      font-family: Fraunces, "Iowan Old Style", Palatino, serif;
+      font-weight: 680;
+      font-size: 2rem;
+      letter-spacing: -0.03em;
+    }
+    header p { margin: 0.2rem 0 0; color: var(--faint); }
+    #coverage {
+      font-family: Fraunces, Palatino, serif;
+      color: var(--mark);
+      white-space: nowrap;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 17rem 1fr;
+      gap: 1.2rem;
+      padding: 0.4rem 1.2rem 2rem;
+    }
+    aside {
+      position: sticky;
+      top: 0.6rem;
+      align-self: start;
+      background: var(--side);
+      color: var(--side-ink);
+      padding: 1rem;
+      border-radius: 0.4rem 1.4rem 0.4rem 0.4rem;
+    }
+    aside h2 {
+      margin: 0 0 0.7rem;
+      font-family: Fraunces, Palatino, serif;
+      font-size: 1rem;
+      font-weight: 520;
+    }
+    label { display: block; font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase; margin: 0.65rem 0 0.2rem; color: #c8bba8; }
+    input, select, button {
+      width: 100%;
+      font: inherit;
+      color: inherit;
+      background: #3a342d;
+      border: 1px solid #5c5348;
+      border-radius: 0.2rem;
+      padding: 0.35rem 0.45rem;
+    }
+    button { cursor: pointer; background: var(--mark); border-color: transparent; color: #fff8f4; }
+    button.quiet { background: transparent; border-color: #5c5348; color: var(--side-ink); }
+    main { min-width: 0; }
+    article {
+      background: var(--sheet);
+      border: 1px solid var(--line);
+      border-left: 6px solid var(--mark);
+      margin: 0 0 0.9rem;
+      padding: 0.9rem 1rem 1rem;
+      box-shadow: 0.35rem 0.35rem 0 #e5dccb;
+    }
+    article.review { border-left-color: var(--flag); }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem 0.8rem;
+      align-items: baseline;
+      color: var(--faint);
+      font-size: 0.92rem;
+    }
+    .meta strong { color: var(--ink); font-family: Fraunces, Palatino, serif; font-weight: 680; }
+    .topics { color: var(--mark); }
+    .question {
+      margin: 0.85rem 0 0.4rem;
+      line-height: 1.5;
+    }
+    .question p {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin: 0.45rem 0;
+    }
+    .question p.part { margin-left: 1.1rem; }
+    .question .marks {
+      flex: none;
+      width: 1.65rem;
+      height: 1.65rem;
+      margin-top: 0.1rem;
+      border-radius: 50%;
+      background: var(--mark);
+      color: #fff8f4;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Fraunces, Palatino, serif;
+      font-size: 0.82rem;
+      font-weight: 680;
+      line-height: 1;
+    }
+    .question table {
+      border-collapse: collapse;
+      margin: 0.6rem 0;
+      font-size: 0.95rem;
+    }
+    .question th, .question td {
+      border: 1px solid var(--line);
+      padding: 0.2rem 0.55rem;
+      text-align: left;
+    }
+    .question th { font-weight: 650; }
+    .actions { display: flex; gap: 0.6rem; align-items: center; }
+    .actions a, .actions button { width: auto; text-decoration: none; }
+    .actions button { padding: 0.3rem 0.6rem; }
+    .empty {
+      padding: 1.2rem;
+      border: 1px dashed var(--line);
+      background: transparent;
+    }
+    @media (max-width: 800px) {
+      .layout { grid-template-columns: 1fr; }
+      aside { position: static; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>AA HL questions</h1>
+      <p>Local papers only. Figures stay on the PDF page.</p>
+    </div>
+    <p id="coverage">Loading…</p>
+  </header>
+  <div class="layout">
+    <aside>
+      <h2>Filter</h2>
+      <label for="q">Text or topic</label>
+      <input id="q" type="search" placeholder="counting, derivative, 1.10">
+      <label for="area">Syllabus area</label>
+      <select id="area"><option value="">Any area</option></select>
+      <label for="topic">Topic</label>
+      <select id="topic"><option value="">Any topic</option></select>
+      <label for="year">Year</label>
+      <select id="year"><option value="">Any year</option></select>
+      <label for="session">Session</label>
+      <select id="session"><option value="">Any session</option></select>
+      <label for="paper">Paper</label>
+      <select id="paper"><option value="">Any paper</option><option>1</option><option>2</option><option>3</option></select>
+      <label for="tz">Time zone</label>
+      <select id="tz"><option value="">Any zone</option><option value="none">No zone</option><option>TZ1</option><option>TZ2</option><option>TZ3</option></select>
+      <label for="look"><input id="look" type="checkbox" style="width:auto"> Needs a look</label>
+      <button id="clear" class="quiet" type="button">Clear filters</button>
+    </aside>
+    <main id="list"></main>
+  </div>
+  <script>
+    const fields = ["q", "area", "topic", "year", "session", "paper", "tz", "look"].map((id) => document.getElementById(id));
+    const byId = Object.fromEntries(fields.map((el) => [el.id, el]));
+    let questions = [];
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[ch]));
+    }
+
+    function typeset(text) {
+      const pattern = /\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]|\\\(([\s\S]+?)\\\)|\$\s*(?![\d])([^$\n]*?\S)\s*\$/g;
+      let html = "";
+      let last = 0;
+      for (const match of text.matchAll(pattern)) {
+        html += escapeHtml(text.slice(last, match.index));
+        const source = match[1] ?? match[2] ?? match[3] ?? match[4];
+        const display = match[1] != null || match[2] != null;
+        if (window.katex) {
+          html += katex.renderToString(source, { throwOnError: false, displayMode: display });
+        } else {
+          html += escapeHtml(match[0]);
+        }
+        last = match.index + match[0].length;
+      }
+      return html + escapeHtml(text.slice(last));
+    }
+
+    function partMark(line) {
+      const mark = line.match(/(?:^|\s)\[(\d{1,2})\]$/);
+      if (!mark || /maximum mark/i.test(line)) return { body: line, mark: "" };
+      return { body: line.slice(0, mark.index).trimEnd(), mark: mark[1] };
+    }
+
+    function markBadge(mark) {
+      const badge = document.createElement("span");
+      badge.className = "marks";
+      badge.textContent = mark;
+      badge.title = `${mark} ${mark === "1" ? "mark" : "marks"}`;
+      return badge;
+    }
+
+    function addParagraph(root, line) {
+      const { body, mark } = partMark(line);
+      if (!body && mark && root.lastElementChild?.tagName === "P") {
+        root.lastElementChild.appendChild(markBadge(mark));
+        return;
+      }
+      const paragraph = document.createElement("p");
+      if (/^\([a-z]+\)/i.test(body) || /^\([ivx]+\)/i.test(body)) paragraph.className = "part";
+      const wording = document.createElement("span");
+      wording.innerHTML = typeset(body);
+      paragraph.appendChild(wording);
+      if (mark) paragraph.appendChild(markBadge(mark));
+      root.appendChild(paragraph);
+    }
+
+    function fillQuestion(root, text) {
+      for (const block of text.trim().split(/\n{2,}/)) {
+        const lines = block.split("\n").filter((line) => line.trim());
+        if (lines[0]?.startsWith("|") && lines.some((line) => /^\|?\s*-{3,}/.test(line))) {
+          const table = document.createElement("table");
+          lines.filter((line) => !/^\|?\s*-{3,}/.test(line)).forEach((line, index) => {
+            const row = document.createElement("tr");
+            for (const cell of line.replace(/^\|/, "").replace(/\|$/, "").split("|")) {
+              const node = document.createElement(index === 0 ? "th" : "td");
+              node.innerHTML = typeset(cell.trim());
+              row.appendChild(node);
+            }
+            table.appendChild(row);
+          });
+          root.appendChild(table);
+          continue;
+        }
+        for (const line of lines) addParagraph(root, line);
+      }
+    }
+
+    function options(select, values) {
+      const current = select.value;
+      select.querySelectorAll("option:not(:first-child)").forEach((node) => node.remove());
+      for (const value of values) {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = value;
+        select.appendChild(option);
+      }
+      select.value = values.includes(current) ? current : "";
+    }
+
+    function matches(item) {
+      const query = byId.q.value.trim().toLowerCase();
+      const topicBits = item.topics.map((topic) => `${topic.code} ${topic.topic} ${topic.area}`).join(" ").toLowerCase();
+      if (query && !item.text.toLowerCase().includes(query) && !topicBits.includes(query) && !item.label.toLowerCase().includes(query)) return false;
+      if (byId.area.value && !item.topics.some((topic) => topic.area === byId.area.value)) return false;
+      if (byId.topic.value && !item.topics.some((topic) => `${topic.code} ${topic.topic}` === byId.topic.value)) return false;
+      if (byId.year.value && String(item.year) !== byId.year.value) return false;
+      if (byId.session.value && item.session !== byId.session.value) return false;
+      if (byId.paper.value && String(item.paper) !== byId.paper.value) return false;
+      if (byId.tz.value === "none" && item.tz) return false;
+      if (byId.tz.value && byId.tz.value !== "none" && item.tz !== byId.tz.value) return false;
+      if (byId.look.checked && item.status !== "review" && !item.flagged) return false;
+      return true;
+    }
+
+    function render() {
+      const shown = questions.filter(matches);
+      const list = document.getElementById("list");
+      list.replaceChildren();
+      if (!shown.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = questions.length
+          ? "Nothing matches these filters."
+          : "No questions indexed yet. Put PDFs in papers/inbox (for example 2025-11-p2-tz1.pdf) or the official specimen in papers/official, then run python scripts/build.py.";
+        list.appendChild(empty);
+        return;
+      }
+      for (const item of shown) {
+        const card = document.createElement("article");
+        if (item.status === "review" || item.flagged) card.classList.add("review");
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        const title = document.createElement("strong");
+        title.textContent = `${item.label} · Q${item.number}`;
+        meta.appendChild(title);
+        const pages = document.createElement("span");
+        pages.textContent = item.page_start === item.page_end ? `p. ${item.page_start}` : `pp. ${item.page_start}–${item.page_end}`;
+        meta.appendChild(pages);
+        const topics = document.createElement("span");
+        topics.className = "topics";
+        topics.textContent = item.topics.length ? item.topics.map((topic) => `${topic.code} ${topic.topic}`).join(" · ") : "No topic citation";
+        meta.appendChild(topics);
+        if (item.status === "review") {
+          const note = document.createElement("span");
+          note.textContent = item.reasons.join("; ");
+          meta.appendChild(note);
+        }
+        const body = document.createElement("div");
+        body.className = "question";
+        fillQuestion(body, item.text);
+        const actions = document.createElement("div");
+        actions.className = "actions";
+        if (item.file) {
+          const link = document.createElement("a");
+          link.href = `/pdf?paper=${encodeURIComponent(item.paper_id || "")}&question=${encodeURIComponent(item.id)}#page=${item.page_start}`;
+          link.textContent = "Open PDF page";
+          actions.appendChild(link);
+        }
+        const flag = document.createElement("button");
+        flag.type = "button";
+        flag.className = "quiet";
+        flag.textContent = item.flagged ? "Clear flag" : "Flag for review";
+        flag.addEventListener("click", async () => {
+          const response = await fetch("/api/reviews", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: item.id, flagged: !item.flagged }),
+          });
+          const payload = await response.json();
+          item.flagged = payload.flagged;
+          render();
+        });
+        actions.appendChild(flag);
+        card.append(meta, body, actions);
+        list.appendChild(card);
+      }
+    }
+
+    for (const field of fields) field.addEventListener("input", render);
+
+    document.getElementById("clear").addEventListener("click", () => {
+      for (const field of fields) {
+        if (field.type === "checkbox") field.checked = false;
+        else field.value = "";
+      }
+      render();
+    });
+
+    fetch("/api/questions").then((response) => response.json()).then((payload) => {
+      questions = payload.questions || [];
+      const coverage = payload.coverage || {};
+      document.getElementById("coverage").textContent =
+        `${coverage.present || 0} of ${coverage.total || 63} papers on disk` +
+        (coverage.needs_ocr ? ` · ${coverage.needs_ocr} need OCR` : "");
+      options(byId.area, [...new Set(questions.flatMap((item) => item.topics.map((topic) => topic.area)))].sort());
+      options(byId.topic, [...new Set(questions.flatMap((item) => item.topics.map((topic) => `${topic.code} ${topic.topic}`)))].sort());
+      options(byId.year, [...new Set(questions.map((item) => String(item.year)).filter(Boolean))].sort());
+      options(byId.session, [...new Set(questions.map((item) => item.session).filter(Boolean))].sort());
+      render();
+    });
+  </script>
+</body>
+</html>

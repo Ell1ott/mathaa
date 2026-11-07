@@ -1,0 +1,192 @@
+Computer Science HL Paper 1
+
+One advantage and one disadvantage of SaaS
+
+Define peripheral
+Outline two uses of a stack
+Outline the importance of user acceptance testing
+Outline use of the MAR
+Two potential usability problems of mobile phones
+
+
+Hexadecimal question 11111011 to hex = fb
+Convert 89 to binary = 1011001
+
+2 ways to improve accessibility of computer systems
+
+Outline two ways of resource management techniques for an OS [4]
+
+
+
+
+
+Q12:
+Identify two characteristics of fiber optics [2]
+Identify two characteristics of wireless transmission [2]
+
+Outline how encryption keeps data secure during transmission [3]
+
+Describe how data is sent using packet switching [5 - marker]
+
+Outline social implications of changes in worker behavior (or smth like that) due to use of a VPN [3]
+
+
+Hotel chain question:
+
+Two causes of data loss
+Impact of data loss on hotel chain
+One migration issue
+How can hotel prevent data loss (can’t rmb how many ways they asked but this was a 2pointer)
+Compare and contrast primary and secondary memory of desktops and tablets [3]
+Compare/contrast network connectivity for wired/wireless
+
+
+
+
+
+
+
+
+Question 13? or 14 idk
+
+
+They give you a linked list
+
+Describe how an element would be removed [5]
+
+
+
+
+Another question: give you a few numbers. 
+
+When traversed using INORDER the number will be sorted. Sketch binary tree
+
+Identify the leafs in the tree u sketched
+
+Car question
+
+Define NOR operator
+
+Output z is determined by inputs A, B, C
+
+Input
+Binary Representation
+Condition
+A
+0
+Distance to obstacle in front is greater than 20m 
+1
+Distance to obstacle in front is less than or equal to 20m
+B
+0
+Car is stationary or reverse
+1
+Car is going forward
+C
+0
+Faster than 130
+1
+Car travels between 0-130
+
+
+
+Z is 1 only if:
+
+The car is travelling in a forward direction AND distance to obstacle in front is greater than 20m
+OR
+The car is going faster than 130 km/h
+Otherwise z = 0
+
+Construct a logic diagram for z
+
+	A —-- NOT —----|
+	B —-----------------| AND—----|
+	C —-------NOT—---------------| OR —---- Z smth like this
+	
+
+Rule D is to be added so that it checks if the car is going in reverse AND less than 30m away from an obstacle from the car’s rear.
+
+State the rules required to check the condition for rule D [2] (don’t even ask me how to do this idk wtf they were tryna make me do)
+
+
+
+
+
+
+
+Next page after car question (continued):
+
+
+Variables: 
+
+F: distance from front of car to obstacle in front
+S: speed of car
+T: true if going forward, false if not
+
+
+There’s a chain of booleans operations questions. Basically evaluates to true & true & true & true = true
+
+Construct a pseudocode that warns the user if car is going >115 km/h or is < 15 m to car in front. Algorithm exits when car is stationary
+
+
+
+
+Trace Table question (last one)
+
+Functions:
+
+substring(x, y, z): given string x, index y (starts from 0) and z, returns the substring of x beginning at y of length z
+E.g. substring(“Hello”, 2, 2) = “ll”
+
+lenString(X): length of input string
+revString(X): reverse of input string, so revString(“hello”) = “olleh”
+joinString(X, Y): joins X and Y together, no space in between
+
+I DON’t fucking rmb what they gave u but the output is supposedly “COMPUTERSAREFUN” according to my friends but i didn’t get that :(
+
+The shit is crazy, it’s a trace table with 7 columns. Algo is like this (next page)
+
+
+J = “”
+
+Loop from i = 1 to i = 4:
+Input X
+Input Y
+Input Z
+R = substring(X, Y, Z)
+S = revString(R)
+J = joinString(S, J)
+
+
+From this construct a trace table [5]. (first row done for you)
+
+You need to get COMPUTERSAREFUN or smth like that
+
+
+Last pseudocode question (same as trace table)
+Using the functions given, create a password-checking algorithm
+
+Rules:
+Password must be at least 8 chars long
+Password must not have any consecutive letters being the same
+User is prompted to re-enter password if the previous 2 rules are passed. This rule passes only if the re-entered password is same as the original password
+
+IF ANY OF THE RULES FAIL U NEED TO START OVER FROM RULE #1
+
+Example:
+
+Please enter a valid password:
+
+“Abccdefg”
+
+Error, consecutive characters. Please try again.
+
+Please enter a valid password:
+
+“Abcdefgh”
+
+Please reenter password:
+
+“Abcdefgh”
+
+Password accepted.

@@ -1,0 +1,17 @@
+Math AIHL
+
+Geometry, about ABC 3 points on a cartesian plane, calculating distance, gradient, midpoint, the last question asks you to find a point equal-distance to the ABC; bearing And the second or third one is about Integration: two functions modelling for a curve and a piece-wise function, looks like a water slide (tidal wave), asks you to use trapezoidal rule, then GDC for exact area then find percentage error; also calculating ∫ from 5 to 12 (-1/4*x^2+2x) dx
+
+Volume of a truck (the trapezoidal shaped thing at the back), given 3 different values (slant height, and one base given; height, angle vary per sub-question); differentiation
+
+Transition matrix, then write in λ^2+λ+c, then eigenvector
+
+Summation symbol the sigma; some probability with no replacements, 15/(15+10) * 10/(15+10-1)
+
+Confidence interval sub-question, 95% (not a question but a sub-question i remembered)
+
+Graph theory: finding lower bound, and upper bound from adjacency table; prim's algorithm, minimum spanning tree, from A to every town without repeating then back to A
+
+Last question: Normal distribution, combinations of normal distributions, context is containment wall composed of three layers: concrete+lead+concrete, just add mean and standard deviation
+
+NO hypothesis testing
