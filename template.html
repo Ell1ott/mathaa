@@ -240,8 +240,30 @@ function pills(){
  if(S.txt)P.push(['x','','“'+esc(S.txt)+'”']);
  $('#meta').innerHTML='<span class="count">'+R.length+' of '+Q.length+' questions</span>'+P.map(p=>'<span class="pill">'+p[2]+'<i role="button" tabindex="0" data-pg="'+p[0]+'" data-pv="'+p[1]+'" aria-label="Remove">✕</i></span>').join('')+(P.length?'<button class="clear" id="clr">Clear all</button>':'');
  $('#fbadge').textContent=P.length?' · '+P.length:''}
+function filtersFrom(search){
+ const u=new URLSearchParams(search),F={p:new Set(),y:new Set(),s:new Set(),m:new Set(),a:new Set(),t:new Set(),saved:false,ver:false,q:'',sort:'new'};
+ for(const k of ['p','y','s','m','a','t'])for(const x of (u.get(k)||'').split(',')){
+  if(!x)continue;
+  if(k==='p'||k==='y'||k==='m'){const n=+x;if(Number.isFinite(n))F[k].add(n)}
+  else F[k].add(x)}
+ F.saved=u.get('saved')==='1';F.ver=u.get('ver')==='1';F.q=u.get('q')||'';
+ const sort=u.get('sort');if(['old','mh','ml','tp'].includes(sort))F.sort=sort;
+ return F}
+function filtersTo(S,q,sort,path){
+ const u=new URLSearchParams();
+ for(const k of ['p','y','s','m','a','t'])if(S[k].size)u.set(k,[...S[k]].join(','));
+ if(S.saved)u.set('saved','1');if(S.ver)u.set('ver','1');
+ if(q)u.set('q',q);if(sort&&sort!=='new')u.set('sort',sort);
+ const s=u.toString();return s?path+'?'+s:path}
+function loadFilters(){
+ const F=filtersFrom(location.search);
+ for(const k of ['p','y','s','m','a','t'])F[k].forEach(v=>S[k].add(v));
+ S.saved=F.saved;S.ver=F.ver;S.txt=F.q.trim().toLowerCase();
+ $('#q').value=F.q;$('#sort').value=F.sort;
+ F.a.forEach(A=>open.add(A));F.t.forEach(c=>{if(T[c])open.add(T[c][1])})}
+function syncUrl(){history.replaceState(null,'',filtersTo(S,$('#q').value.trim(),$('#sort').value,location.pathname))}
 function render(){
- R=Q.filter(q=>ok(q));sortR();shown=30;side();pills();$('#main').scrollTop=0;draw()}
+ R=Q.filter(q=>ok(q));sortR();shown=30;side();pills();$('#main').scrollTop=0;draw();syncUrl()}
 function draw(){
  const g=$('#grid');
  if(!R.length){g.innerHTML='<div class="empty"><b>No questions match</b>Try removing a filter or searching for something broader.<br><button id="clr2">Clear filters</button></div>';return}
@@ -270,7 +292,7 @@ document.addEventListener('click',e=>{
 });
 function draw2(){const y=$('#main').scrollTop;draw();$('#main').scrollTop=y}
 let tm;$('#q').addEventListener('input',e=>{clearTimeout(tm);tm=setTimeout(()=>{S.txt=e.target.value.trim().toLowerCase();render()},140)});
-$('#sort').addEventListener('change',()=>{sortR();shown=30;draw()});
+$('#sort').addEventListener('change',()=>{sortR();shown=30;draw();syncUrl()});
 document.addEventListener('keydown',e=>{
  const typing=/INPUT|SELECT/.test(document.activeElement.tagName);
  if(e.key==='Escape'){if($('#sheet').classList.contains('on'))shut();else if(typing)document.activeElement.blur();else $('#side').classList.remove('on'),$('#scrim').classList.remove('on')}
@@ -298,7 +320,7 @@ function applyView(){
  img.onerror=()=>{box.innerHTML='<p class="note">No printed cutout for this question.</p>'};
  if(img.getAttribute('src')!==src)img.src=src}
 function shut(){$('#sheet').classList.remove('on');$('#side').classList.remove('on');$('#scrim').classList.remove('on');$('#sheet').setAttribute('aria-hidden','true')}
-render();
+loadFilters();render();
 </script>
 </body>
 </html>

@@ -382,6 +382,27 @@ if (fmt("Use |x| here.\n\nNot a table.").includes("<table>")) process.exit(7);
         run = subprocess.run(["node", "-e", script], capture_output=True, text=True)
         self.assertEqual(run.returncode, 0, run.stderr or run.stdout)
 
+    def test_filters_roundtrip_in_the_url(self):
+        src = Path(__file__).resolve().parents[1].joinpath("template.html").read_text()
+        fns = src[src.index("function filtersFrom") : src.index("function loadFilters")]
+        script = fns + r"""
+const search = "?p=1,3&y=2024&s=May,November&m=0,3&a=Calculus,Functions&t=1.1,5.5&saved=1&ver=1&q=Hello+World&sort=mh";
+const F = filtersFrom(search);
+const back = filtersTo(F, F.q, F.sort, "/");
+const again = filtersFrom(back.slice(back.indexOf("?")));
+for (const key of ["p", "y", "s", "m", "a", "t"]) {
+  const left = [...F[key]].join(",");
+  const right = [...again[key]].join(",");
+  if (left !== right) { console.error(key, left, right); process.exit(1); }
+}
+if (again.q !== "Hello World" || again.sort !== "mh" || !again.saved || !again.ver) process.exit(2);
+if (filtersTo({p:new Set(),y:new Set(),s:new Set(),m:new Set(),a:new Set(),t:new Set(),saved:false,ver:false}, "", "new", "/") !== "/") process.exit(3);
+if (filtersFrom("?sort=nope&m=no&saved=0").sort !== "new") process.exit(4);
+if (filtersFrom("?sort=nope&m=no&saved=0").m.size) process.exit(5);
+"""
+        run = subprocess.run(["node", "-e", script], capture_output=True, text=True)
+        self.assertEqual(run.returncode, 0, run.stderr or run.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
