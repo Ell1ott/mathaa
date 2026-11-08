@@ -188,6 +188,126 @@ def figure_urls(key: str) -> list[str]:
     return [f"/fig/{path.name}" for path in paths]
 
 
+_WORD = re.compile(r"[A-Za-z]{4,}")
+# A graph OCR turned into a markdown table sits directly under the figure sentence.
+_READOUT = re.compile(
+    r"\A(?:[ \t]*\n)+[ \t]*(?:diagram not to scale[ \t]*\n+)?(?:\|[^\n]*\n){2,}",
+    re.I,
+)
+
+
+def _anchor_end(text: str, line: str, start: int) -> int | None:
+    """End offset of the PDF line above a figure, once it shows up in the question."""
+    words = _WORD.findall(line)[-4:]
+    if len(words) < 3:
+        return None
+    pat = r"\b" + r"\b.{0,120}?\b".join(re.escape(word) for word in words) + r"\b"
+    match = re.search(pat, text[start:], re.I | re.S)
+    if match is None:
+        return None
+    return start + match.end()
+
+
+def _insert_figure(text: str, pos: int, url: str) -> str:
+    end = text.find("\n", pos)
+    if end < 0:
+        end = len(text)
+    rest = text[end:]
+    near = text[max(0, end - 300) : end]
+    readout = _READOUT.match(rest)
+    if readout and not re.search(r"\btable\b", near, re.I):
+        rest = "\n" + rest[readout.end() :].lstrip("\n")
+    return text[:end] + f"\n\n![]({url})\n" + rest
+
+
+def place_figures(text: str, urls: list[str], anchors: list[str]) -> str:
+    """Put back figures OCR never marked, using the PDF line printed above each one.
+
+    shortcut: a figure is skipped when that line is not in this question's text,
+    which also drops a drawing that belongs to the next question. Re-OCR to place it.
+    """
+    cursor = 0
+    spots = []
+    for url, line in zip(urls, anchors):
+        if url in text:
+            continue
+        pos = _anchor_end(text, line, cursor)
+        if pos is None:
+            continue
+        spots.append((pos, url))
+        cursor = pos
+    if not spots:
+        return text
+    for pos, url in reversed(spots):
+        text = _insert_figure(text, pos, url)
+    return re.sub(r"\n{3,}", "\n\n", text).strip()
+
+
+def _anchor_line(page, rect) -> str:
+    rows: dict[tuple, list] = {}
+    for word in page.get_text("words"):
+        rows.setdefault((round(word[1]), word[5], word[6]), []).append(word)
+    best = ""
+    for key in sorted(rows):
+        bits = sorted(rows[key], key=lambda word: word[0])
+        y1 = max(bit[3] for bit in bits)
+        x0 = min(bit[0] for bit in bits)
+        if y1 > rect.y0 + 4 or x0 > CONTENT_RIGHT:
+            continue
+        line = " ".join(bit[4] for bit in bits)
+        if len(_WORD.findall(line)) >= 3:
+            best = line
+    return best
+
+
+def restore_figures(papers: list[dict]) -> tuple[int, int]:
+    """Crop vector diagrams OCR replaced with text, and splice the image in."""
+    import pymupdf
+
+    FIGS.mkdir(parents=True, exist_ok=True)
+    questions_fixed = figures = 0
+    for paper in papers:
+        questions = paper.get("questions") or []
+        path = ROOT / paper.get("file", "")
+        if not questions or not path.is_file():
+            continue
+        doc = pymupdf.open(path)
+        try:
+            for index, question in enumerate(questions):
+                key = question.get("id") or _key(paper, question)
+                if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", key):
+                    continue
+                nxt = questions[index + 1] if index + 1 < len(questions) else None
+                cursor = 0
+                kept = []
+                text = question.get("text") or ""
+                for page, top, bottom in bands(doc, question, nxt):
+                    for rect in diagram_rects(page, top, bottom):
+                        line = _anchor_line(page, rect)
+                        pos = _anchor_end(text, line, cursor)
+                        if pos is None:
+                            continue
+                        kept.append((page, rect, line))
+                        cursor = pos
+                if not kept:
+                    continue
+                urls = [f"/fig/{key}-{nth}.png" for nth in range(1, len(kept) + 1)]
+                if all(url in text for url in urls):
+                    continue
+                for nth, (page, rect, _line) in enumerate(kept, 1):
+                    dest = FIGS / f"{key}-{nth}.png"
+                    if not dest.is_file():
+                        page.get_pixmap(dpi=140, clip=rect).save(dest)
+                updated = place_figures(text, urls, [line for _page, _rect, line in kept])
+                if updated != text:
+                    question["text"] = updated
+                    questions_fixed += 1
+                    figures += sum(1 for url in urls if url in updated)
+        finally:
+            doc.close()
+    return questions_fixed, figures
+
+
 def render_figures(papers: list[dict]) -> None:
     """Write data/figs/<id>-<n>.png for each diagram under a `[Figure:]` placeholder.
 
@@ -587,6 +707,7 @@ def transcribe(papers: list[dict]) -> None:
     if not key:
         print("skipping formula text; set OPENPARSER_API_KEY")
         _apply_cache(papers)
+        _report_figures(papers)
         return
     pending = []
     for paper in papers:
@@ -623,3 +744,10 @@ def transcribe(papers: list[dict]) -> None:
         for nth, future in enumerate(as_completed(futures), 1):
             print(f"{nth}/{len(pending)} {future.result()}", flush=True)
     _apply_cache(papers)
+    _report_figures(papers)
+
+
+def _report_figures(papers: list[dict]) -> None:
+    fixed, figures = restore_figures(papers)
+    if fixed:
+        print(f"restored {figures} figures in {fixed} questions")

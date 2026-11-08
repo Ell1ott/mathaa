@@ -12,6 +12,7 @@ from transcribe import (  # noqa: E402
     job_id,
     line_y,
     markdown_from,
+    place_figures,
     splice_figures,
     stitch,
     strip_page_furniture,
@@ -286,6 +287,28 @@ class FigureTest(unittest.TestCase):
         self.assertIn("![](/fig/q-1.png)", cleaned)
         self.assertIn("![](/fig/q-2.png)", cleaned)
         self.assertNotIn("[Figure:", cleaned)
+
+    def test_place_puts_a_graph_back_and_drops_its_readout(self):
+        text = (
+            "The curve passes through the top right corner of each rectangle.\n\n"
+            "| x | y |\n| --- | --- |\n| 0 | 0 |\n\n"
+            "(i) Write down an expression.\n"
+        )
+        got = place_figures(
+            text,
+            ["/fig/q-1.png"],
+            ["The curve passes through the top right corner of each rectangle."],
+        )
+        self.assertIn("![](/fig/q-1.png)", got)
+        self.assertNotIn("| x | y |", got)
+        self.assertIn("(i) Write down", got)
+        again = place_figures(got, ["/fig/q-1.png"], ["The curve passes through the top right corner of each rectangle."])
+        self.assertEqual(again.count("![]("), 1)
+
+    def test_place_skips_a_drawing_from_the_next_question(self):
+        text = "Prove by contradiction that the inequality holds."
+        got = place_figures(text, ["/fig/q-1.png"], ["The following diagram shows parallelogram with"])
+        self.assertNotIn("![](", got)
 
     def test_diagram_rect_ignores_a_hairline(self):
         import pymupdf
