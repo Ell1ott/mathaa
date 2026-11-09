@@ -9,7 +9,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from catalog import ROOT
-from transcribe import tidy_question
+from transcribe import tidy_question, tidy_scheme
 
 QUESTIONS = ROOT / "data" / "questions.json"
 COVERAGE = ROOT / "data" / "coverage.json"
@@ -56,22 +56,26 @@ def question_bank(questions: list[dict]) -> dict:
                 text = text[:nxt]
         for topic in question["topics"]:
             topics[topic["code"]] = [topic["topic"], topic["area"]]
-        out.append(
-            {
-                "i": question["id"],
-                "y": question["year"],
-                "s": question["session"],
-                "p": question["paper"],
-                "z": question["tz"],
-                "n": number,
-                "m": marks,
-                "t": text.strip(),
-                "c": [topic["code"] for topic in question["topics"]],
-                "v": question["status"] == "matched",
-                "a": question["page_start"],
-                "b": question["page_end"],
-            }
-        )
+        scheme_md = ROOT / "data" / "schemes" / f"{question['id']}.md"
+        scheme = tidy_scheme(scheme_md.read_text()) if scheme_md.is_file() else ""
+        row = {
+            "i": question["id"],
+            "y": question["year"],
+            "s": question["session"],
+            "p": question["paper"],
+            "z": question["tz"],
+            "n": number,
+            "m": marks,
+            "t": text.strip(),
+            "c": [topic["code"] for topic in question["topics"]],
+            "v": question["status"] == "matched",
+            "a": question["page_start"],
+            "b": question["page_end"],
+            "k": scheme_md.is_file() or (ROOT / "data" / "schemes" / f"{question['id']}.png").is_file(),
+        }
+        if scheme:
+            row["e"] = scheme
+        out.append(row)
     out.sort(key=lambda item: (-item["y"], SESSION_ORDER[item["s"]], item["p"], item["z"] or "", item["n"]))
     return {"topics": topics, "qs": out}
 
@@ -134,8 +138,9 @@ class Handler(BaseHTTPRequestHandler):
         if parsed.path == "/api/coverage":
             self.send(200, json.dumps(load_json(COVERAGE, {})).encode(), "application/json")
             return
-        if parsed.path.startswith("/cut/") or parsed.path.startswith("/fig/"):
-            kind = "cuts" if parsed.path.startswith("/cut/") else "figs"
+        image_kind = {"cut": "cuts", "fig": "figs", "scheme": "schemes"}.get(parsed.path.split("/")[1] if parsed.path.startswith("/") else "")
+        if image_kind and parsed.path.count("/") >= 2:
+            kind = image_kind
             name = parsed.path.split("/", 2)[2]
             path = (ROOT / "data" / kind / name).resolve()
             if not CUT_NAME.fullmatch(name) or path.parent != (ROOT / "data" / kind).resolve() or not path.is_file():

@@ -28,6 +28,7 @@ def main() -> None:
     (SITE / "index.html").write_bytes(bank_page())
     copy_dir(ROOT / "data" / "cuts", SITE / "cut")
     copy_dir(ROOT / "data" / "figs", SITE / "fig")
+    copy_dir(ROOT / "data" / "schemes", SITE / "scheme")
     print(SITE)
 
 

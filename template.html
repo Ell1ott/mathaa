@@ -121,6 +121,7 @@ select{background:var(--fill);border:0;border-radius:11px;height:38px;padding:0 
 #sheet .bar .seg button.on{background:var(--surf);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.15)}
 #sheet .bar .seg svg{display:none}
 #sheet #bm.on{color:#ff9f0a}#sheet #bm.on svg{fill:#ff9f0a}
+#sheet #cp.done{color:var(--acc)}
 #sheet .bar .count{font-size:13px;color:var(--ink2);min-width:44px;margin:0;text-align:center;font-variant-numeric:tabular-nums}
 .sb{overflow-y:auto;padding:26px 32px 108px;flex:1;min-width:0;touch-action:pan-y;overscroll-behavior-x:contain}
 .sb.swiping{overflow:hidden;padding:0}
@@ -152,12 +153,12 @@ select{background:var(--fill);border:0;border-radius:11px;height:38px;padding:0 
  .top{padding:12px 16px}.grid{padding:16px;grid-template-columns:minmax(0,1fr)}
  .sb{padding:20px 16px 108px}.dr{display:grid;margin-left:auto}
  .toggles{margin-left:0}
- #sheet .bar .seg button{min-width:68px;padding:0 14px}
+ #sheet .bar .seg button{min-width:58px;padding:0 10px}
  #sheet .sep{margin:0 2px}
  #sheet .bar button{width:40px;height:40px;min-width:40px}
  #sheet .bar .count{display:none}
 }
-@media (max-width:350px){
+@media (max-width:430px){
  #sheet .bar .seg button span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
  #sheet .bar .seg svg{display:block;width:20px;height:20px;min-width:20px;min-height:20px}
  #sheet .bar .seg button{width:36px;height:36px;min-width:36px;padding:0;aspect-ratio:1}
@@ -195,9 +196,11 @@ select{background:var(--fill);border:0;border-radius:11px;height:38px;padding:0 
   <div class="seg" role="tablist">
     <button id="tText" class="on" role="tab" aria-label="Text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h9"/></svg><span>Text</span></button>
     <button id="tPaper" role="tab" aria-label="Paper"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="10" r="1.4"/><path d="M20 16l-4.5-4-7.5 6"/></svg><span>Paper</span></button>
+    <button id="tScheme" role="tab" aria-label="Markscheme"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span>Scheme</span></button>
   </div>
   <span class="sep"></span>
   <button id="bm" aria-label="Bookmark" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></svg></button>
+  <button id="cp" aria-label="Copy question text"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>
  </nav>
  </div>
 </section>
@@ -217,7 +220,7 @@ const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const lab=q=>(q.s==='Specimen'?'Specimen ':q.s+' ')+q.y;
 const calc=q=>q.p===1?'No calculator':'Calculator allowed';
 let ST={};try{ST=JSON.parse(localStorage.getItem('ibq-star')||'{}')}catch(e){}
-let paperOn=false;
+let view='text';
 const saveST=()=>{try{localStorage.setItem('ibq-star',JSON.stringify(ST))}catch(e){}};
 const S={p:new Set(),y:new Set(),s:new Set(),m:new Set(),a:new Set(),t:new Set(),saved:false,ver:false,txt:''};
 const open=new Set();let R=[],shown=30,cur=-1;
@@ -363,8 +366,10 @@ document.addEventListener('click',e=>{
  if(t.closest('#close')||t===$('#scrim')){shut();return}
  if(t.closest('#prev'))show(cur-1);if(t.closest('#next'))show(cur+1);
  if(t.closest('#bm')&&cur>=0){const q=R[cur];ST[q.i]?delete ST[q.i]:ST[q.i]=1;saveST();sheetStar();draw2();side()}
- if(t.closest('#tText')){paperOn=false;applyView();return}
- if(t.closest('#tPaper')){paperOn=true;applyView();return}
+ if(t.closest('#cp')){if(cur<0)return;const b=$('#cp');navigator.clipboard&&navigator.clipboard.writeText(R[cur].t).then(()=>{b.classList.add('done');clearTimeout(b._t);b._t=setTimeout(()=>b.classList.remove('done'),900)}).catch(()=>{})}
+ if(t.closest('#tText')){view='text';applyView();return}
+ if(t.closest('#tPaper')){view='paper';applyView();return}
+ if(t.closest('#tScheme')&&!t.closest('#tScheme').disabled){view='scheme';applyView();return}
 });
 function draw2(){const y=$('#main').scrollTop;draw();$('#main').scrollTop=y}
 let tm;$('#q').addEventListener('input',e=>{clearTimeout(tm);tm=setTimeout(()=>{S.txt=e.target.value.trim().toLowerCase();render()},140)});
@@ -378,17 +383,21 @@ document.addEventListener('keydown',e=>{
 function sheetStar(){const on=!!ST[R[cur].i];const b=$('#bm');b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false')}
 function bodyHTML(i){
  const q=R[i];
- return '<div class="facts">'+(q.m?'<span><b>'+q.m+'</b> marks</span>':'')+'<span>'+calc(q)+'</span><span>Pages '+q.a+(q.b!==q.a?'–'+q.b:'')+'</span><span>'+(i+1)+' of '+R.length+' in current view</span></div><div class="tags" style="margin-bottom:22px">'+tags(q,9)+'</div><div class="paper"><img alt="Question as printed on the paper"></div><div class="qwrap"><div class="q">'+fmt(q.t)+'</div>'+(q.v?'':'<div class="note">Topic tags for this question were assigned automatically and may not be exact.</div>')+'</div>'}
-function prep(pane,i){
- const box=pane.querySelector('.paper'),wrap=pane.querySelector('.qwrap');
- if(!box||!wrap)return;
- box.hidden=!paperOn;wrap.hidden=paperOn;
+ const scheme=q.e?'<div class="scheme qwrap"><div class="q">'+fmt(q.e)+'</div></div>':'<div class="scheme paper"><img alt="Markscheme for this question"></div>';
+ return '<div class="facts">'+(q.m?'<span><b>'+q.m+'</b> marks</span>':'')+'<span>'+calc(q)+'</span><span>Pages '+q.a+(q.b!==q.a?'–'+q.b:'')+'</span><span>'+(i+1)+' of '+R.length+' in current view</span></div><div class="tags" style="margin-bottom:22px">'+tags(q,9)+'</div><div class="paper"><img alt="Question as printed on the paper"></div>'+scheme+'<div class="qwrap"><div class="q">'+fmt(q.t)+'</div>'+(q.v?'':'<div class="note">Topic tags for this question were assigned automatically and may not be exact.</div>')+'</div>'}
+function loadCut(box,i,kind){
  const img=box.querySelector('img');
- if(img){
-  const src='/cut/'+encodeURIComponent(R[i].i)+'.png';
-  img.onerror=()=>{box.innerHTML='<p class="note">No printed cutout for this question.</p>'};
-  if(img.getAttribute('src')!==src)img.src=src}
- typeset([pane.querySelector('.q')])}
+ if(!img)return;
+ const src='/'+kind+'/'+encodeURIComponent(R[i].i)+'.png';
+ img.onerror=()=>{box.innerHTML='<p class="note">'+(kind==='scheme'?'No markscheme for this question.':'No printed cutout for this question.')+'</p>'};
+ if(img.getAttribute('src')!==src)img.src=src}
+function prep(pane,i){
+ const box=pane.querySelector('.paper:not(.scheme)'),scheme=pane.querySelector('.scheme'),wrap=pane.querySelector('.qwrap:not(.scheme)');
+ if(!box||!wrap)return;
+ box.hidden=view!=='paper';scheme.hidden=view!=='scheme';wrap.hidden=view!=='text';
+ if(view==='paper')loadCut(box,i,'cut');
+ if(view==='scheme'&&!R[i].e)loadCut(scheme,i,'scheme');
+ typeset([...pane.querySelectorAll('.q')])}
 function show(i){
  if(i<0||i>=R.length)return;if(i>=shown){shown=i+10;draw2()}
  cur=i;
@@ -398,18 +407,20 @@ function show(i){
  $('#prev').disabled=i===0;$('#next').disabled=i===R.length-1;sheetStar();
  body.innerHTML=bodyHTML(i);
  body.scrollTop=0;$('#sheet').classList.add('on');$('#scrim').classList.add('on');$('#sheet').setAttribute('aria-hidden','false');
- applyView();typeset([body.querySelector('.q')])}
+ applyView();typeset([...body.querySelectorAll('.q')])}
 function applyView(){
- $('#tText').classList.toggle('on',!paperOn);$('#tPaper').classList.toggle('on',paperOn);
- const box=$('#sbody .paper'),wrap=$('#sbody .qwrap');
+ const q=R[cur];
+ const schemeOn=!!(q&&q.k);
+ if(view==='scheme'&&!schemeOn)view='text';
+ $('#tText').classList.toggle('on',view==='text');
+ $('#tPaper').classList.toggle('on',view==='paper');
+ $('#tScheme').classList.toggle('on',view==='scheme');
+ $('#tScheme').disabled=!schemeOn;
+ const box=$('#sbody .paper:not(.scheme)'),scheme=$('#sbody .scheme'),wrap=$('#sbody .qwrap:not(.scheme)');
  if(!box||!wrap)return;
- box.hidden=!paperOn;wrap.hidden=paperOn;
- if(!paperOn)return;
- const img=box.querySelector('img');
- if(!img)return;
- const src='/cut/'+encodeURIComponent(R[cur].i)+'.png';
- img.onerror=()=>{box.innerHTML='<p class="note">No printed cutout for this question.</p>'};
- if(img.getAttribute('src')!==src)img.src=src}
+ box.hidden=view!=='paper';scheme.hidden=view!=='scheme';wrap.hidden=view!=='text';
+ if(view==='paper')loadCut(box,cur,'cut');
+ if(view==='scheme'&&!q.e)loadCut(scheme,cur,'scheme');}
 function shut(){$('#sheet').classList.remove('on');$('#side').classList.remove('on');$('#scrim').classList.remove('on');$('#sheet').setAttribute('aria-hidden','true')}
 (function(){
  const sheet=$('#sheet'),body=$('#sbody');
@@ -463,7 +474,7 @@ function shut(){$('#sheet').classList.remove('on');$('#side').classList.remove('
  }
  function down(e){
   if(busy||!sheet.classList.contains('on'))return;
-  if(e.pointerType==='touch'||e.button||(e.touches&&e.touches.length!==1))return;
+  if(!e.touches||e.touches.length!==1)return;
   if(e.target.closest('.qfoot,button,a,input,select,textarea'))return;
   const p=point(e);
   on=true;mode=0;x0=x=p.clientX;y0=p.clientY;t0=e.timeStamp;vx=0;
@@ -500,10 +511,6 @@ function shut(){$('#sheet').classList.remove('on');$('#side').classList.remove('
  sheet.addEventListener('touchmove',move,{passive:false});
  sheet.addEventListener('touchend',up);
  sheet.addEventListener('touchcancel',cancel);
- sheet.addEventListener('pointerdown',down);
- sheet.addEventListener('pointermove',move);
- sheet.addEventListener('pointerup',up);
- sheet.addEventListener('pointercancel',cancel);
 })();
 loadFilters();render();
 if(window.lucide)lucide.createIcons({attrs:{'stroke-width':1.75}});

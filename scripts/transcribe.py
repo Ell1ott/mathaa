@@ -20,6 +20,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from catalog import ROOT
+from extract import markscheme_questions, markscheme_ranges
 
 CACHE = ROOT / "data" / "vl"
 API = "https://api.openparser.dev"
@@ -352,6 +353,7 @@ def render_figures(papers: list[dict]) -> None:
 
 
 CUTS = ROOT / "data" / "cuts"
+SCHEMES = ROOT / "data" / "schemes"
 FIGS = ROOT / "data" / "figs"
 FIGURE = re.compile(r"(?m)^[ \t]*\[Figure:.*?\][ \t]*$")
 # Answer lines sit in the right margin. Diagrams stay in the question column.
@@ -416,6 +418,87 @@ def write_cuts(questions: list[dict]) -> tuple[int, int]:
     wanted = {f"{question['id']}.png" for question in questions}
     for old in CUTS.glob("*.png"):
         if old.name not in wanted:
+            old.unlink()
+    return written, skipped
+
+
+def scheme_clips(doc, span: dict) -> list:
+    """Crop one markscheme question. `bottom` is the next question's top."""
+    import pymupdf
+
+    clips = []
+    for page_no in range(span["page_start"], span["page_end"] + 1):
+        page = doc[page_no - 1]
+        top = 56
+        bottom = page.rect.y1 - 72
+        if page_no == span["page_start"]:
+            top = max(0, span["top"] - 6)
+        if page_no == span["page_end"] and span["bottom"] is not None:
+            bottom = min(bottom, span["bottom"] - 6)
+        if bottom - top < 8:
+            continue
+        clips.append(page.get_pixmap(dpi=140, clip=pymupdf.Rect(0, top, page.rect.x1, bottom)))
+    return clips
+
+
+def each_scheme(questions: list[dict]):
+    """Yield (document, question, span, pdf) for every question with a markscheme."""
+    import pymupdf
+    from collections import defaultdict
+
+    by_file: dict[str, list[dict]] = defaultdict(list)
+    for question in questions:
+        if re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", question["id"]):
+            by_file[question["file"]].append(question)
+    for rel, group in by_file.items():
+        question_pdf = ROOT / rel
+        sibling = question_pdf.with_name(question_pdf.stem + "-markscheme.pdf")
+        source = sibling if sibling.is_file() else question_pdf
+        if not source.is_file():
+            continue
+        doc = pymupdf.open(source)
+        try:
+            ranges = markscheme_ranges([page.get_text("text") for page in doc])
+            if sibling.is_file() and not ranges:
+                ranges = [{"paper": None, "start": 1, "end": doc.page_count}]
+            by_paper: dict[int | None, dict[int, dict]] = {}
+            for item in ranges:
+                by_paper[item["paper"]] = {
+                    span["number"]: span
+                    for span in markscheme_questions(doc, item["start"], item["end"])
+                }
+            for question in group:
+                span = by_paper.get(question["paper"], {}).get(question["number"])
+                if span is None:
+                    span = by_paper.get(None, {}).get(question["number"])
+                if span is not None:
+                    yield doc, question, span, source
+        finally:
+            doc.close()
+
+
+def write_schemes(questions: list[dict]) -> tuple[int, int]:
+    """Write data/schemes/<id>.png from the markscheme paired with each paper.
+
+    shortcut: a newer PNG is kept even if the crop changed, delete data/schemes to rebuild.
+    """
+    SCHEMES.mkdir(parents=True, exist_ok=True)
+    written = skipped = 0
+    kept: set[str] = set()
+    for doc, question, span, source in each_scheme(questions):
+        dest = SCHEMES / f"{question['id']}.png"
+        kept.add(dest.name)
+        if dest.is_file() and dest.stat().st_mtime >= source.stat().st_mtime:
+            skipped += 1
+            continue
+        pages = scheme_clips(doc, span)
+        if not pages:
+            kept.discard(dest.name)
+            continue
+        dest.write_bytes(stitch(pages))
+        written += 1
+    for old in SCHEMES.glob("*.png"):
+        if old.name not in kept:
             old.unlink()
     return written, skipped
 
@@ -556,6 +639,44 @@ def strip_page_furniture(text: str) -> str:
         return text
     kept = [line for line, gone in zip(raw, drop) if not gone]
     return re.sub(r"\n{3,}", "\n\n", "\n".join(kept)).strip()
+
+
+SCHEME_DROP = re.compile(
+    r"^(?:[–—-]\s*\d+\s*[–—-]|question\s+\d+\s+continued\.?|continued(?:…|\.{3})?)$",
+    re.I,
+)
+
+
+SCHEME_WORD = {
+    "ag",
+    "and",
+    "as",
+    "either",
+    "ft",
+    "hence",
+    "if",
+    "let",
+    "note",
+    "or",
+    "show",
+    "so",
+    "then",
+    "to",
+}
+
+
+def tidy_scheme(text: str) -> str:
+    """Markscheme markdown without page numbers and continuation lines."""
+    kept = []
+    for line in text.splitlines():
+        plain = _plain_line(line)
+        if not plain or SCHEME_DROP.match(plain) or BOILER.match(plain):
+            continue
+        # A short letter-only line is usually a misread header, not a mark.
+        if re.fullmatch(r"[A-Za-z]{1,8}", plain) and plain.lower() not in SCHEME_WORD:
+            continue
+        kept.append(plain)
+    return "\n".join(kept).strip()
 
 
 def tidy_question(text: str, number: int) -> str:
@@ -745,6 +866,44 @@ def transcribe(papers: list[dict]) -> None:
             print(f"{nth}/{len(pending)} {future.result()}", flush=True)
     _apply_cache(papers)
     _report_figures(papers)
+
+
+def transcribe_schemes(questions: list[dict]) -> None:
+    """Write data/schemes/<id>.md from the same OCR pass the question text uses.
+
+    shortcut: a markdown file newer than the PDF is kept, delete it to redo that question.
+    """
+    key = api_key()
+    SCHEMES.mkdir(parents=True, exist_ok=True)
+    if not key:
+        print("skipping markscheme text; set OPENPARSER_API_KEY")
+        return
+    pending = []
+    for doc, question, span, source in each_scheme(questions):
+        dest = SCHEMES / f"{question['id']}.md"
+        if dest.is_file() and dest.stat().st_size > 20 and dest.stat().st_mtime >= source.stat().st_mtime:
+            continue
+        pages = scheme_clips(doc, span)
+        if not pages:
+            continue
+        folder = CACHE / "scheme-crops" / question["id"]
+        folder.mkdir(parents=True, exist_ok=True)
+        names = []
+        for nth, pix in enumerate(pages, 1):
+            image = folder / f"{nth}.png"
+            pix.save(image)
+            names.append(image)
+        pending.append((names, dest))
+    if not pending:
+        print("markscheme text: already current")
+        return
+    with ThreadPoolExecutor(max_workers=WORKERS) as pool:
+        futures = [pool.submit(_one, images, dest, key) for images, dest in pending]
+        for nth, future in enumerate(as_completed(futures), 1):
+            try:
+                print(f"scheme {nth}/{len(pending)} {future.result()}", flush=True)
+            except Exception as error:
+                print(f"scheme {nth}/{len(pending)} failed: {error}", flush=True)
 
 
 def _report_figures(papers: list[dict]) -> None:

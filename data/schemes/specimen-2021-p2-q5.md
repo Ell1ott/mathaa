@@ -1,0 +1,3 @@
+<table><tr><td rowspan="2">(a)</td><td>use of a graph to find the coordinates of the local minimum $ s = -16.513... $</td><td rowspan="2">(M1)\n(A1)\nA1\n[3 marks]</td></tr><tr><td>maximum distance is 16.5 cm (to the left of O)</td></tr><tr><td rowspan="3">(b)</td><td>attempt to find time when particle changes direction eg first maximum on the graph of $ s $ or the first $ t $ – intercept on the graph of $ s&amp;#x27; $. $ t = 1.51986... $</td><td>(M1)\n(A1)</td></tr><tr><td>attempt to find the gradient of $ s&amp;#x27; $ for their value of $ t $, $ s&amp;#x27;&amp;#x27;(1.51986...) $</td><td rowspan="2">(M1)\nA1</td></tr><tr><td>= -8.92 ( $ cm/s^{{2}} $)</td></tr></table>
+
+Total [7 marks]

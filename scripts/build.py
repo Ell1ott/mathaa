@@ -143,10 +143,15 @@ def main() -> None:
     QUESTIONS_PATH.write_text(
         json.dumps({"built": date.today().isoformat(), "questions": questions}, indent=2) + "\n"
     )
-    from transcribe import write_cuts
+    from transcribe import write_cuts, write_schemes
 
     written, skipped = write_cuts(questions)
     print(f"question cuts: {written} written, {skipped} already current")
+    written, skipped = write_schemes(questions)
+    print(f"markschemes: {written} written, {skipped} already current")
+    from transcribe import transcribe_schemes
+
+    transcribe_schemes(questions)
     report = coverage(load_catalog(), papers, reports)
     COVERAGE_PATH.write_text(json.dumps(report, indent=2) + "\n")
     write_readme_table(report)

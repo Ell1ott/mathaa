@@ -73,6 +73,15 @@ MISSING = [
 ]
 
 
+def selected(year: int | None, session: str | None) -> list[tuple]:
+    rows = MISSING
+    if year is not None:
+        rows = [row for row in rows if row[0] == year]
+    if session is not None:
+        rows = [row for row in rows if row[1] == session]
+    return rows
+
+
 def cookie_value(args: argparse.Namespace) -> str:
     if args.cookie:
         return args.cookie
@@ -239,6 +248,8 @@ def main() -> None:
     parser.add_argument(
         "--markschemes", action="store_true", help="also download markschemes"
     )
+    parser.add_argument("--year", type=int, help="only this exam year, for example 2025")
+    parser.add_argument("--session", choices=("May", "November"), help="only this session")
     parser.add_argument("--dry-run", action="store_true", help="print without downloading")
     args = parser.parse_args()
 
@@ -246,12 +257,16 @@ def main() -> None:
     cache: dict = {}
     counts = {"downloaded": 0, "updated": 0, "identical": 0, "planned": 0, "missing": 0}
 
-    result = fetch_specimen(cookie, args.user_agent, args.dry_run)
-    counts[result] += 1
-    print(f"  {result:10} Specimen 2021 Paper 1, 2 and 3 -> {SPECIMEN.relative_to(ROOT)}")
+    if args.year is None and args.session is None:
+        result = fetch_specimen(cookie, args.user_agent, args.dry_run)
+        counts[result] += 1
+        print(f"  {result:10} Specimen 2021 Paper 1, 2 and 3 -> {SPECIMEN.relative_to(ROOT)}")
 
     roles = [False, True] if args.markschemes else [False]
-    for year, session, paper, tz in MISSING:
+    rows = selected(args.year, args.session)
+    if not rows:
+        raise SystemExit(f"No papers listed for {args.session or ''} {args.year or ''}".strip())
+    for year, session, paper, tz in rows:
         folder, entries = listing_for(year, session, cookie, args.user_agent, cache)
         for markscheme in roles:
             name = pick(entries, paper, tz, markscheme)
@@ -262,6 +277,14 @@ def main() -> None:
                 counts["missing"] += 1
                 continue
             dest = destination(year, session, paper, tz, markscheme)
+            already = False
+            if dest.is_file() and dest.stat().st_size > 100_000:
+                with dest.open("rb") as handle:
+                    already = handle.read(4) == b"%PDF"
+            if already:
+                print(f"  {'identical':10} {label} -> {dest.relative_to(ROOT)}")
+                counts["identical"] += 1
+                continue
             if args.dry_run:
                 print(f"  {'would get':10} {label} -> {dest.relative_to(ROOT)}")
                 counts["planned"] += 1

@@ -153,6 +153,104 @@ def resolve_paper(signals: dict, conflicts: list[str], catalog: list[dict]) -> d
     return {"id": None, "ambiguous": True, "reason": "no catalog paper"}
 
 
+def is_markscheme_cover(text: str) -> bool:
+    head = text[:1500].lower()
+    if "contents" in head or "markscheme" not in head or "higher level" not in head:
+        return False
+    return bool(re.search(r"paper\s+[123]\b", head))
+
+
+def markscheme_ranges(pages: list[str]) -> list[dict]:
+    """HL markscheme sections in a PDF. A standalone scheme is one range."""
+    ranges = []
+    current = None
+    for number, text in enumerate(pages, 1):
+        if is_markscheme_cover(text):
+            if current:
+                ranges.append(current)
+            paper = re.search(r"paper\s+([123])\b", text[:1500], re.I)
+            current = {"paper": int(paper.group(1)), "start": number, "end": number}
+            continue
+        if current is None:
+            continue
+        if page_kind(text) in {"cover", "sl"}:
+            ranges.append(current)
+            current = None
+            continue
+        current["end"] = number
+    if current:
+        ranges.append(current)
+    return ranges
+
+
+_SCHEME_NUM = re.compile(r"(\d{1,2})\.?$")
+_SCHEME_TOTAL = re.compile(r"^(?:total\s+)?\[\s*(?:total\s+)?\d+\s+marks?\]$", re.I)
+
+
+def markscheme_questions(doc, start: int, end: int) -> list[dict]:
+    """Question spans inside one markscheme range.
+
+    The number sits in the left margin. A missing period, as in a bare ``2``,
+    still counts. Instruction lists are skipped because they have no [n marks] line.
+    """
+    raw = []
+    totals = []
+    for page_no in range(start, end + 1):
+        lines: dict[tuple, list] = {}
+        for word in doc[page_no - 1].get_text("words"):
+            lines.setdefault((word[5], word[6]), []).append(word)
+        for key in sorted(lines):
+            bits = sorted(lines[key], key=lambda word: word[0])
+            text = " ".join(bit[4] for bit in bits)
+            if _SCHEME_TOTAL.match(text.strip()):
+                totals.append((page_no, bits[0][1]))
+            match = _SCHEME_NUM.fullmatch(bits[0][4])
+            # Question numbers sit in the left margin. Later ones are sometimes
+            # indented, as in "9. (a)", so the cutoff is wider than the margin.
+            if not match or bits[0][0] > 96:
+                continue
+            number = int(match.group(1))
+            if 1 <= number <= 15:
+                raw.append((page_no, bits[0][1], number, bits[0][0]))
+    best: list = []
+    for index, item in enumerate(raw):
+        if item[2] != 1:
+            continue
+        seq = [item]
+        expect = 2
+        for later in raw[index + 1 :]:
+            prev = seq[-1]
+            # The examiner instructions are also numbered. A real question
+            # has a [n marks] line before the next one begins.
+            between = any((prev[0], prev[1]) < total < (later[0], later[1]) for total in totals)
+            # A few schemes omit the [n marks] line on one question. Once two
+            # real questions have linked, a later number in the same margin counts.
+            same_column = abs(later[3] - seq[0][3]) <= 16
+            if later[2] == expect and (between or (same_column and len(seq) >= 2)):
+                seq.append(later)
+                expect += 1
+        if len(seq) > len(best) or (
+            len(seq) == len(best) and best and (seq[0][0], seq[0][1]) > (best[0][0], best[0][1])
+        ):
+            best = seq
+    spans = []
+    for index, item in enumerate(best):
+        if index + 1 < len(best):
+            page_end, bottom = best[index + 1][0], best[index + 1][1]
+        else:
+            page_end, bottom = end, None
+        spans.append(
+            {
+                "number": item[2],
+                "page_start": item[0],
+                "page_end": page_end,
+                "top": item[1],
+                "bottom": bottom,
+            }
+        )
+    return spans
+
+
 def page_kind(text: str) -> str:
     head = text[:1500].lower()
     if "standard level" in head and "higher level" not in head:

@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from catalog import build_catalog  # noqa: E402
 from serve import question_bank  # noqa: E402
 from transcribe import (  # noqa: E402
+    tidy_scheme,
     diagram_rects,
     job_id,
     line_y,
@@ -22,6 +23,9 @@ from extract import (  # noqa: E402
     apply_folder_session,
     clean_question,
     merge_signals,
+    is_markscheme_cover,
+    markscheme_questions,
+    markscheme_ranges,
     page_kind,
     questions_from_pages,
     resolve_paper,
@@ -29,6 +33,7 @@ from extract import (  # noqa: E402
     split_papers,
     text_layer_ok,
 )
+from fetch_missing import selected  # noqa: E402
 from match import lacks_overlap  # noqa: E402
 from sync_refs import parse_topic_page, robots_allows, topic_urls  # noqa: E402
 
@@ -149,6 +154,11 @@ class ExtractTest(unittest.TestCase):
         self.assertEqual(named["paper"], 2)
         self.assertEqual(named["tz"], "TZ1")
         self.assertIsNone(named["year"])
+        november = selected(2025, "November")
+        self.assertEqual(
+            [(row[2], row[3]) for row in november],
+            [(1, 1), (1, 3), (2, 1), (2, 3), (3, 1), (3, 3)],
+        )
 
     def test_split_and_span(self):
         pages = [
@@ -172,6 +182,50 @@ class ExtractTest(unittest.TestCase):
         plural = questions_from_pages([(4, "1.\n[Maximum marks: 28]\nExplore polynomials.\n")])
         self.assertEqual(plural[0]["number"], 1)
         self.assertIn("Explore polynomials", plural[0]["text"])
+
+    def test_markscheme_range_skips_contents(self):
+        pages = [
+            "CONTENTS\nMathematics higher level\npaper 1 markscheme\n",
+            "Markscheme\nHigher level\nPaper 1\n",
+            "Instructions to examiners\nAbbreviations\n",
+            "Section A\n1.\nTotal [5 marks]\n",
+            "Higher level\nPaper 2\nInstructions to candidates\n",
+        ]
+        self.assertFalse(is_markscheme_cover(pages[0]))
+        self.assertTrue(is_markscheme_cover(pages[1]))
+        ranges = markscheme_ranges(pages)
+        self.assertEqual(ranges, [{"paper": 1, "start": 2, "end": 4}])
+
+    def test_markscheme_questions_ignore_the_worked_examples(self):
+        import pymupdf
+
+        document = pymupdf.open()
+        cover = document.new_page()
+        cover.insert_text((72, 80), "Markscheme")
+        cover.insert_text((72, 110), "Higher level")
+        cover.insert_text((72, 140), "Paper 1")
+        cover.insert_text((48, 700), "1.")
+        cover.insert_text((48, 740), "2.")
+        notes = document.new_page()
+        notes.insert_text((42, 120), "10.")
+        notes.insert_text((70, 120), "Presentation of candidate work")
+        body = document.new_page()
+        body.insert_text((42, 140), "1.")
+        body.insert_text((42, 400), "Total [5 marks]")
+        body.insert_text((42, 500), "2")
+        last = document.new_page()
+        last.insert_text((42, 100), "Total [4 marks]")
+        last.insert_text((42, 160), "3.")
+        ranges = markscheme_ranges([page.get_text("text") for page in document])
+        spans = markscheme_questions(document, ranges[0]["start"], ranges[0]["end"])
+        document.close()
+        self.assertEqual([span["number"] for span in spans], [1, 2, 3])
+        self.assertEqual(spans[0]["page_start"], 3)
+        self.assertEqual(spans[0]["page_end"], 3)
+        self.assertEqual(spans[1]["page_start"], 3)
+        self.assertEqual(spans[0]["bottom"], spans[1]["top"])
+        self.assertEqual(spans[2]["page_end"], 4)
+        self.assertIsNone(spans[2]["bottom"])
 
     def test_resolve(self):
         catalog = build_catalog()
@@ -223,6 +277,17 @@ class ExtractTest(unittest.TestCase):
 
 
 class OpenParserTest(unittest.TestCase):
+    def test_tidy_scheme_drops_page_furniture(self):
+        cleaned = tidy_scheme(
+            "– 8 –\n1. (a) \\(d=-6\\) (M1)\nQuestion 1 continued.\ncontinued…\nTurn over\nTotal [6 marks]\n"
+        )
+        self.assertIn(r"\(d=-6\)", cleaned)
+        self.assertIn("Total [6 marks]", cleaned)
+        self.assertNotIn("continued", cleaned.lower())
+        self.assertNotIn("Turn over", cleaned)
+        self.assertNotIn("glce", tidy_scheme("glce\nEITHER\nA1\n"))
+        self.assertIn("EITHER", tidy_scheme("glce\nEITHER\nA1\n"))
+
     def test_tidy_keeps_one_question(self):
         raw = Path("/Users/elliottfriedrich/github/mathaa/data/vl/2026-05-p2-tz1-q1.md").read_text()
         cleaned = tidy_question(raw, 1)
