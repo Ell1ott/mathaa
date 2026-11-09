@@ -1,16 +1,22 @@
-import { useEffect, useLayoutEffect, useState } from 'react'
+import { useEffect, useLayoutEffect } from 'react'
 
-export function useSwipe(sheetRef, bodyRef, optsRef, enabled) {
-  const [swipe, setSwipe] = useState(null)
-
-  useEffect(() => {
-    if (!enabled) setSwipe(null)
-  }, [enabled])
+// The reel stays mounted. Replacing the node under the finger makes iOS cancel the touch.
+export function useSwipe(sheetRef, bodyRef, reelRef, optsRef, enabled, index) {
+  useLayoutEffect(() => {
+    if (!enabled) return
+    const body = bodyRef.current
+    const reel = reelRef.current
+    if (!body || !reel) return
+    const w = body.clientWidth
+    for (const pane of reel.children) pane.style.width = w + 'px'
+    reel.style.transition = 'none'
+    reel.style.transform = 'translate3d(' + -w + 'px,0,0)'
+  }, [enabled, index, bodyRef, reelRef])
 
   useEffect(() => {
     const sheet = sheetRef.current
     const body = bodyRef.current
-    if (!sheet || !body) return undefined
+    if (!sheet || !body || !enabled) return undefined
     let on = false
     let busy = false
     let x0 = 0
@@ -19,39 +25,43 @@ export function useSwipe(sheetRef, bodyRef, optsRef, enabled) {
     let t0 = 0
     let vx = 0
     let mode = 0
-    let base = 0
     let width = 0
 
     const point = (e) => (e.changedTouches ? e.changedTouches[0] : e.touches ? e.touches[0] : e)
-    const strip = () => body.querySelector('.reel')
-    const place = (px) => {
+    const strip = () => reelRef.current
+    const place = (px, animate) => {
       const reel = strip()
-      if (reel) reel.style.transform = 'translate3d(' + px + 'px,0,0)'
+      if (!reel) return
+      reel.style.transition = animate ? 'transform .34s cubic-bezier(.32,.72,0,1)' : 'none'
+      reel.style.transform = 'translate3d(' + px + 'px,0,0)'
+    }
+    const fit = () => {
+      const reel = strip()
+      if (!reel) return 0
+      const w = body.clientWidth
+      for (const pane of reel.children) pane.style.width = w + 'px'
+      return w
     }
 
     function slide(dest) {
+      const { index: cur, onIndex } = optsRef.current
       const reel = strip()
-      const { index, onIndex } = optsRef.current
       if (!reel) {
         busy = false
-        setSwipe(null)
-        if (dest !== index) onIndex(dest)
+        if (dest !== cur) onIndex(dest)
         return
       }
       busy = true
       on = false
       mode = 0
-      const target = dest > index ? -2 * width : dest < index ? 0 : -width
-      reel.style.transition = 'transform .34s cubic-bezier(.32,.72,0,1)'
-      place(target)
+      const target = dest > cur ? -2 * width : dest < cur ? 0 : -width
+      place(target, true)
       let done = false
       const finish = () => {
         if (done) return
         done = true
         busy = false
-        reel.style.transition = 'none'
-        setSwipe(null)
-        if (dest !== index) onIndex(dest)
+        if (dest !== cur) onIndex(dest)
       }
       reel.addEventListener('transitionend', finish, { once: true })
       setTimeout(finish, 380)
@@ -68,6 +78,7 @@ export function useSwipe(sheetRef, bodyRef, optsRef, enabled) {
       y0 = p.clientY
       t0 = e.timeStamp
       vx = 0
+      width = body.clientWidth
     }
 
     function move(e) {
@@ -79,46 +90,35 @@ export function useSwipe(sheetRef, bodyRef, optsRef, enabled) {
         if (Math.abs(dx) < 12 && Math.abs(dy) < 12) return
         mode = Math.abs(dx) > Math.abs(dy) ? 1 : 2
         if (mode === 2) { on = false; return }
-        width = body.clientWidth
-        base = -width
-        setSwipe({ width, pad: getComputedStyle(body).padding, top: body.scrollTop, dx })
-        return
+        width = fit() || width
       }
-      if (mode !== 1) return
+      if (mode !== 1 || !strip()) return
       if (e.cancelable) e.preventDefault()
       const dt = Math.max(1, e.timeStamp - t0)
       vx = (p.clientX - x) / dt
       x = p.clientX
       t0 = e.timeStamp
-      const { index, count } = optsRef.current
-      let shift = base + (p.clientX - x0)
-      const min = index >= count - 1 ? -width : -2 * width
-      const max = index <= 0 ? -width : 0
+      const { index: cur, count } = optsRef.current
+      let shift = -width + dx
+      const min = cur >= count - 1 ? -width : -2 * width
+      const max = cur <= 0 ? -width : 0
       if (shift > max) shift = max + (shift - max) * 0.28
       if (shift < min) shift = min + (shift - min) * 0.28
-      const reel = strip()
-      if (!reel) return
-      reel.style.transition = 'none'
-      place(shift)
+      place(shift, false)
     }
 
     function up(e) {
       if (!on) return
       const dx = point(e).clientX - x0
       on = false
-      if (mode !== 1) { mode = 0; return }
-      const { index, count, onIndex } = optsRef.current
-      let dest = index
+      if (mode !== 1 || !strip()) { mode = 0; return }
+      const { index: cur, count } = optsRef.current
+      let dest = cur
       if (Math.abs(dx) > 56 || Math.abs(vx) > 0.45) {
-        if (dx < 0 && index < count - 1) dest = index + 1
-        else if (dx > 0 && index > 0) dest = index - 1
+        if (dx < 0 && cur < count - 1) dest = cur + 1
+        else if (dx > 0 && cur > 0) dest = cur - 1
       }
       mode = 0
-      if (!strip()) {
-        setSwipe(null)
-        if (dest !== index) onIndex(dest)
-        return
-      }
       slide(dest)
     }
 
@@ -129,25 +129,22 @@ export function useSwipe(sheetRef, bodyRef, optsRef, enabled) {
       if (strip()) slide(optsRef.current.index)
     }
 
+    const ro = new ResizeObserver(() => {
+      if (on || busy) return
+      const w = fit()
+      if (w) place(-w, false)
+    })
+    ro.observe(body)
     sheet.addEventListener('touchstart', down, { passive: true })
     sheet.addEventListener('touchmove', move, { passive: false })
     sheet.addEventListener('touchend', up)
     sheet.addEventListener('touchcancel', cancel)
     return () => {
+      ro.disconnect()
       sheet.removeEventListener('touchstart', down)
       sheet.removeEventListener('touchmove', move)
       sheet.removeEventListener('touchend', up)
       sheet.removeEventListener('touchcancel', cancel)
     }
-  }, [sheetRef, bodyRef, optsRef])
-
-  useLayoutEffect(() => {
-    if (!swipe) return
-    const reel = bodyRef.current?.querySelector('.reel')
-    if (!reel) return
-    reel.style.transition = 'none'
-    reel.style.transform = 'translate3d(' + (-swipe.width + swipe.dx) + 'px,0,0)'
-  }, [swipe, bodyRef])
-
-  return swipe
+  }, [enabled, sheetRef, bodyRef, reelRef, optsRef])
 }

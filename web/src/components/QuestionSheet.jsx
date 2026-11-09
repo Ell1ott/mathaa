@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AREAS } from '../areas.js'
 import { calculator, paperName } from '../bank.js'
 import { useSwipe } from '../useSwipe.js'
@@ -51,16 +51,11 @@ function Body({ question, topics, view, index, total }) {
 export function QuestionSheet({ open, docs, index, view, question, questions, paper, papers, topics, saved, onClose, onIndex, onView, onStar, onCopy, copied }) {
   const sheetRef = useRef(null)
   const bodyRef = useRef(null)
+  const reelRef = useRef(null)
   const optsRef = useRef({})
   const count = docs ? papers.length : questions.length
   optsRef.current = { enabled: open && !docs, index, count, onIndex }
-  const swipe = useSwipe(sheetRef, bodyRef, optsRef, open && !docs)
-  const prevSwipe = useRef(null)
-
-  useLayoutEffect(() => {
-    if (prevSwipe.current && !swipe && bodyRef.current) bodyRef.current.scrollTop = prevSwipe.current.top
-    prevSwipe.current = swipe
-  }, [swipe])
+  useSwipe(sheetRef, bodyRef, reelRef, optsRef, open && !docs, index)
 
   const atStart = index <= 0
   const atEnd = index >= count - 1
@@ -75,25 +70,22 @@ export function QuestionSheet({ open, docs, index, view, question, questions, pa
       role="dialog"
       aria-label={docs ? 'Paper' : 'Question'}
     >
-      <div ref={bodyRef} className={'sb' + (swipe ? ' swiping' : '')} id="sbody">
+      <div ref={bodyRef} className={'sb' + (open && !docs ? ' deck' : '')} id="sbody">
         {open && docs && paper && (
           <iframe className="pframe" src={'/pdf?paper=' + encodeURIComponent(paper.i)} title={paperName(paper)} />
         )}
-        {open && !docs && swipe && (
-          <div className="reel">
+        {open && !docs && (
+          <div className="reel" ref={reelRef}>
             {[-1, 0, 1].map((delta) => {
               const i = index + delta
               const q = questions[i]
               return (
-                <SwipePane key={delta} width={swipe.width} pad={swipe.pad} top={swipe.top} restore={delta === 0}>
+                <div key={q ? q.i : 'gap-' + i} className="pane">
                   {q && <Body question={q} topics={topics} view={view} index={i} total={count} />}
-                </SwipePane>
+                </div>
               )
             })}
           </div>
-        )}
-        {open && !docs && !swipe && question && (
-          <Body question={question} topics={topics} view={view} index={index} total={count} />
         )}
       </div>
       <div className="qfoot">
@@ -126,10 +118,3 @@ export function QuestionSheet({ open, docs, index, view, question, questions, pa
   )
 }
 
-function SwipePane({ width, pad, top, restore, children }) {
-  const ref = useRef(null)
-  useLayoutEffect(() => {
-    if (restore && ref.current) ref.current.scrollTop = top
-  }, [restore, top])
-  return <div ref={ref} className="pane" style={{ width, padding: pad }}>{children}</div>
-}
