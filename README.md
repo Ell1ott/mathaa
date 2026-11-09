@@ -6,7 +6,7 @@ Question text and the cutout images in `data/questions.json`, `data/cuts/`, and 
 
 ## Deploy
 
-`scripts/export_site.py` writes `site/index.html` (the same page `serve.py` builds) plus `site/cut/` and `site/fig/`. `site/` is gitignored. Vercel runs that script on each push; connect the GitHub repo and leave the framework as Other so `vercel.json` sets the build. Use the Git integration. A private repo keeps the files off public GitHub. The production URL is still public.
+`web/` is the Vite + React question browser. `scripts/export_site.py` copies `web/dist` into `site/`, writes `site/questions.json`, and copies `site/cut/`, `site/fig/`, and `site/scheme/`. `site/` is gitignored. Vercel installs and builds `web/`, then runs that script. Connect the GitHub repo and leave the framework as Other so `vercel.json` sets the build. Use the Git integration. A private repo keeps the files off public GitHub. The production URL is still public.
 
 ## Sources
 
@@ -22,7 +22,15 @@ python scripts/build.py
 python scripts/serve.py
 ```
 
-Open http://127.0.0.1:8765
+In another terminal:
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+Open the Vite URL, http://127.0.0.1:5173. `serve.py` supplies the question bank, images, and PDFs.
 
 `build.py` writes `data/catalog.json`, refreshes Aimnova citations if `data/references.json` is missing, extracts questions, and rewrites the coverage table below. Run `python scripts/build.py --refs` to fetch the citation pages again.
 

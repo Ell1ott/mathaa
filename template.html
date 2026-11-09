@@ -21,6 +21,9 @@ button{cursor:pointer;border:0;background:none}
 aside{border-right:1px solid var(--line);overflow-y:auto;padding:28px 20px 40px;background:var(--surf)}
 h1{font-size:21px;font-weight:700;letter-spacing:-.025em;line-height:1.2}
 .sub{color:var(--ink2);font-size:13px;margin:2px 0 22px}
+.browse{position:relative;display:inline-flex;align-items:center;gap:4px;margin:2px 0 22px;color:var(--ink2);font-size:15px;font-weight:500;line-height:1.3}
+.browse select{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;border-radius:0;background:none;opacity:0;cursor:pointer;appearance:none;-webkit-appearance:none}
+.browse::after{content:"";width:11px;height:11px;background:currentColor;flex:none;-webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><path fill='black' d='M2.2 4.2 6 8l3.8-3.8-1-1L6 6 3.2 3.2z'/></svg>") center/contain no-repeat;mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><path fill='black' d='M2.2 4.2 6 8l3.8-3.8-1-1L6 6 3.2 3.2z'/></svg>") center/contain no-repeat}
 .grp{margin-bottom:22px}
 .grp h3{font-size:13px;font-weight:600;color:var(--ink2);margin-bottom:8px;display:flex;justify-content:space-between}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -102,6 +105,15 @@ select{background:var(--fill);border:0;border-radius:11px;height:38px;padding:0 
 .empty{grid-column:1/-1;text-align:center;padding:90px 20px;color:var(--ink2)}
 .empty b{display:block;font-size:19px;color:var(--ink);margin-bottom:4px}
 .empty button{margin-top:14px;color:#fff;background:var(--acc);padding:8px 18px;border-radius:999px;font-weight:500}
+.grid.list{display:flex;flex-direction:column}
+.prow{display:flex;align-items:center;gap:10px;width:100%;background:var(--surf);border-radius:14px;padding:13px 16px;box-shadow:0 0 0 1px var(--line);text-align:left}
+.prow:hover{box-shadow:0 0 0 1px var(--line),var(--sh)}
+.prow .src{color:var(--ink2);font-size:14px;min-width:0}
+.prow .mk{margin-left:auto}
+#sheet.docs .qonly{display:none}
+#sheet.docs .sb{padding:0;overflow:hidden}
+#sheet.docs .pframe{display:block;width:100%;height:100%;border:0;background:#3a3a3c}
+#sheet.docs .bar .count{display:block;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;padding:0 8px}
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.32);opacity:0;pointer-events:none;transition:opacity .25s;z-index:20;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
 .scrim.on{opacity:1;pointer-events:auto}
 .sheet{position:fixed;top:0;right:0;bottom:0;width:min(780px,100%);background:var(--surf);z-index:21;transform:translateX(104%);transition:transform .38s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;box-shadow:-20px 0 60px rgba(0,0,0,.18);padding-top:env(safe-area-inset-top,0px);overflow:hidden}
@@ -192,15 +204,15 @@ select{background:var(--fill);border:0;border-radius:11px;height:38px;padding:0 
   <button id="prev" aria-label="Previous question"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
   <span class="count" id="count"></span>
   <button id="next" aria-label="Next question"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
-  <span class="sep"></span>
-  <div class="seg" role="tablist">
+  <span class="sep qonly"></span>
+  <div class="seg qonly" role="tablist">
     <button id="tText" class="on" role="tab" aria-label="Text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h9"/></svg><span>Text</span></button>
     <button id="tPaper" role="tab" aria-label="Paper"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="10" r="1.4"/><path d="M20 16l-4.5-4-7.5 6"/></svg><span>Paper</span></button>
     <button id="tScheme" role="tab" aria-label="Markscheme"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span>Scheme</span></button>
   </div>
-  <span class="sep"></span>
-  <button id="bm" aria-label="Bookmark" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></svg></button>
-  <button id="cp" aria-label="Copy question text"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>
+  <span class="sep qonly"></span>
+  <button id="bm" class="qonly" aria-label="Bookmark" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></svg></button>
+  <button id="cp" class="qonly" aria-label="Copy question text"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>
  </nav>
  </div>
 </section>
@@ -214,6 +226,9 @@ const D=__DATA__;
 const AREAS={"Number and algebra":"#0a84ff","Functions":"#bf5af2","Geometry and trigonometry":"#ff9f0a","Statistics and probability":"#30d158","Calculus":"#ff375f"};
 const AREA_SHORT={"Number and algebra":"Number & algebra","Geometry and trigonometry":"Geometry & trig","Statistics and probability":"Stats & probability"};
 const T=D.topics,Q=D.qs;
+const PAPERS=(()=>{const m=new Map();for(const q of Q){const i=q.i.replace(/-q\d+$/,'');let p=m.get(i);if(!p){p={i,y:q.y,s:q.s,p:q.p,z:q.z||'',n:0};m.set(i,p)}p.n++}return [...m.values()]})();
+const WHEN={May:0,November:1,Specimen:2};
+let mode='questions',PR=[],docs=false;
 const MB=[['1–5',m=>m<=5],['6–9',m=>m>=6&&m<=9],['10–14',m=>m>=10&&m<=14],['15+',m=>m>=15]];
 const $=s=>document.querySelector(s);
 const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -275,11 +290,31 @@ let pend=[];
 function typeset(els){if(!window.mjReady){pend.push(...els);return}window.mjq=(window.mjq||Promise.resolve()).then(()=>MathJax.typesetPromise(els)).catch(()=>{})}
 function flush(){const p=pend;pend=[];if(p.length)typeset(p)}
 function sortR(){const k=$('#sort').value,f={new:(a,b)=>0,old:(a,b)=>Q.indexOf(b)-Q.indexOf(a),mh:(a,b)=>(b.m||0)-(a.m||0),ml:(a,b)=>(a.m??99)-(b.m??99),tp:(a,b)=>(a.c[0]||'').localeCompare(b.c[0]||'',undefined,{numeric:true})};R.sort(f[k])}
+function paperHay(p){return (p.s+' '+p.y+' paper '+p.p+' '+(p.z||'')).toLowerCase()}
+function okPaper(p,skip){
+ if(skip!=='p'&&S.p.size&&!S.p.has(p.p))return false;
+ if(skip!=='y'&&S.y.size&&!S.y.has(p.y))return false;
+ if(skip!=='s'&&S.s.size&&!S.s.has(p.s))return false;
+ if(S.txt){for(const w of S.txt.split(/\s+/))if(w&&!paperHay(p).includes(w))return false}
+ return true}
+function tallyP(g,fn){const c={};PAPERS.forEach(p=>{if(okPaper(p,g))fn(p).forEach(k=>c[k]=(c[k]||0)+1)});return c}
+function sortP(){const old=$('#sort').value==='old';PR.sort((a,b)=>{const d=(a.y-b.y)||((WHEN[a.s]??9)-(WHEN[b.s]??9));return (d?(old?d:-d):0)||a.p-b.p||(a.z||'').localeCompare(b.z||'')})}
+function paperName(p){return p.s+' '+p.y+', Paper '+p.p+(p.z?', '+p.z:'')}
+function head(){const on=mode==='papers',ql='Questions, '+Q.length,pl='Whole papers, '+PAPERS.length;return '<h1>IB Math AA HL</h1><label class="browse"><span>'+(on?pl:ql)+'</span><select id="browse" aria-label="Browse"><option value="questions"'+(on?'':' selected')+'>'+ql+'</option><option value="papers"'+(on?' selected':'')+'>'+pl+'</option></select></label>'}
+function sidePapers(){
+ const cp=tallyP('p',p=>[p.p]),cy=tallyP('y',p=>[p.y]),cs=tallyP('s',p=>[p.s]);
+ const years=[...new Set(PAPERS.map(p=>p.y))].sort((a,b)=>b-a);
+ let h=head();
+ h+='<div class="grp"><h3>Paper</h3><div class="seg">'+[1,2,3].map(p=>'<button data-g="p" data-v="'+p+'" class="'+(S.p.has(p)?'on':'')+((cp[p]||0)===0&&!S.p.has(p)?' z':'')+'">Paper '+p+'</button>').join('')+'</div></div>';
+ h+='<div class="grp"><h3>Year</h3><div class="chips">'+chips('y',years,cy)+'</div></div>';
+ h+='<div class="grp"><h3>Session</h3><div class="chips">'+chips('s',['May','November','Specimen'],cs)+'</div></div>';
+ $('#side').innerHTML=h}
 function chips(g,vals,cnt,lab2){return vals.map(v=>'<button class="chip'+(S[g].has(v)?' on':'')+((cnt[v]||0)===0&&!S[g].has(v)?' z':'')+'" data-g="'+g+'" data-v="'+v+'">'+(lab2?lab2(v):v)+'<small>'+(cnt[v]||0)+'</small></button>').join('')}
 function side(){
+ if(mode==='papers'){sidePapers();return}
  const cp=tally('p',q=>[q.p]),cy=tally('y',q=>[q.y]),cs=tally('s',q=>[q.s]),cm=tally('m',q=>q.m==null?[]:MB.map((b,i)=>b[1](q.m)?i:-1).filter(i=>i>=0)),ct=tally('t',q=>q.c),ca=tally('t',q=>q.ar);
  const years=[...new Set(Q.map(q=>q.y))].sort((a,b)=>b-a);
- let h='<h1>IB Math AA HL</h1><p class="sub">Past paper questions, '+Q.length+' in total</p>';
+ let h=head();
  h+='<div class="grp"><h3>Paper</h3><div class="seg">'+[1,2,3].map(p=>'<button data-g="p" data-v="'+p+'" class="'+(S.p.has(p)?'on':'')+((cp[p]||0)===0&&!S.p.has(p)?' z':'')+'">Paper '+p+'</button>').join('')+'</div></div>';
  h+='<div class="grp"><h3>Year</h3><div class="chips">'+chips('y',years,cy)+'</div></div>';
  h+='<div class="grp"><h3>Session</h3><div class="chips">'+chips('s',['May','November','Specimen'],cs)+'</div></div>';
@@ -293,12 +328,14 @@ function side(){
  $('#side').innerHTML=h}
 function pills(){
  const P=[];
- S.p.forEach(v=>P.push(['p',v,'Paper '+v]));S.y.forEach(v=>P.push(['y',v,v]));S.s.forEach(v=>P.push(['s',v,v]));S.m.forEach(v=>P.push(['m',v,MB[v][0]+' marks']));
+ S.p.forEach(v=>P.push(['p',v,'Paper '+v]));S.y.forEach(v=>P.push(['y',v,v]));S.s.forEach(v=>P.push(['s',v,v]));
+ if(mode!=='papers'){S.m.forEach(v=>P.push(['m',v,MB[v][0]+' marks']));
  S.a.forEach(v=>P.push(['a',v,AREA_SHORT[v]||v]));S.t.forEach(v=>P.push(['t',v,T[v][0]]));
- if(S.saved)P.push(['f','saved','Saved']);if(S.ver)P.push(['f','ver','Verified topics']);
+ if(S.saved)P.push(['f','saved','Saved']);if(S.ver)P.push(['f','ver','Verified topics'])}
  if(S.txt)P.push(['x','','“'+esc(S.txt)+'”']);
  const pillsHtml=P.map(p=>'<span class="pill">'+p[2]+'<i role="button" tabindex="0" data-pg="'+p[0]+'" data-pv="'+p[1]+'" aria-label="Remove">✕</i></span>').join('');
- $('#meta').innerHTML='<span class="count">'+R.length+' of '+Q.length+' questions</span>'+(P.length?'<span class="pillwrap"><span class="pills" id="pills">'+pillsHtml+'<button type="button" class="pill more" id="pmore" hidden aria-expanded="false"></button></span><div class="pmenu" id="pmenu" hidden></div></span><button class="clear" id="clr">Clear all</button>':'');
+ const total=mode==='papers'?PAPERS.length:Q.length,n=mode==='papers'?PR.length:R.length,noun=mode==='papers'?'paper':'question';
+ $('#meta').innerHTML='<span class="count">'+n+' of '+total+' '+(total===1?noun:noun+'s')+'</span>'+(P.length?'<span class="pillwrap"><span class="pills" id="pills">'+pillsHtml+'<button type="button" class="pill more" id="pmore" hidden aria-expanded="false"></button></span><div class="pmenu" id="pmenu" hidden></div></span><button class="clear" id="clr">Clear all</button>':'');
  $('#fbadge').textContent=P.length||'';
  fitPills()}
 function fitPills(){
@@ -324,27 +361,47 @@ function filtersFrom(search){
   else F[k].add(x)}
  F.saved=u.get('saved')==='1';F.ver=u.get('ver')==='1';F.q=u.get('q')||'';
  const sort=u.get('sort');if(['old','mh','ml','tp'].includes(sort))F.sort=sort;
+ F.browse=u.get('browse')==='papers'?'papers':'questions';
  return F}
 function filtersTo(S,q,sort,path){
  const u=new URLSearchParams();
  for(const k of ['p','y','s','m','a','t'])if(S[k].size)u.set(k,[...S[k]].join(','));
  if(S.saved)u.set('saved','1');if(S.ver)u.set('ver','1');
  if(q)u.set('q',q);if(sort&&sort!=='new')u.set('sort',sort);
+ if(S.browse==='papers')u.set('browse','papers');
  const s=u.toString();return s?path+'?'+s:path}
 function loadFilters(){
  const F=filtersFrom(location.search);
  for(const k of ['p','y','s','m','a','t'])F[k].forEach(v=>S[k].add(v));
- S.saved=F.saved;S.ver=F.ver;S.txt=F.q.trim().toLowerCase();
+ S.saved=F.saved;S.ver=F.ver;S.txt=F.q.trim().toLowerCase();mode=F.browse;
+ if(mode==='papers'&&!['new','old'].includes(F.sort))F.sort='new';
  $('#q').value=F.q;$('#sort').value=F.sort;
  F.a.forEach(A=>open.add(A));F.t.forEach(c=>{if(T[c])open.add(T[c][1])})}
-function syncUrl(){history.replaceState(null,'',filtersTo(S,$('#q').value.trim(),$('#sort').value,location.pathname))}
+function syncUrl(){S.browse=mode;history.replaceState(null,'',filtersTo(S,$('#q').value.trim(),$('#sort').value,location.pathname))}
+function syncSort(){
+ const el=$('#sort');
+ const html=mode==='papers'
+  ?'<option value="new">Year, newest</option><option value="old">Year, oldest</option>'
+  :'<option value="new">Newest first</option><option value="old">Oldest first</option><option value="mh">Most marks</option><option value="ml">Fewest marks</option><option value="tp">By topic</option>';
+ if(el.dataset.mode===mode)return;
+ const v=el.value;el.innerHTML=html;el.dataset.mode=mode;el.value=html.includes('value="'+v+'"')?v:'new'}
 function render(){
- R=Q.filter(q=>ok(q));sortR();shown=30;side();pills();$('#main').scrollTop=0;draw();syncUrl()}
+ syncSort();
+ if(mode==='papers')PR=PAPERS.filter(p=>okPaper(p)),sortP();
+ else R=Q.filter(q=>ok(q)),sortR(),shown=30;
+ side();pills();$('#main').scrollTop=0;draw();syncUrl();
+ $('#q').placeholder=mode==='papers'?'Search year, session, time zone':'Search questions, topics, papers'}
 function draw(){
  const g=$('#grid');
+ if(mode==='papers'){
+  g.classList.add('list');
+  if(!PR.length){g.innerHTML='<div class="empty"><b>No papers match</b>Try another year or session.<br><button id="clr2">Clear filters</button></div>';return}
+  g.innerHTML=PR.map((p,i)=>'<button type="button" class="prow" data-i="'+i+'"><span class="qn">Paper '+p.p+(p.z?' '+esc(p.z):'')+'</span><span class="src">'+esc(p.s+' '+p.y)+'</span><span class="mk">'+p.n+' questions</span></button>').join('');
+  return}
+ g.classList.remove('list');
  if(!R.length){g.innerHTML='<div class="empty"><b>No questions match</b>Try removing a filter or searching for something broader.<br><button id="clr2">Clear filters</button></div>';return}
  g.innerHTML=R.slice(0,shown).map(card).join('');typeset([...g.querySelectorAll('.prev')])}
-function more(){if(shown>=R.length)return;const s=shown;shown+=30;const g=$('#grid'),t=document.createElement('div');t.innerHTML=R.slice(s,shown).map((q,i)=>card(q,s+i)).join('');const els=[...t.children];els.forEach(e=>g.appendChild(e));typeset(els.map(e=>e.querySelector('.prev')))}
+function more(){if(mode==='papers'||shown>=R.length)return;const s=shown;shown+=30;const g=$('#grid'),t=document.createElement('div');t.innerHTML=R.slice(s,shown).map((q,i)=>card(q,s+i)).join('');const els=[...t.children];els.forEach(e=>g.appendChild(e));typeset(els.map(e=>e.querySelector('.prev')))}
 new IntersectionObserver(e=>{if(e[0].isIntersecting)more()},{rootMargin:'600px'}).observe($('#sent'));
 function clearAll(){['p','y','s','m','a','t'].forEach(k=>S[k].clear());S.saved=S.ver=false;S.txt='';$('#q').value='';render()}
 function tog(set,v){set.has(v)?set.delete(v):set.add(v)}
@@ -354,6 +411,7 @@ document.addEventListener('click',e=>{
  if(menu&&!menu.hidden&&!t.closest('#pmenu')&&!t.closest('#pmore')){menu.hidden=true;const more=$('#pmore');if(more)more.setAttribute('aria-expanded','false')}
  if(b=t.closest('#pmore')){const m=$('#pmenu');if(m){m.hidden=!m.hidden;b.setAttribute('aria-expanded',m.hidden?'false':'true')}return}
  if(b=t.closest('.star')){e.stopPropagation();const q=R[+b.dataset.s];ST[q.i]?delete ST[q.i]:ST[q.i]=1;saveST();b.classList.toggle('on');b.textContent=ST[q.i]?'★':'☆';if(S.saved)render();else side();return}
+ if(b=t.closest('.prow')){showPaper(+b.dataset.i);return}
  if(b=t.closest('.card')){show(+b.dataset.i);return}
  if(b=t.closest('[data-pg]')){const g=b.dataset.pg,v=b.dataset.pv;if(g==='f')S[v]=false;else if(g==='x'){S.txt='';$('#q').value=''}else tog(S[g],g==='p'||g==='y'||g==='m'?+v:v);render();return}
  if(t.closest('#clr')||t.closest('#clr2')){clearAll();return}
@@ -364,7 +422,7 @@ document.addEventListener('click',e=>{
  if(b=t.closest('[data-g]')){const g=b.dataset.g;tog(S[g],g==='s'?b.dataset.v:+b.dataset.v);render();return}
  if(t.closest('#fopen')){$('#side').classList.add('on');$('#scrim').classList.add('on');return}
  if(t.closest('#close')||t===$('#scrim')){shut();return}
- if(t.closest('#prev'))show(cur-1);if(t.closest('#next'))show(cur+1);
+ if(t.closest('#prev'))docs?showPaper(cur-1):show(cur-1);if(t.closest('#next'))docs?showPaper(cur+1):show(cur+1);
  if(t.closest('#bm')&&cur>=0){const q=R[cur];ST[q.i]?delete ST[q.i]:ST[q.i]=1;saveST();sheetStar();draw2();side()}
  if(t.closest('#cp')){if(cur<0)return;const b=$('#cp');navigator.clipboard&&navigator.clipboard.writeText(R[cur].t).then(()=>{b.classList.add('done');clearTimeout(b._t);b._t=setTimeout(()=>b.classList.remove('done'),900)}).catch(()=>{})}
  if(t.closest('#tText')){view='text';applyView();return}
@@ -373,12 +431,13 @@ document.addEventListener('click',e=>{
 });
 function draw2(){const y=$('#main').scrollTop;draw();$('#main').scrollTop=y}
 let tm;$('#q').addEventListener('input',e=>{clearTimeout(tm);tm=setTimeout(()=>{S.txt=e.target.value.trim().toLowerCase();render()},140)});
-$('#sort').addEventListener('change',()=>{sortR();shown=30;draw();syncUrl()});
+$('#sort').addEventListener('change',()=>{if(mode==='papers'){sortP();draw();syncUrl();return}sortR();shown=30;draw();syncUrl()});
+document.addEventListener('change',e=>{if(e.target.id!=='browse')return;mode=e.target.value;if($('#sheet').classList.contains('on'))shut();render()});
 document.addEventListener('keydown',e=>{
  const typing=/INPUT|SELECT/.test(document.activeElement.tagName);
  if(e.key==='Escape'){const menu=$('#pmenu');if(menu&&!menu.hidden){menu.hidden=true;$('#pmore').setAttribute('aria-expanded','false');return}if($('#sheet').classList.contains('on'))shut();else if(typing)document.activeElement.blur();else $('#side').classList.remove('on'),$('#scrim').classList.remove('on')}
  else if(e.key==='/'&&!typing){e.preventDefault();$('#q').focus()}
- else if(!typing&&$('#sheet').classList.contains('on')){if(e.key==='ArrowRight')show(cur+1);if(e.key==='ArrowLeft')show(cur-1);if(e.key==='s'||e.key==='b'){$('#bm').click()}}
+ else if(!typing&&$('#sheet').classList.contains('on')){if(e.key==='ArrowRight')docs?showPaper(cur+1):show(cur+1);if(e.key==='ArrowLeft')docs?showPaper(cur-1):show(cur-1);if(!docs&&(e.key==='s'||e.key==='b')){$('#bm').click()}}
  else if(e.key==='Enter'&&document.activeElement.classList.contains('card'))show(+document.activeElement.dataset.i)});
 function sheetStar(){const on=!!ST[R[cur].i];const b=$('#bm');b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false')}
 function bodyHTML(i){
@@ -398,8 +457,18 @@ function prep(pane,i){
  if(view==='paper')loadCut(box,i,'cut');
  if(view==='scheme'&&!R[i].e)loadCut(scheme,i,'scheme');
  typeset([...pane.querySelectorAll('.q')])}
+function showPaper(i){
+ if(i<0||i>=PR.length)return;
+ docs=true;cur=i;
+ const p=PR[i];
+ $('#sbody').innerHTML='<iframe class="pframe" src="/pdf?paper='+encodeURIComponent(p.i)+'" title="'+esc(paperName(p))+'"></iframe>';
+ $('#count').textContent=paperName(p);
+ $('#prev').disabled=i===0;$('#next').disabled=i===PR.length-1;
+ $('#sheet').classList.add('on','docs');$('#scrim').classList.add('on');
+ $('#sheet').setAttribute('aria-hidden','false');$('#sheet').setAttribute('aria-label','Paper')}
 function show(i){
  if(i<0||i>=R.length)return;if(i>=shown){shown=i+10;draw2()}
+ docs=false;$('#sheet').classList.remove('docs');$('#sheet').setAttribute('aria-label','Question');
  cur=i;
  const body=$('#sbody');
  body.classList.remove('swiping');
@@ -421,7 +490,7 @@ function applyView(){
  box.hidden=view!=='paper';scheme.hidden=view!=='scheme';wrap.hidden=view!=='text';
  if(view==='paper')loadCut(box,cur,'cut');
  if(view==='scheme'&&!q.e)loadCut(scheme,cur,'scheme');}
-function shut(){$('#sheet').classList.remove('on');$('#side').classList.remove('on');$('#scrim').classList.remove('on');$('#sheet').setAttribute('aria-hidden','true')}
+function shut(){docs=false;$('#sheet').classList.remove('on','docs');$('#side').classList.remove('on');$('#scrim').classList.remove('on');$('#sheet').setAttribute('aria-hidden','true');$('#sheet').setAttribute('aria-label','Question')}
 (function(){
  const sheet=$('#sheet'),body=$('#sbody');
  let on=false,busy=false,x0=0,y0=0,x=0,t0=0,vx=0,mode=0,w=0,base=0;
@@ -473,7 +542,7 @@ function shut(){$('#sheet').classList.remove('on');$('#side').classList.remove('
   setTimeout(finish,380);
  }
  function down(e){
-  if(busy||!sheet.classList.contains('on'))return;
+  if(docs||busy||!sheet.classList.contains('on'))return;
   if(!e.touches||e.touches.length!==1)return;
   if(e.target.closest('.qfoot,button,a,input,select,textarea'))return;
   const p=point(e);

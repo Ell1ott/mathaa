@@ -14,7 +14,6 @@ from transcribe import tidy_question, tidy_scheme
 QUESTIONS = ROOT / "data" / "questions.json"
 COVERAGE = ROOT / "data" / "coverage.json"
 REVIEWS = ROOT / "data" / "reviews.json"
-TEMPLATE = ROOT / "template.html"
 PORT = 8765
 CUT_NAME = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*\.png")
 HEADER = re.compile(
@@ -30,7 +29,7 @@ def load_json(path: Path, fallback):
 
 
 def question_bank(questions: list[dict]) -> dict:
-    """Shape questions.json into the {topics, qs} blob template.html reads."""
+    """Shape questions.json into the {topics, qs} blob the browser reads."""
     topics: dict[str, list[str]] = {}
     out = []
     for question in questions:
@@ -80,11 +79,9 @@ def question_bank(questions: list[dict]) -> dict:
     return {"topics": topics, "qs": out}
 
 
-def bank_page() -> bytes:
+def bank_json() -> bytes:
     payload = load_json(QUESTIONS, {"questions": []})
-    blob = json.dumps(question_bank(payload.get("questions", [])), ensure_ascii=False, separators=(",", ":"))
-    html = TEMPLATE.read_text().replace("__DATA__", blob.replace("</", "<\\/"), 1)
-    return html.encode()
+    return json.dumps(question_bank(payload.get("questions", [])), ensure_ascii=False, separators=(",", ":")).encode()
 
 
 def pdf_for(question_id: str | None, paper_id: str | None) -> Path | None:
@@ -116,7 +113,10 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
         if parsed.path == "/":
-            self.send(200, bank_page(), "text/html; charset=utf-8")
+            self.send(200, b"Question browser runs from the Vite dev server. In web/: npm run dev\n", "text/plain; charset=utf-8")
+            return
+        if parsed.path == "/questions.json":
+            self.send(200, bank_json(), "application/json")
             return
         if parsed.path == "/api/questions":
             payload = load_json(QUESTIONS, {"questions": []})

@@ -9,9 +9,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from catalog import ROOT  # noqa: E402
-from serve import bank_page  # noqa: E402
+from serve import bank_json  # noqa: E402
 
 SITE = ROOT / "site"
+DIST = ROOT / "web" / "dist"
 
 
 def copy_dir(src: Path, dest: Path) -> None:
@@ -24,8 +25,12 @@ def copy_dir(src: Path, dest: Path) -> None:
 
 
 def main() -> None:
-    SITE.mkdir(parents=True, exist_ok=True)
-    (SITE / "index.html").write_bytes(bank_page())
+    if not (DIST / "index.html").is_file():
+        raise SystemExit("web/dist is missing. Run npm run build in web/.")
+    if SITE.exists():
+        shutil.rmtree(SITE)
+    shutil.copytree(DIST, SITE)
+    (SITE / "questions.json").write_bytes(bank_json())
     copy_dir(ROOT / "data" / "cuts", SITE / "cut")
     copy_dir(ROOT / "data" / "figs", SITE / "fig")
     copy_dir(ROOT / "data" / "schemes", SITE / "scheme")

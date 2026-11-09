@@ -448,12 +448,8 @@ class BankTest(unittest.TestCase):
 
 class TemplateTableTest(unittest.TestCase):
     def test_pipe_tables_become_html(self):
-        src = Path(__file__).resolve().parents[1].joinpath("template.html").read_text()
-        fmt = src[src.index("function fmt") : src.index("function tags")]
-        script = (
-            "const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');\n"
-            + fmt
-            + r"""
+        script = r"""
+import { fmt } from './web/src/format.js'
 const spaced = "| x | y |\n\n| --- | --- |\n\n| 0 | 4 |\n\n| π | 3.2 |\n\n| 2π | 2 |";
 const html = fmt(spaced);
 if (!html.includes("<th>x</th>") || !html.includes("<th>y</th>")) process.exit(1);
@@ -466,14 +462,13 @@ const open = fmt("| Score | Frequency\n| --- | ---\n| 1 | 1 |");
 if (!open.includes("<th>Frequency</th>") || !open.includes("<td>1</td>")) process.exit(6);
 if (fmt("Use |x| here.\n\nNot a table.").includes("<table>")) process.exit(7);
 """
-        )
-        run = subprocess.run(["node", "-e", script], capture_output=True, text=True)
+        root = Path(__file__).resolve().parents[1]
+        run = subprocess.run(["node", "--input-type=module", "-e", script], cwd=root, capture_output=True, text=True)
         self.assertEqual(run.returncode, 0, run.stderr or run.stdout)
 
     def test_filters_roundtrip_in_the_url(self):
-        src = Path(__file__).resolve().parents[1].joinpath("template.html").read_text()
-        fns = src[src.index("function filtersFrom") : src.index("function loadFilters")]
-        script = fns + r"""
+        script = r"""
+import { filtersFrom, filtersTo } from './web/src/filters.js'
 const search = "?p=1,3&y=2024&s=May,November&m=0,3&a=Calculus,Functions&t=1.1,5.5&saved=1&ver=1&q=Hello+World&sort=mh";
 const F = filtersFrom(search);
 const back = filtersTo(F, F.q, F.sort, "/");
@@ -488,7 +483,8 @@ if (filtersTo({p:new Set(),y:new Set(),s:new Set(),m:new Set(),a:new Set(),t:new
 if (filtersFrom("?sort=nope&m=no&saved=0").sort !== "new") process.exit(4);
 if (filtersFrom("?sort=nope&m=no&saved=0").m.size) process.exit(5);
 """
-        run = subprocess.run(["node", "-e", script], capture_output=True, text=True)
+        root = Path(__file__).resolve().parents[1]
+        run = subprocess.run(["node", "--input-type=module", "-e", script], cwd=root, capture_output=True, text=True)
         self.assertEqual(run.returncode, 0, run.stderr or run.stdout)
 
 
