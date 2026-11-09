@@ -1,5 +1,5 @@
 import { AREAS, AREA_SHORT } from '../areas.js'
-import { MARK_BANDS, SESSIONS, topicsIn } from '../bank.js'
+import { LEVEL_ORDER, LEVELS, MARK_BANDS, SESSIONS, SUBJECTS, topicsIn } from '../bank.js'
 import { Chip } from './Chip.jsx'
 import { Segment } from './Segment.jsx'
 
@@ -8,9 +8,11 @@ function dim(count, on) {
 }
 
 export function Sidebar({
+  subject,
   mode,
   questionTotal,
   paperTotal,
+  onSubject,
   onMode,
   filters,
   counts,
@@ -27,13 +29,20 @@ export function Sidebar({
   const questionLabel = 'Questions, ' + questionTotal
   const paperLabel = 'Whole papers, ' + paperTotal
   const papers = mode === 'papers'
+  const econ = subject === 'econ'
+  const subjectLabel = SUBJECTS.find((item) => item[0] === subject)?.[1] || SUBJECTS[0][1]
   return (
     <>
-      <h1>IB Math AA HL</h1>
+      <label className="subject">
+        <h1>{subjectLabel}</h1>
+        <select id="subject" aria-label="Subject" value={subject} onChange={(e) => onSubject(e.target.value)}>
+          {SUBJECTS.map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+        </select>
+      </label>
       <label className="browse">
         <span>{papers ? paperLabel : questionLabel}</span>
         <select id="browse" aria-label="Browse" value={mode} onChange={(e) => onMode(e.target.value)}>
-          <option value="questions">{questionLabel}</option>
+          {!econ && <option value="questions">{questionLabel}</option>}
           <option value="papers">{paperLabel}</option>
         </select>
       </label>
@@ -50,6 +59,18 @@ export function Sidebar({
           }))}
         />
       </div>
+      {econ && (
+        <div className="grp">
+          <h3>Level</h3>
+          <div className="chips">
+            {LEVEL_ORDER.filter((level) => counts.l[level] || filters.l.has(level)).map((level) => (
+              <Chip key={level} on={filters.l.has(level)} dim={dim(counts.l[level], filters.l.has(level))} count={counts.l[level] || 0} onClick={() => onToggle('l', level)}>
+                {LEVELS[level]}
+              </Chip>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="grp">
         <h3>Year</h3>
         <div className="chips">

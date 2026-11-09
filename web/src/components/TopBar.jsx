@@ -12,6 +12,16 @@ function FilterIcon() {
   )
 }
 
+function GroupIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 3 3 8l9 5 9-5-9-5z" />
+      <path d="m3 12 9 5 9-5" />
+      <path d="m3 16 9 5 9-5" />
+    </svg>
+  )
+}
+
 function SortIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -23,7 +33,12 @@ function SortIcon() {
   )
 }
 
-export function TopBar({ mode, query, sort, countLabel, pills, searchRef, menuRef, onQuery, onSort, onOpenFilters, onRemove, onClear }) {
+export function TopBar({ mode, query, sort, group, groups, countLabel, pills, searchRef, menuRef, onQuery, onSort, onGroup, onOpenFilters, onRemove, onClear }) {
+  const sorts = mode === 'papers'
+    ? [['new', 'Year, newest'], ['old', 'Year, oldest']]
+    : [['new', 'Newest first'], ['old', 'Oldest first'], ['mh', 'Most marks'], ['ml', 'Fewest marks'], ['tp', 'By topic']]
+  const groupLabel = groups.find(([id]) => id === group)?.[1] || groups[0][1]
+  const sortLabel = sorts.find(([id]) => id === sort)?.[1] || sorts[0][1]
   return (
     <div className="top">
       <div className="bar">
@@ -49,23 +64,18 @@ export function TopBar({ mode, query, sort, countLabel, pills, searchRef, menuRe
           />
           <kbd>/</kbd>
         </label>
-        <label className="sortbtn">
+        <label className="pick">
+          <GroupIcon />
+          <span>{groupLabel}</span>
+          <select id="group" aria-label="Group" value={group} onChange={(e) => onGroup(e.target.value)}>
+            {groups.map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+          </select>
+        </label>
+        <label className="pick">
           <SortIcon />
+          <span>{sortLabel}</span>
           <select id="sort" aria-label="Sort" value={sort} onChange={(e) => onSort(e.target.value)}>
-            {mode === 'papers' ? (
-              <>
-                <option value="new">Year, newest</option>
-                <option value="old">Year, oldest</option>
-              </>
-            ) : (
-              <>
-                <option value="new">Newest first</option>
-                <option value="old">Oldest first</option>
-                <option value="mh">Most marks</option>
-                <option value="ml">Fewest marks</option>
-                <option value="tp">By topic</option>
-              </>
-            )}
+            {sorts.map(([id, label]) => <option key={id} value={id}>{label}</option>)}
           </select>
         </label>
       </div>

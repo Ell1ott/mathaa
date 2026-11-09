@@ -3,11 +3,16 @@ import { filtersFrom, filtersTo } from './filters.js'
 import {
   MARK_BANDS,
   activePills,
+  chunk,
+  groupOptions,
   matchesPaper,
   matchesQuestion,
+  orderPapers,
+  orderQuestions,
+  paperBucket,
   prepare,
-  sortPapers,
-  sortQuestions,
+  questionBucket,
+  resolveGroup,
   tally,
   toggleSet,
   yearsOf,
@@ -31,12 +36,46 @@ function saveStars(stars) {
 
 function initialFilters() {
   const filters = filtersFrom(location.search)
-  if (filters.browse === 'papers' && !['new', 'old'].includes(filters.sort)) filters.sort = 'new'
+  if ((filters.browse === 'papers' || filters.sub === 'econ') && !['new', 'old'].includes(filters.sort)) filters.sort = 'new'
   return filters
 }
 
 function countLabel(n, total, noun) {
   return n + ' of ' + total + ' ' + (total === 1 ? noun : noun + 's')
+}
+
+function Sections({ groups, limit, scope, render }) {
+  const [closed, setClosed] = useState(() => new Set())
+  const nodes = []
+  let left = limit
+  for (const group of groups) {
+    if (left <= 0) break
+    const key = scope + '\0' + group.id
+    const open = !closed.has(key)
+    const take = open ? group.rows.slice(0, left) : []
+    if (open) left -= take.length
+    nodes.push(
+      <h2 className="ghead" key={'g-' + group.id}>
+        <button
+          type="button"
+          aria-expanded={open}
+          onClick={() => setClosed((prev) => {
+            const next = new Set(prev)
+            if (next.has(key)) next.delete(key)
+            else next.add(key)
+            return next
+          })}
+        >
+          <span className={'chev' + (open ? ' open' : '')} aria-hidden="true">›</span>
+          {group.code ? <span className="gc">{group.code}</span> : null}
+          <span>{group.label}</span>
+          <span className="gn">{group.rows.length}</span>
+        </button>
+      </h2>,
+    )
+    for (const row of take) nodes.push(render(row))
+  }
+  return nodes
 }
 
 export default function App() {
@@ -102,13 +141,20 @@ export default function App() {
 
   const questions = useMemo(() => {
     if (!bank) return []
-    return sortQuestions(bank.questions.filter((q) => matchesQuestion(q, filters, stars, null, txt)), filters.sort)
+    const matched = bank.questions.filter((q) => matchesQuestion(q, filters, stars, null, txt))
+    return orderQuestions(matched, filters.group, filters.sort, bank.topics)
   }, [bank, filters, stars, txt])
 
-  const papers = useMemo(() => {
+  const subjectPapers = useMemo(() => {
     if (!bank) return []
-    return sortPapers(bank.papers.filter((p) => matchesPaper(p, filters, null, txt)), filters.sort)
-  }, [bank, filters, txt])
+    const sub = filters.sub || 'math'
+    return bank.papers.filter((p) => (p.u || 'math') === sub)
+  }, [bank, filters.sub])
+
+  const papers = useMemo(() => {
+    const matched = subjectPapers.filter((p) => matchesPaper(p, filters, null, txt))
+    return orderPapers(matched, filters.group, filters.sort, filters.sub)
+  }, [subjectPapers, filters, txt])
 
   lenRef.current = questions.length
 
@@ -163,10 +209,22 @@ export default function App() {
     requestScroll()
   }
 
+  function onSubject(sub) {
+    setFilters((S) => {
+      const econ = sub === 'econ'
+      const browse = econ ? 'papers' : S.browse
+      const sort = econ && !['new', 'old'].includes(S.sort) ? 'new' : S.sort
+      return { ...S, sub, browse, sort, group: resolveGroup(browse, sub, S.group), l: new Set() }
+    })
+    setSheet((s) => ({ ...s, open: false, docs: false }))
+    resetList()
+  }
+
   function onMode(browse) {
     setFilters((S) => {
+      if (S.sub === 'econ' && browse !== 'papers') return S
       const sort = browse === 'papers' && !['new', 'old'].includes(S.sort) ? 'new' : S.sort
-      return { ...S, browse, sort }
+      return { ...S, browse, sort, group: resolveGroup(browse, S.sub, S.group) }
     })
     setSheet((s) => ({ ...s, open: false, docs: false }))
     resetList()
@@ -205,6 +263,11 @@ export default function App() {
     setShown(30)
   }
 
+  function onGroup(group) {
+    setFilters((S) => ({ ...S, group: resolveGroup(S.browse, S.sub, group) }))
+    resetList()
+  }
+
   function onQuery(value) {
     setQuery(value)
   }
@@ -212,7 +275,7 @@ export default function App() {
   function clearAll() {
     setFilters((S) => ({
       ...S,
-      p: new Set(), y: new Set(), s: new Set(), m: new Set(), a: new Set(), t: new Set(),
+      p: new Set(), y: new Set(), s: new Set(), m: new Set(), a: new Set(), t: new Set(), l: new Set(),
       saved: false, ver: false,
     }))
     setQuery('')
@@ -288,12 +351,16 @@ export default function App() {
     a: tally(bank.questions, (q) => matchesQuestion(q, filters, stars, 't', txt), (q) => q.ar),
   }
   const pCounts = {
-    p: tally(bank.papers, (p) => matchesPaper(p, filters, 'p', txt), (p) => [p.p]),
-    y: tally(bank.papers, (p) => matchesPaper(p, filters, 'y', txt), (p) => [p.y]),
-    s: tally(bank.papers, (p) => matchesPaper(p, filters, 's', txt), (p) => [p.s]),
+    p: tally(subjectPapers, (p) => matchesPaper(p, filters, 'p', txt), (p) => [p.p]),
+    y: tally(subjectPapers, (p) => matchesPaper(p, filters, 'y', txt), (p) => [p.y]),
+    s: tally(subjectPapers, (p) => matchesPaper(p, filters, 's', txt), (p) => [p.s]),
+    l: tally(subjectPapers, (p) => matchesPaper(p, filters, 'l', txt), (p) => (p.l ? [p.l] : [])),
   }
   const counts = papersMode ? pCounts : qCounts
-  const years = yearsOf(papersMode ? bank.papers : bank.questions)
+  const years = yearsOf(papersMode ? subjectPapers : bank.questions)
+  const groups = papersMode
+    ? chunk(papers, (paper) => paperBucket(paper, filters.group))
+    : chunk(questions, (question) => questionBucket(question, filters.group, bank.topics))
   const pills = activePills(filters, bank.topics, txt)
   const noun = papersMode ? 'paper' : 'question'
   const visible = papersMode ? papers.length : questions.length
@@ -305,9 +372,11 @@ export default function App() {
       <div className="app">
         <aside id="side" aria-label="Filters" className={sideOpen ? 'on' : ''}>
           <Sidebar
+            subject={filters.sub}
             mode={filters.browse}
             questionTotal={bank.questions.length}
-            paperTotal={bank.papers.length}
+            paperTotal={subjectPapers.length}
+            onSubject={onSubject}
             onMode={onMode}
             filters={filters}
             counts={counts}
@@ -327,30 +396,39 @@ export default function App() {
             mode={filters.browse}
             query={query}
             sort={filters.sort}
+            group={filters.group}
+            groups={groupOptions(filters.browse, filters.sub)}
             countLabel={countLabel(visible, total, noun)}
             pills={pills}
             searchRef={searchRef}
             menuRef={menuRef}
             onQuery={onQuery}
             onSort={onSort}
+            onGroup={onGroup}
             onOpenFilters={() => setSideOpen(true)}
             onRemove={removePill}
             onClear={clearAll}
           />
           <div className={'grid' + (papersMode ? ' list' : '')} id="grid">
             {papersMode && !papers.length && <Empty title="No papers match" onClear={clearAll}>Try another year or session.</Empty>}
-            {papersMode && papers.map((paper, i) => <PaperRow key={paper.i} paper={paper} onOpen={() => openIndex(i, true)} />)}
             {!papersMode && !questions.length && <Empty title="No questions match" onClear={clearAll}>Try removing a filter or searching for something broader.</Empty>}
-            {!papersMode && questions.slice(0, shown).map((question, i) => (
-              <QuestionCard
-                key={question.i}
-                question={question}
-                topics={bank.topics}
-                saved={!!stars[question.i]}
-                onOpen={() => openIndex(i, false)}
-                onStar={() => toggleStar(question.i)}
-              />
-            ))}
+            <Sections
+              groups={groups}
+              limit={papersMode ? papers.length : shown}
+              scope={filters.browse + filters.group}
+              render={({ item, i }) => (papersMode ? (
+                <PaperRow key={item.i} paper={item} onOpen={() => openIndex(i, true)} />
+              ) : (
+                <QuestionCard
+                  key={item.i}
+                  question={item}
+                  topics={bank.topics}
+                  saved={!!stars[item.i]}
+                  onOpen={() => openIndex(i, false)}
+                  onStar={() => toggleStar(item.i)}
+                />
+              ))}
+            />
           </div>
           <div id="sent" ref={sentRef} style={{ height: 1 }} />
         </main>

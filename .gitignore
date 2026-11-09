@@ -14,5 +14,6 @@ papers/**/*.pdf
 papers/**/*.mp3
 site/
 data/reviews.json
+data/thumbs/
 data/coverage.json
 data/specimen_fetch.json

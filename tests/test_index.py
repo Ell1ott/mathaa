@@ -6,7 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from catalog import build_catalog  # noqa: E402
-from serve import question_bank  # noqa: E402
+from serve import economics_catalog, question_bank  # noqa: E402
 from transcribe import (  # noqa: E402
     tidy_scheme,
     diagram_rects,
@@ -445,6 +445,63 @@ class BankTest(unittest.TestCase):
         self.assertEqual(bank["qs"][0]["m"], 8)
         self.assertEqual(bank["topics"]["5.5"], ["Integration", "Calculus"])
 
+    def test_page_png_renders_the_asked_page(self):
+        import tempfile
+
+        import pymupdf
+        from serve import page_count, page_png
+
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "two.pdf"
+            document = pymupdf.open()
+            for word in ("one", "two"):
+                document.new_page().insert_text((72, 72), word)
+            document.save(path)
+            document.close()
+            self.assertEqual(page_count(path), 2)
+            png = page_png(path, 1)
+            self.assertTrue(png.startswith(b"\x89PNG"))
+            self.assertIsNone(page_png(path, 0))
+            self.assertIsNone(page_png(path, 3))
+            from serve import thumb_jpeg
+
+            jpg = thumb_jpeg(path, 1)
+            self.assertTrue(jpg.startswith(b"\xff\xd8"))
+            self.assertLess(len(jpg), len(png))
+            self.assertEqual(thumb_jpeg(path, 1), jpg)
+            self.assertIsNone(thumb_jpeg(path, 3))
+
+    def test_economics_papers_skip_markschemes_and_other_languages(self):
+        root = Path(__file__).resolve().parents[1] / "papers" / "library" / "societies" / "economics"
+        if not any(root.rglob("*.pdf")):
+            self.skipTest("economics library is not on disk")
+        papers, files = economics_catalog(root)
+        self.assertGreater(len(papers), 100)
+        self.assertEqual(len(papers), len({paper["i"] for paper in papers}))
+        self.assertEqual(len(papers), len(files))
+        self.assertTrue(all(paper["u"] == "econ" and paper["l"] for paper in papers))
+        self.assertNotIn("markscheme", " ".join(path.name for path in files.values()))
+        self.assertTrue(all(path.parent.name == "en" for path in files.values()))
+        sample = next(paper for paper in papers if paper["l"] == "hl" and paper["z"] == "TZ1")
+        self.assertTrue(sample["i"].startswith("econ-hl-"))
+        self.assertIn("-p", sample["i"])
+
+    def test_browser_keeps_economics_out_of_math(self):
+        script = r"""
+import { prepare, matchesPaper } from './web/src/bank.js'
+const bank = prepare({ qs: [], ps: [{ i: 'econ-hl-2024-05-p1-tz1', y: 2024, s: 'May', p: 1, z: 'TZ1', l: 'hl' }] })
+if (bank.questions.length || bank.papers.length !== 1 || bank.papers[0].u !== 'econ' || bank.papers[0].n !== 0) process.exit(1)
+const S = { sub: 'math', p: new Set(), y: new Set(), s: new Set(), l: new Set() }
+if (matchesPaper(bank.papers[0], S, null, '')) process.exit(2)
+S.sub = 'econ'
+if (!matchesPaper(bank.papers[0], S, null, 'hl 2024')) process.exit(3)
+S.l.add('sl')
+if (matchesPaper(bank.papers[0], S, null, '')) process.exit(4)
+"""
+        root = Path(__file__).resolve().parents[1]
+        run = subprocess.run(["node", "--input-type=module", "-e", script], cwd=root, capture_output=True, text=True)
+        self.assertEqual(run.returncode, 0, run.stderr or run.stdout)
+
 
 class TemplateTableTest(unittest.TestCase):
     def test_pipe_tables_become_html(self):
@@ -469,6 +526,7 @@ if (fmt("Use |x| here.\n\nNot a table.").includes("<table>")) process.exit(7);
     def test_filters_roundtrip_in_the_url(self):
         script = r"""
 import { filtersFrom, filtersTo } from './web/src/filters.js'
+import { chunk, orderPapers, orderQuestions, paperBucket, questionBucket } from './web/src/bank.js'
 const search = "?p=1,3&y=2024&s=May,November&m=0,3&a=Calculus,Functions&t=1.1,5.5&saved=1&ver=1&q=Hello+World&sort=mh";
 const F = filtersFrom(search);
 const back = filtersTo(F, F.q, F.sort, "/");
@@ -478,10 +536,43 @@ for (const key of ["p", "y", "s", "m", "a", "t"]) {
   const right = [...again[key]].join(",");
   if (left !== right) { console.error(key, left, right); process.exit(1); }
 }
-if (again.q !== "Hello World" || again.sort !== "mh" || !again.saved || !again.ver) process.exit(2);
+if (again.q !== "Hello World" || again.sort !== "mh" || !again.saved || !again.ver || again.sub !== "math") process.exit(2);
 if (filtersTo({p:new Set(),y:new Set(),s:new Set(),m:new Set(),a:new Set(),t:new Set(),saved:false,ver:false}, "", "new", "/") !== "/") process.exit(3);
+const econ = filtersFrom("?sub=econ&l=hl,sl&browse=questions&sort=mh");
+if (econ.sub !== "econ" || econ.browse !== "papers" || econ.sort !== "mh") process.exit(8);
+if ([...econ.l].join(",") !== "hl,sl") process.exit(9);
+const econUrl = filtersTo(econ, "", econ.sort, "/");
+if (!econUrl.includes("sub=econ") || !econUrl.includes("l=hl")) process.exit(10);
 if (filtersFrom("?sort=nope&m=no&saved=0").sort !== "new") process.exit(4);
 if (filtersFrom("?sort=nope&m=no&saved=0").m.size) process.exit(5);
+if (filtersFrom("").group !== "sub") process.exit(11);
+if (filtersFrom("?browse=papers").group !== "year") process.exit(12);
+if (filtersFrom("?g=nope").group !== "sub") process.exit(13);
+if (filtersTo(filtersFrom(""), "", "new", "/") !== "/") process.exit(14);
+const grouped = filtersFrom("?g=year");
+if (grouped.group !== "year" || !filtersTo(grouped, "", grouped.sort, "/").includes("g=year")) process.exit(15);
+const econLevel = filtersFrom("?sub=econ&g=level");
+if (econLevel.group !== "level" || econLevel.browse !== "papers") process.exit(16);
+const topics = { '1.2': ['Exponents', 'Number and algebra'], '1.10': ['Binomial', 'Number and algebra'], '5.10': ['Integration', 'Calculus'] }
+const qs = [
+  { c: ['5.10'], ar: ['Calculus'], y: 2024, p: 1, s: 'May', ord: 0, m: 5 },
+  { c: ['1.10'], ar: ['Number and algebra'], y: 2025, p: 2, s: 'November', ord: 1, m: 8 },
+  { c: ['1.2'], ar: ['Number and algebra'], y: 2023, p: 1, s: 'May', ord: 2, m: 3 },
+  { c: [], ar: [], y: 2022, p: 1, s: 'May', ord: 3, m: 1 },
+]
+const ordered = orderQuestions(qs, 'sub', 'new', topics)
+if (ordered.map(q => q.c[0] || '').join(',') !== '1.2,1.10,5.10,') process.exit(18);
+const buckets = chunk(ordered, q => questionBucket(q, 'sub', topics))
+if (buckets[0].label !== 'Exponents' || buckets[0].code !== '1.2' || buckets[3].label !== 'Other') process.exit(19);
+if (orderQuestions(qs, 'year', 'old', topics).map(q => q.y).join(',') !== '2022,2023,2024,2025') process.exit(20);
+const papers = orderPapers([
+  { y: 2024, s: 'November', p: 2, z: '', l: 'sl' },
+  { y: 2025, s: 'May', p: 1, z: '', l: 'hl' },
+  { y: 2025, s: 'May', p: 2, z: 'TZ1', l: 'hl' },
+], 'year', 'new', 'math')
+if (papers.map(p => p.y + '-' + p.p).join(',') !== '2025-1,2025-2,2024-2') process.exit(21);
+const yearGroups = chunk(papers, p => paperBucket(p, 'year'))
+if (yearGroups.length !== 2 || yearGroups[0].label !== '2025' || yearGroups[0].rows.length !== 2) process.exit(22);
 """
         root = Path(__file__).resolve().parents[1]
         run = subprocess.run(["node", "--input-type=module", "-e", script], cwd=root, capture_output=True, text=True)

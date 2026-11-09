@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
+import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -14,12 +16,16 @@ from transcribe import tidy_question, tidy_scheme
 QUESTIONS = ROOT / "data" / "questions.json"
 COVERAGE = ROOT / "data" / "coverage.json"
 REVIEWS = ROOT / "data" / "reviews.json"
+THUMBS = ROOT / "data" / "thumbs"
 PORT = 8765
 CUT_NAME = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*\.png")
 HEADER = re.compile(
     r"(?m)^[#\s]*(\d+)\.\s*(?:\\\()?\s*\[Maximum marks?:\s*(\d+)\]\s*(?:\\\))?[ \t]*\n?"
 )
 SESSION_ORDER = {"November": 0, "May": 1, "Specimen": 2}
+ECON_ROOT = ROOT / "papers" / "library" / "societies" / "economics"
+ECON_NAME = re.compile(r"^p(\d+)(?:-(tz\d+))?\.pdf$", re.I)
+ECON_MONTH = {"05": "May", "11": "November"}
 
 
 def load_json(path: Path, fallback):
@@ -79,12 +85,171 @@ def question_bank(questions: list[dict]) -> dict:
     return {"topics": topics, "qs": out}
 
 
+def economics_catalog(root: Path | None = None) -> tuple[list[dict], dict[str, Path]]:
+    """English economics question papers. Markschemes and other languages stay out."""
+    base = ECON_ROOT if root is None else root
+    papers: list[dict] = []
+    files: dict[str, Path] = {}
+    if not base.is_dir():
+        return papers, files
+    for path in sorted(base.rglob("*.pdf")):
+        if path.parent.name != "en":
+            continue
+        match = ECON_NAME.fullmatch(path.name)
+        if match is None:
+            continue
+        rel = path.relative_to(base)
+        if len(rel.parts) != 4:
+            continue
+        level, session, _lang, _name = rel.parts
+        year_s, _, month = session.partition("-")
+        session_name = ECON_MONTH.get(month)
+        if not year_s.isdigit() or session_name is None:
+            continue
+        tz = (match.group(2) or "").upper()
+        zone = f"-{tz.lower()}" if tz else ""
+        pid = f"econ-{level}-{year_s}-{month}-p{match.group(1)}{zone}"
+        if pid in files:
+            continue
+        files[pid] = path
+        papers.append(
+            {
+                "i": pid,
+                "y": int(year_s),
+                "s": session_name,
+                "p": int(match.group(1)),
+                "z": tz,
+                "l": level,
+                "u": "econ",
+            }
+        )
+    return papers, files
+
+
+_econ_cache: tuple[list[dict], dict[str, Path]] | None = None
+
+
+def load_economics() -> tuple[list[dict], dict[str, Path]]:
+    global _econ_cache
+    if _econ_cache is None:
+        _econ_cache = economics_catalog()
+    return _econ_cache
+
+
 def bank_json() -> bytes:
     payload = load_json(QUESTIONS, {"questions": []})
-    return json.dumps(question_bank(payload.get("questions", [])), ensure_ascii=False, separators=(",", ":")).encode()
+    bank = question_bank(payload.get("questions", []))
+    papers, _files = load_economics()
+    if papers:
+        bank["ps"] = papers
+    return json.dumps(bank, ensure_ascii=False, separators=(",", ":")).encode()
+
+
+_PAGE_PNG: dict[tuple, bytes] = {}
+_PAPER_FILES: dict[str, Path] | None = None
+_PAPER_MTIME: float | None = None
+_THUMB_LOCKS: dict[str, threading.Lock] = {}
+
+
+def page_count(path: Path) -> int:
+    import pymupdf
+
+    document = pymupdf.open(path)
+    try:
+        return document.page_count
+    finally:
+        document.close()
+
+
+def page_png(path: Path, page: int, dpi: int = 100) -> bytes | None:
+    """One PDF page as a PNG. None when the page number is outside the file."""
+    import pymupdf
+
+    if page < 1:
+        return None
+    key = (str(path), path.stat().st_mtime_ns, page, dpi)
+    cached = _PAGE_PNG.get(key)
+    if cached is not None:
+        return cached
+    document = pymupdf.open(path)
+    try:
+        if page > document.page_count:
+            return None
+        data = document[page - 1].get_pixmap(dpi=dpi, alpha=False).tobytes("png")
+    finally:
+        document.close()
+    if len(_PAGE_PNG) > 40:
+        _PAGE_PNG.pop(next(iter(_PAGE_PNG)))
+    _PAGE_PNG[key] = data
+    return data
+
+
+def _thumb_file(path: Path, page: int, stamp: int) -> Path:
+    digest = hashlib.sha1(f"{path}:{stamp}:{page}".encode()).hexdigest()[:20]
+    return THUMBS / f"{digest}.jpg"
+
+
+def thumb_jpeg(path: Path, page: int) -> bytes | None:
+    """Small JPEG of one page, cached on disk. Page 1 also writes page 2 while the file is open."""
+    if page < 1:
+        return None
+    stamp = path.stat().st_mtime_ns
+    dest = _thumb_file(path, page, stamp)
+    if dest.is_file():
+        return dest.read_bytes()
+    lock = _THUMB_LOCKS.setdefault(str(path), threading.Lock())
+    with lock:
+        if dest.is_file():
+            return dest.read_bytes()
+        import pymupdf
+
+        document = pymupdf.open(path)
+        try:
+            count = document.page_count
+            if page > count:
+                return None
+            numbers = [page]
+            if page == 1 and count > 1 and not _thumb_file(path, 2, stamp).is_file():
+                numbers.append(2)
+            THUMBS.mkdir(parents=True, exist_ok=True)
+            written: dict[int, bytes] = {}
+            for number in numbers:
+                target = _thumb_file(path, number, stamp)
+                sheet = document[number - 1]
+                zoom = 320 / sheet.rect.width
+                data = sheet.get_pixmap(matrix=pymupdf.Matrix(zoom, zoom), alpha=False).tobytes("jpeg", jpg_quality=50)
+                target.write_bytes(data)
+                written[number] = data
+        finally:
+            document.close()
+        return written.get(page)
+
+
+def paper_files() -> dict[str, Path]:
+    """paper id to PDF path. Rebuilt when questions.json changes."""
+    global _PAPER_FILES, _PAPER_MTIME
+    mtime = QUESTIONS.stat().st_mtime if QUESTIONS.exists() else 0
+    if _PAPER_FILES is not None and _PAPER_MTIME == mtime:
+        return _PAPER_FILES
+    files: dict[str, Path] = {}
+    root = ROOT.resolve()
+    for question in load_json(QUESTIONS, {"questions": []}).get("questions", []):
+        pid = question.get("paper_id")
+        if not pid or pid in files:
+            continue
+        path = (ROOT / question["file"]).resolve()
+        if root in path.parents and path.is_file():
+            files[pid] = path
+    _papers, econ = load_economics()
+    files.update(econ)
+    _PAPER_FILES = files
+    _PAPER_MTIME = mtime
+    return files
 
 
 def pdf_for(question_id: str | None, paper_id: str | None) -> Path | None:
+    if paper_id and not question_id:
+        return paper_files().get(paper_id)
     payload = load_json(QUESTIONS, {"questions": []})
     for question in payload.get("questions", []):
         if question_id and question["id"] != question_id:
@@ -96,6 +261,8 @@ def pdf_for(question_id: str | None, paper_id: str | None) -> Path | None:
             return None
         if path.is_file():
             return path
+    if paper_id and paper_id.startswith("econ-"):
+        return paper_files().get(paper_id)
     return None
 
 
@@ -103,10 +270,12 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt: str, *args) -> None:
         print(f"{self.address_string()} {fmt % args}")
 
-    def send(self, code: int, body: bytes, content_type: str) -> None:
+    def send(self, code: int, body: bytes, content_type: str, cache: str | None = None) -> None:
         self.send_response(code)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
+        if cache:
+            self.send_header("Cache-Control", cache)
         self.end_headers()
         self.wfile.write(body)
 
@@ -156,6 +325,27 @@ class Handler(BaseHTTPRequestHandler):
             )
             if path is None:
                 self.send(404, b"PDF not on disk", "text/plain; charset=utf-8")
+                return
+            page = query.get("page", [None])[0]
+            if page is not None:
+                if not page.isdigit():
+                    self.send(400, b"bad page", "text/plain; charset=utf-8")
+                    return
+                if query.get("thumb", [None])[0] == "1":
+                    jpg = thumb_jpeg(path, int(page))
+                    if jpg is None:
+                        self.send(404, b"page not in PDF", "text/plain; charset=utf-8")
+                        return
+                    self.send(200, jpg, "image/jpeg", "private, max-age=86400")
+                    return
+                png = page_png(path, int(page))
+                if png is None:
+                    self.send(404, b"page not in PDF", "text/plain; charset=utf-8")
+                    return
+                self.send(200, png, "image/png", "private, max-age=86400")
+                return
+            if query.get("count", [None])[0] == "1":
+                self.send(200, json.dumps({"n": page_count(path)}).encode(), "application/json")
                 return
             self.send(200, path.read_bytes(), "application/pdf")
             return
