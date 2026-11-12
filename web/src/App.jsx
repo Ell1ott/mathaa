@@ -3,6 +3,8 @@ import { filtersFrom, filtersTo } from './filters.js'
 import {
   MARK_BANDS,
   activePills,
+  areaIndexFor,
+  areasFor,
   chunk,
   groupOptions,
   matchesPaper,
@@ -89,6 +91,7 @@ export default function App() {
   const [shown, setShown] = useState(30)
   const [sideOpen, setSideOpen] = useState(false)
   const [sheet, setSheet] = useState({ open: false, docs: false, index: 0, view: 'text' })
+  const [pendingId, setPendingId] = useState(() => new URLSearchParams(location.search).get('open') || '')
   const [copied, setCopied] = useState(false)
   const mainRef = useRef(null)
   const searchRef = useRef(null)
@@ -115,23 +118,24 @@ export default function App() {
     seeded.current = true
     setOpenAreas((prev) => {
       const next = new Set(prev)
-      filters.t.forEach((code) => { if (bank.topics[code]) next.add(bank.topics[code][1]) })
+      const named = filters.sub === 'phys' ? bank.physTopics : bank.topics
+      filters.t.forEach((code) => { if (named[code]) next.add(named[code][1]) })
       return next
     })
   }, [bank, filters.t])
 
+  const queryReady = useRef(false)
   useEffect(() => {
     const timer = setTimeout(() => {
       setTxt(query.trim().toLowerCase())
-      setShown(30)
-      scrollRef.current = true
+      if (queryReady.current) {
+        setShown(30)
+        scrollRef.current = true
+      }
+      queryReady.current = true
     }, 140)
     return () => clearTimeout(timer)
   }, [query])
-
-  useEffect(() => {
-    history.replaceState(null, '', filtersTo(filters, query.trim(), filters.sort, location.pathname))
-  }, [filters, txt])
 
   useEffect(() => {
     if (!scrollRef.current || !mainRef.current) return
@@ -139,11 +143,20 @@ export default function App() {
     scrollRef.current = false
   })
 
+  const subjectQuestions = useMemo(() => {
+    if (!bank) return []
+    const sub = filters.sub || 'math'
+    return bank.questions.filter((q) => (q.u || 'math') === sub)
+  }, [bank, filters.sub])
+
+  const topics = bank ? (filters.sub === 'phys' ? bank.physTopics : bank.topics) : {}
+  const areas = areasFor(filters.sub)
+
   const questions = useMemo(() => {
     if (!bank) return []
-    const matched = bank.questions.filter((q) => matchesQuestion(q, filters, stars, null, txt))
-    return orderQuestions(matched, filters.group, filters.sort, bank.topics)
-  }, [bank, filters, stars, txt])
+    const matched = subjectQuestions.filter((q) => matchesQuestion(q, filters, stars, null, txt))
+    return orderQuestions(matched, filters.group, filters.sort, topics, areaIndexFor(filters.sub))
+  }, [bank, subjectQuestions, filters, stars, txt, topics])
 
   const subjectPapers = useMemo(() => {
     if (!bank) return []
@@ -157,6 +170,24 @@ export default function App() {
   }, [subjectPapers, filters, txt])
 
   lenRef.current = questions.length
+
+  const openQuestion = sheet.open && !sheet.docs ? questions[sheet.index]?.i || '' : ''
+
+  useEffect(() => {
+    if (!bank) return
+    const open = filters.browse === 'papers' ? '' : (openQuestion || pendingId)
+    history.replaceState(null, '', filtersTo(filters, query.trim(), filters.sort, location.pathname, open))
+  }, [bank, filters, txt, openQuestion, pendingId])
+
+  useEffect(() => {
+    if (!bank || !pendingId) return
+    if (filters.browse === 'papers') { setPendingId(''); return }
+    const index = questions.findIndex((q) => q.i === pendingId)
+    if (index < 0) { setPendingId(''); return }
+    setShown((n) => (index >= n ? index + 10 : n))
+    setSheet((s) => ({ open: true, docs: false, index, view: s.view }))
+    setPendingId('')
+  }, [bank, questions, pendingId, filters.browse])
 
   useEffect(() => {
     const el = sentRef.current
@@ -188,7 +219,7 @@ export default function App() {
       }
       if (e.key === '/' && !typing) { e.preventDefault(); searchRef.current?.focus(); return }
       if (typing || !sheet.open) return
-      const list = sheet.docs ? papers : questions
+      const list = sheet.docs ? (sheet.docId ? subjectPapers : papers) : questions
       if (e.key === 'ArrowRight') step(1, list)
       if (e.key === 'ArrowLeft') step(-1, list)
       if (!sheet.docs && (e.key === 's' || e.key === 'b')) toggleStar(questions[sheet.index]?.i)
@@ -196,6 +227,10 @@ export default function App() {
     function step(delta, list) {
       const next = sheet.index + delta
       if (next < 0 || next >= list.length) return
+      if (sheet.docs && sheet.docId) {
+        setSheet((s) => ({ ...s, index: next, docId: list[next].i }))
+        return
+      }
       openIndex(next, sheet.docs)
     }
     document.addEventListener('keydown', onKey)
@@ -214,7 +249,17 @@ export default function App() {
       const econ = sub === 'econ'
       const browse = econ ? 'papers' : S.browse
       const sort = econ && !['new', 'old'].includes(S.sort) ? 'new' : S.sort
-      return { ...S, sub, browse, sort, group: resolveGroup(browse, sub, S.group), l: new Set() }
+      return {
+        ...S,
+        sub,
+        browse,
+        sort,
+        group: resolveGroup(browse, sub, S.group),
+        l: new Set(),
+        p: new Set(),
+        a: new Set(),
+        t: new Set(),
+      }
     })
     setSheet((s) => ({ ...s, open: false, docs: false }))
     resetList()
@@ -276,7 +321,7 @@ export default function App() {
     setFilters((S) => ({
       ...S,
       p: new Set(), y: new Set(), s: new Set(), m: new Set(), a: new Set(), t: new Set(), l: new Set(),
-      saved: false, ver: false,
+      saved: false, ver: false, unc: false,
     }))
     setQuery('')
     setTxt('')
@@ -305,7 +350,7 @@ export default function App() {
     const list = docs ? papers : questions
     if (index < 0 || index >= list.length) return
     if (docs) {
-      setSheet((s) => ({ ...s, open: true, docs: true, index }))
+      setSheet((s) => ({ ...s, open: true, docs: true, index, docId: '' }))
       return
     }
     setShown((n) => (index >= n ? index + 10 : n))
@@ -314,6 +359,13 @@ export default function App() {
       const view = s.view === 'scheme' && q && !q.k ? 'text' : s.view
       return { open: true, docs: false, index, view }
     })
+  }
+
+  function openFullPaper(question) {
+    const id = question.i.replace(/-q[a-z0-9]+$/i, '')
+    const index = subjectPapers.findIndex((p) => p.i === id)
+    if (index < 0) return
+    setSheet((s) => ({ ...s, open: true, docs: true, index, docId: id }))
   }
 
   function onView(view) {
@@ -341,14 +393,15 @@ export default function App() {
 
   const papersMode = filters.browse === 'papers'
   const qCounts = {
-    p: tally(bank.questions, (q) => matchesQuestion(q, filters, stars, 'p', txt), (q) => [q.p]),
-    y: tally(bank.questions, (q) => matchesQuestion(q, filters, stars, 'y', txt), (q) => [q.y]),
-    s: tally(bank.questions, (q) => matchesQuestion(q, filters, stars, 's', txt), (q) => [q.s]),
-    m: tally(bank.questions, (q) => matchesQuestion(q, filters, stars, 'm', txt), (q) => (
+    p: tally(subjectQuestions, (q) => matchesQuestion(q, filters, stars, 'p', txt), (q) => [q.p]),
+    y: tally(subjectQuestions, (q) => matchesQuestion(q, filters, stars, 'y', txt), (q) => [q.y]),
+    s: tally(subjectQuestions, (q) => matchesQuestion(q, filters, stars, 's', txt), (q) => [q.s]),
+    l: tally(subjectQuestions, (q) => matchesQuestion(q, filters, stars, 'l', txt), (q) => (q.l ? [q.l] : [])),
+    m: tally(subjectQuestions, (q) => matchesQuestion(q, filters, stars, 'm', txt), (q) => (
       q.m == null ? [] : MARK_BANDS.map((band, i) => (band[1](q.m) ? i : -1)).filter((i) => i >= 0)
     )),
-    t: tally(bank.questions, (q) => matchesQuestion(q, filters, stars, 't', txt), (q) => q.c),
-    a: tally(bank.questions, (q) => matchesQuestion(q, filters, stars, 't', txt), (q) => q.ar),
+    t: tally(subjectQuestions, (q) => matchesQuestion(q, filters, stars, 't', txt), (q) => q.c),
+    a: tally(subjectQuestions, (q) => matchesQuestion(q, filters, stars, 't', txt), (q) => q.ar),
   }
   const pCounts = {
     p: tally(subjectPapers, (p) => matchesPaper(p, filters, 'p', txt), (p) => [p.p]),
@@ -357,15 +410,16 @@ export default function App() {
     l: tally(subjectPapers, (p) => matchesPaper(p, filters, 'l', txt), (p) => (p.l ? [p.l] : [])),
   }
   const counts = papersMode ? pCounts : qCounts
-  const years = yearsOf(papersMode ? subjectPapers : bank.questions)
+  const years = yearsOf(papersMode ? subjectPapers : subjectQuestions)
   const groups = papersMode
     ? chunk(papers, (paper) => paperBucket(paper, filters.group))
-    : chunk(questions, (question) => questionBucket(question, filters.group, bank.topics))
-  const pills = activePills(filters, bank.topics, txt)
+    : chunk(questions, (question) => questionBucket(question, filters.group, topics))
+  const pills = activePills(filters, topics, txt)
   const noun = papersMode ? 'paper' : 'question'
   const visible = papersMode ? papers.length : questions.length
-  const total = papersMode ? bank.papers.length : bank.questions.length
+  const total = papersMode ? subjectPapers.length : subjectQuestions.length
   const scrim = sideOpen || sheet.open
+  const sheetPapers = sheet.docId ? subjectPapers : papers
 
   return (
     <>
@@ -374,7 +428,7 @@ export default function App() {
           <Sidebar
             subject={filters.sub}
             mode={filters.browse}
-            questionTotal={bank.questions.length}
+            questionTotal={subjectQuestions.length}
             paperTotal={subjectPapers.length}
             onSubject={onSubject}
             onMode={onMode}
@@ -382,8 +436,9 @@ export default function App() {
             counts={counts}
             years={years}
             openAreas={openAreas}
-            topics={bank.topics}
+            topics={topics}
             savedCount={Object.keys(stars).length}
+            uncategorizedCount={subjectQuestions.filter((q) => !(q.c && q.c.length) && matchesQuestion(q, { ...filters, unc: true }, stars, null, txt)).length}
             onToggle={onToggle}
             onToggleArea={onToggleArea}
             onToggleTopic={onToggleTopic}
@@ -422,7 +477,8 @@ export default function App() {
                 <QuestionCard
                   key={item.i}
                   question={item}
-                  topics={bank.topics}
+                  topics={topics}
+                  areas={areas}
                   saved={!!stars[item.i]}
                   onOpen={() => openIndex(i, false)}
                   onStar={() => toggleStar(item.i)}
@@ -441,16 +497,25 @@ export default function App() {
         view={sheet.view}
         question={questions[sheet.index]}
         questions={questions}
-        paper={papers[sheet.index]}
-        papers={papers}
-        topics={bank.topics}
+        paper={sheetPapers[sheet.index]}
+        papers={sheetPapers}
+        topics={topics}
+        areas={areas}
         saved={!!stars[questions[sheet.index]?.i]}
         copied={copied}
         onClose={() => { setSheet((s) => ({ ...s, open: false, docs: false })); setSideOpen(false) }}
-        onIndex={(index) => openIndex(index, sheet.docs)}
+        onIndex={(index) => {
+          if (sheet.docs && sheet.docId) {
+            if (index < 0 || index >= subjectPapers.length) return
+            setSheet((s) => ({ ...s, index, docId: subjectPapers[index].i }))
+            return
+          }
+          openIndex(index, sheet.docs)
+        }}
         onView={onView}
         onStar={() => toggleStar(questions[sheet.index]?.i)}
         onCopy={copyQuestion}
+        onOpenPaper={openFullPaper}
       />
     </>
   )

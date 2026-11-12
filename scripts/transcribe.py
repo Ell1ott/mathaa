@@ -591,7 +591,11 @@ def _table(raw: str) -> str:
     flat = [cell for row in rows for cell in row]
     blob = " ".join(flat)
     years = sum(1 for cell in flat if re.fullmatch(r"(?:19|20)\d{2}", cell))
-    if not flat or re.search(r"\d{30,}", blob) or years >= 8:
+    filled = [cell for cell in flat if cell]
+    heads = " ".join(rows[0]).lower() if rows else ""
+    answer_grid = any(re.fullmatch(r"[01]{8,}", cell) for cell in filled)
+    invented = bool(re.search(r"\b(category|element)\b", heads) and re.search(r"\bvalue\b", heads))
+    if not flat or re.search(r"\d{30,}", blob) or years >= 8 or answer_grid or invented:
         return ""
     if not any(re.search(r"[A-Za-z0-9]", cell) for cell in flat):
         return ""

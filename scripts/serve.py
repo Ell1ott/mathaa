@@ -14,6 +14,7 @@ from catalog import ROOT
 from transcribe import tidy_question, tidy_scheme
 
 QUESTIONS = ROOT / "data" / "questions.json"
+PHYSICS_QUESTIONS = ROOT / "data" / "physics" / "questions.json"
 COVERAGE = ROOT / "data" / "coverage.json"
 REVIEWS = ROOT / "data" / "reviews.json"
 THUMBS = ROOT / "data" / "thumbs"
@@ -34,7 +35,28 @@ def load_json(path: Path, fallback):
     return json.loads(path.read_text())
 
 
-def question_bank(questions: list[dict]) -> dict:
+def paper_value(paper: int | str) -> int | str:
+    text = str(paper)
+    if text.isdigit():
+        return int(text)
+    return text.upper()
+
+
+def paper_rank(paper: int | str) -> tuple[int, str]:
+    match = re.match(r"(\d+)([A-Za-z])?", str(paper))
+    if not match:
+        return (99, "")
+    return (int(match.group(1)), (match.group(2) or "").upper())
+
+
+def number_rank(number: int | str) -> tuple[str, int]:
+    match = re.match(r"([A-Za-z]*)(\d+)$", str(number))
+    if not match:
+        return ("", 0)
+    return (match.group(1), int(match.group(2)))
+
+
+def question_bank(questions: list[dict], subject: str = "math") -> dict:
     """Shape questions.json into the {topics, qs} blob the browser reads."""
     topics: dict[str, list[str]] = {}
     out = []
@@ -67,7 +89,7 @@ def question_bank(questions: list[dict]) -> dict:
             "i": question["id"],
             "y": question["year"],
             "s": question["session"],
-            "p": question["paper"],
+            "p": paper_value(question["paper"]),
             "z": question["tz"],
             "n": number,
             "m": marks,
@@ -78,10 +100,22 @@ def question_bank(questions: list[dict]) -> dict:
             "b": question["page_end"],
             "k": scheme_md.is_file() or (ROOT / "data" / "schemes" / f"{question['id']}.png").is_file(),
         }
+        if question.get("level"):
+            row["l"] = question["level"]
+        if subject != "math":
+            row["u"] = subject
         if scheme:
             row["e"] = scheme
         out.append(row)
-    out.sort(key=lambda item: (-item["y"], SESSION_ORDER[item["s"]], item["p"], item["z"] or "", item["n"]))
+    out.sort(
+        key=lambda item: (
+            -item["y"],
+            SESSION_ORDER.get(item["s"], 9),
+            paper_rank(item["p"]),
+            item["z"] or "",
+            number_rank(item["n"]),
+        )
+    )
     return {"topics": topics, "qs": out}
 
 
@@ -136,9 +170,36 @@ def load_economics() -> tuple[list[dict], dict[str, Path]]:
     return _econ_cache
 
 
+def physics_papers(payload: dict, counts: dict[str, int]) -> list[dict]:
+    rows = []
+    for paper in payload.get("papers", []):
+        rows.append(
+            {
+                "i": paper["id"],
+                "y": paper["year"],
+                "s": paper["session"],
+                "p": paper_value(paper["paper"]),
+                "z": paper.get("tz") or "",
+                "n": counts.get(paper["id"], 0),
+                "l": paper["level"],
+                "u": "phys",
+            }
+        )
+    return rows
+
+
 def bank_json() -> bytes:
     payload = load_json(QUESTIONS, {"questions": []})
     bank = question_bank(payload.get("questions", []))
+    physics = load_json(PHYSICS_QUESTIONS, {"questions": [], "papers": []})
+    phys = question_bank(physics.get("questions", []), subject="phys")
+    bank["qs"].extend(phys["qs"])
+    bank["pt"] = phys["topics"]
+    counts: dict[str, int] = {}
+    for question in physics.get("questions", []):
+        counts[question["paper_id"]] = counts.get(question["paper_id"], 0) + 1
+    if physics.get("papers"):
+        bank["pp"] = physics_papers(physics, counts)
     papers, _files = load_economics()
     if papers:
         bank["ps"] = papers
@@ -225,21 +286,36 @@ def thumb_jpeg(path: Path, page: int) -> bytes | None:
         return written.get(page)
 
 
+def _question_mtime() -> tuple[float, float]:
+    def stamp(path: Path) -> float:
+        return path.stat().st_mtime if path.exists() else 0
+
+    return (stamp(QUESTIONS), stamp(PHYSICS_QUESTIONS))
+
+
+def _remember_pdf(files: dict[str, Path], root: Path, paper_id: str | None, file: str | None) -> None:
+    if not paper_id or not file or paper_id in files:
+        return
+    path = (ROOT / file).resolve()
+    if root in path.parents and path.is_file():
+        files[paper_id] = path
+
+
 def paper_files() -> dict[str, Path]:
-    """paper id to PDF path. Rebuilt when questions.json changes."""
+    """paper id to PDF path. Rebuilt when a question bank changes."""
     global _PAPER_FILES, _PAPER_MTIME
-    mtime = QUESTIONS.stat().st_mtime if QUESTIONS.exists() else 0
+    mtime = _question_mtime()
     if _PAPER_FILES is not None and _PAPER_MTIME == mtime:
         return _PAPER_FILES
     files: dict[str, Path] = {}
     root = ROOT.resolve()
     for question in load_json(QUESTIONS, {"questions": []}).get("questions", []):
-        pid = question.get("paper_id")
-        if not pid or pid in files:
-            continue
-        path = (ROOT / question["file"]).resolve()
-        if root in path.parents and path.is_file():
-            files[pid] = path
+        _remember_pdf(files, root, question.get("paper_id"), question.get("file"))
+    physics = load_json(PHYSICS_QUESTIONS, {"questions": [], "papers": []})
+    for question in physics.get("questions", []):
+        _remember_pdf(files, root, question.get("paper_id"), question.get("file"))
+    for paper in physics.get("papers", []):
+        _remember_pdf(files, root, paper.get("id"), paper.get("file"))
     _papers, econ = load_economics()
     files.update(econ)
     _PAPER_FILES = files
@@ -250,18 +326,18 @@ def paper_files() -> dict[str, Path]:
 def pdf_for(question_id: str | None, paper_id: str | None) -> Path | None:
     if paper_id and not question_id:
         return paper_files().get(paper_id)
-    payload = load_json(QUESTIONS, {"questions": []})
-    for question in payload.get("questions", []):
-        if question_id and question["id"] != question_id:
-            continue
-        if paper_id and question.get("paper_id") != paper_id:
-            continue
-        path = (ROOT / question["file"]).resolve()
-        if ROOT.resolve() not in path.parents:
-            return None
-        if path.is_file():
-            return path
-    if paper_id and paper_id.startswith("econ-"):
+    root = ROOT.resolve()
+    for path in (QUESTIONS, PHYSICS_QUESTIONS):
+        for question in load_json(path, {"questions": []}).get("questions", []):
+            if question_id and question["id"] != question_id:
+                continue
+            if paper_id and question.get("paper_id") != paper_id:
+                continue
+            file = (ROOT / question["file"]).resolve()
+            if root not in file.parents or not file.is_file():
+                return None
+            return file
+    if paper_id:
         return paper_files().get(paper_id)
     return None
 

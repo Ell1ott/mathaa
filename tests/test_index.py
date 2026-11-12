@@ -35,7 +35,9 @@ from extract import (  # noqa: E402
 )
 from fetch_missing import selected  # noqa: E402
 from match import lacks_overlap  # noqa: E402
-from sync_refs import parse_topic_page, robots_allows, topic_urls  # noqa: E402
+from extract_physics import match_physics, questions_from_physics  # noqa: E402
+from ocr_physics import split_pages  # noqa: E402
+from sync_refs import parse_physics_page, parse_topic_page, physics_topic_urls, robots_allows, topic_urls  # noqa: E402
 
 PAGE = """
 <h1>1.10 Counting &amp; binomial (HL only)</h1>
@@ -87,6 +89,135 @@ class RefsTest(unittest.TestCase):
             topic_urls(sitemap),
             ["https://www.aimnova.app/ib-math-aa/past-papers-hl/unit-1-number-algebra/counting-binomial"],
         )
+
+
+class PhysicsRefsTest(unittest.TestCase):
+    def test_parse_hl_only_topic_and_paper_1(self):
+        page = """
+        <h1>1.4 Rigid body mechanics (HL only)</h1>
+        <h2>Questions on 1.4, by exam session</h2>
+        <p class="font-black">May 2025</p>
+        <span class="whitespace-nowrap">P1 TZ2</span><span>Q1, Q4</span>
+        Frequently asked
+        """
+        url = "https://www.aimnova.app/ib-physics/past-papers-hl/unit-1-space-time-and-motion/rigid-body-mechanics"
+        refs = parse_physics_page(page, url)
+        self.assertEqual(refs[0]["topic"], "Rigid body mechanics")
+        self.assertEqual(refs[0]["area"], "Space, time and motion")
+        self.assertEqual(refs[0]["level"], "hl")
+        self.assertEqual(refs[0]["paper"], 1)
+        self.assertEqual(refs[0]["tz"], "TZ2")
+        self.assertEqual([ref["question"] for ref in refs], [1, 4])
+
+    def test_topic_urls_keep_hl_and_sl_topics(self):
+        sitemap = """
+        <loc>https://www.aimnova.app/ib-physics/past-papers-hl/unit-1-space-time-and-motion</loc>
+        <loc>https://www.aimnova.app/ib-physics/past-papers-hl/unit-1-space-time-and-motion/kinematics</loc>
+        <loc>https://www.aimnova.app/ib-physics/past-papers-sl/unit-6-experimental-skills/experimental-skills</loc>
+        <loc>https://www.aimnova.app/ib-physics/past-papers-hl/may-2026-tz1-paper-1</loc>
+        """
+        self.assertEqual(
+            physics_topic_urls(sitemap),
+            [
+                "https://www.aimnova.app/ib-physics/past-papers-hl/unit-1-space-time-and-motion/kinematics",
+                "https://www.aimnova.app/ib-physics/past-papers-sl/unit-6-experimental-skills/experimental-skills",
+            ],
+        )
+
+
+class PhysicsExtractTest(unittest.TestCase):
+    def test_splits_numbered_questions_and_skips_inner_numbers(self):
+        pages = [
+            (1, "1. A ball hangs from a string.\n(a) Find the speed.\n2. Two.\n"),
+            (2, "3. Three has a diagram label.\n2. not a question\n4. Four.\n"),
+        ]
+        questions = questions_from_physics(pages)
+        self.assertEqual([question["number"] for question in questions], [1, 2, 3, 4])
+        self.assertIn("(a) Find the speed.", questions[0]["text"])
+        self.assertIn("not a question", questions[2]["text"])
+        self.assertEqual(questions[0]["page_start"], 1)
+        self.assertEqual(questions[2]["page_end"], 2)
+
+    def test_falls_back_to_section_labels(self):
+        pages = [
+            (2, "A1. This question is about decay.\n(a) Describe it.\n"),
+            (4, "A2. Next.\n"),
+            (6, "B1. Section B starts.\n"),
+        ]
+        questions = questions_from_physics(pages)
+        self.assertEqual([question["number"] for question in questions], ["A1", "A2", "B1"])
+        self.assertIn("Describe it.", questions[0]["text"])
+
+    def test_ocr_pages_split_after_the_page_break(self):
+        found = split_pages(
+            {
+                3: "1. Velocity is the rate of change of position.\n\n2. A graph is shown.\n| t | a |\n| --- | --- |\n| 0 | 1 |",
+                4: "3\n\n2225-6707\n\n16EP13\n\nThe graph continues.\n\n3. A force acts on the cube.",
+            }
+        )
+        self.assertEqual(sorted(found), [1, 2, 3])
+        self.assertIn("rate of change", found[1])
+        self.assertNotIn("A force", found[1])
+        self.assertIn("| t | a |", found[2])
+        self.assertNotIn("2225-6707", found[2])
+        self.assertNotIn("16EP13", found[2])
+        self.assertIn("graph continues", found[2])
+        self.assertIn("force acts", found[3])
+
+    def test_colliding_booklets_stay_untagged(self):
+        shared = {
+            "level": "hl",
+            "year": 2025,
+            "session": "May",
+            "tz": "TZ1",
+        }
+        papers = [
+            {
+                **shared,
+                "id": "phy-hl-2025-05-p1a-tz1",
+                "paper": "1A",
+                "file": "a.pdf",
+                "questions": [
+                    {"number": 1, "text": "Instantaneous velocity is the rate of change of position.", "page_start": 3, "page_end": 3},
+                    {"number": 30, "text": "Kinematics of a projectile.", "page_start": 12, "page_end": 12},
+                ],
+            },
+            {
+                **shared,
+                "id": "phy-hl-2025-05-p1b-tz1",
+                "paper": "1B",
+                "file": "b.pdf",
+                "questions": [
+                    {"number": 1, "text": "A student measures the motion of a trolley.", "page_start": 2, "page_end": 3},
+                ],
+            },
+            {
+                "level": "hl",
+                "year": 2016,
+                "session": "May",
+                "tz": None,
+                "id": "phy-hl-2016-05-p2",
+                "paper": "2",
+                "file": "c.pdf",
+                "questions": [
+                    {"number": 1, "text": "Forces and momentum of a collision.", "page_start": 2, "page_end": 4},
+                ],
+            },
+        ]
+        refs = [
+            {"level": "hl", "year": 2025, "session": "May", "paper": 1, "tz": "TZ1", "question": 1, "code": "1.1", "topic": "Kinematics", "area": "Space, time and motion"},
+            {"level": "hl", "year": 2025, "session": "May", "paper": 1, "tz": "TZ1", "question": 30, "code": "1.1", "topic": "Kinematics", "area": "Space, time and motion"},
+            {"level": "hl", "year": 2016, "session": "May", "paper": 2, "tz": None, "question": 1, "code": "1.2", "topic": "Forces and momentum", "area": "Space, time and motion"},
+        ]
+        got = {(row["paper_id"], row["number"]): row for row in match_physics(papers, refs)}
+        self.assertEqual(got[("phy-hl-2025-05-p1a-tz1", 1)]["status"], "untagged")
+        self.assertEqual(got[("phy-hl-2025-05-p1b-tz1", 1)]["status"], "untagged")
+        tagged = got[("phy-hl-2025-05-p1a-tz1", 30)]
+        self.assertEqual(tagged["status"], "matched")
+        self.assertEqual(tagged["topics"][0]["code"], "1.1")
+        older = got[("phy-hl-2016-05-p2", 1)]
+        self.assertEqual(older["status"], "matched")
+        self.assertEqual(older["topics"][0]["topic"], "Forces and momentum")
 
 
 class ExtractTest(unittest.TestCase):
@@ -299,6 +430,13 @@ class OpenParserTest(unittest.TestCase):
         self.assertNotIn("&lt;", cleaned)
         self.assertNotIn("100000", cleaned)
         self.assertEqual(tidy_question(cleaned, 1), cleaned)
+        ruled = (
+            "<table><tr><td>10000000000000000001</td></tr>"
+            "<tr><td>1000000000000000001</td></tr>"
+            "<tr><td>100000000000000</td></tr></table>"
+        )
+        self.assertNotIn("100000", tidy_question("10. Photons.\n" + ruled + "\n(b) Next.", 10))
+        self.assertIn("(b) Next.", tidy_question("10. Photons.\n" + ruled + "\n(b) Next.", 10))
 
     def test_tidy_splits_when_the_mark_is_wrapped(self):
         raw = "3. \\([Maximum mark: 5]\\)\nSolve.\n\n4. [Maximum mark: 7]\nNext question.\n"
@@ -526,7 +664,7 @@ if (fmt("Use |x| here.\n\nNot a table.").includes("<table>")) process.exit(7);
     def test_filters_roundtrip_in_the_url(self):
         script = r"""
 import { filtersFrom, filtersTo } from './web/src/filters.js'
-import { chunk, orderPapers, orderQuestions, paperBucket, questionBucket } from './web/src/bank.js'
+import { chunk, matchesQuestion, orderPapers, orderQuestions, paperBucket, questionBucket } from './web/src/bank.js'
 const search = "?p=1,3&y=2024&s=May,November&m=0,3&a=Calculus,Functions&t=1.1,5.5&saved=1&ver=1&q=Hello+World&sort=mh";
 const F = filtersFrom(search);
 const back = filtersTo(F, F.q, F.sort, "/");
@@ -573,6 +711,22 @@ const papers = orderPapers([
 if (papers.map(p => p.y + '-' + p.p).join(',') !== '2025-1,2025-2,2024-2') process.exit(21);
 const yearGroups = chunk(papers, p => paperBucket(p, 'year'))
 if (yearGroups.length !== 2 || yearGroups[0].label !== '2025' || yearGroups[0].rows.length !== 2) process.exit(22);
+const phys = filtersFrom("?sub=phys&p=1,1A,2&l=hl");
+if (phys.sub !== "phys" || phys.browse !== "questions" || [...phys.p].join(",") !== "1,1A,2") process.exit(23);
+const physAgain = filtersFrom(filtersTo(phys, "", phys.sort, "/").slice(1) ? filtersTo(phys, "", phys.sort, "/").slice(filtersTo(phys, "", phys.sort, "/").indexOf("?")) : "");
+if (physAgain.sub !== "phys" || [...physAgain.p].join(",") !== "1,1A,2" || [...physAgain.l].join(",") !== "hl") process.exit(24);
+if (filtersFrom("?sub=phys&browse=papers&g=level").group !== "level") process.exit(25);
+if (filtersFrom("").unc) process.exit(26);
+const bareOn = filtersFrom("?unc=1");
+if (!bareOn.unc || !filtersTo(bareOn, "", "new", "/").includes("unc=1")) process.exit(27);
+const off = filtersFrom("?sub=phys");
+const bare = { u: "phys", c: [], i: "a", p: 1, y: 2024, s: "May" };
+const tagged = { u: "phys", c: ["1.1"], i: "b", p: 1, y: 2024, s: "May" };
+if (matchesQuestion(bare, off, {}, null, "") || !matchesQuestion(tagged, off, {}, null, "")) process.exit(28);
+if (!matchesQuestion(bare, { ...off, unc: true }, {}, null, "")) process.exit(29);
+const opened = filtersTo(filtersFrom("?y=2024"), "", "new", "/", "2024-05-p1-tz1-q3");
+if (opened !== "/?y=2024&open=2024-05-p1-tz1-q3") process.exit(30);
+if (filtersTo(filtersFrom("?open=2024-05-p1-q1"), "", "new", "/") !== "/") process.exit(31);
 """
         root = Path(__file__).resolve().parents[1]
         run = subprocess.run(["node", "--input-type=module", "-e", script], cwd=root, capture_output=True, text=True)

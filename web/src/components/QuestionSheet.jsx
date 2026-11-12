@@ -26,29 +26,47 @@ function Cut({ id, kind, active }) {
   )
 }
 
-function Body({ question, topics, view, index, total }) {
+function PdfPages({ question, active }) {
+  const first = question.a || 1
+  const last = Math.min(question.b || first, first + 7)
+  const pages = []
+  for (let page = first; page <= last; page++) pages.push(page)
+  return (
+    <div className="paper" hidden={!active}>
+      {active && pages.map((page) => (
+        <img key={page} alt={'Question as printed, page ' + page} src={'/pdf?question=' + encodeURIComponent(question.i) + '&page=' + page} />
+      ))}
+    </div>
+  )
+}
+
+function Body({ question, topics, areas, view, index, total, onOpenPaper }) {
+  const calc = calculator(question)
   return (
     <>
       <div className="facts">
+        <button type="button" className="srcbtn" onClick={() => onOpenPaper(question)}>{paperName(question)}</button>
         {question.m ? <span><b>{question.m}</b> marks</span> : null}
-        <span>{calculator(question)}</span>
+        {calc ? <span>{calc}</span> : null}
         <span>Pages {question.a}{question.b !== question.a ? '–' + question.b : ''}</span>
         <span>{index + 1} of {total} in current view</span>
       </div>
-      <Tags question={question} topics={topics} areas={AREAS} max={9} style={{ marginBottom: 22 }} />
-      <Cut id={question.i} kind="cut" active={view === 'paper'} />
+      <Tags question={question} topics={topics} areas={areas} max={9} style={{ marginBottom: 22 }} />
+      {question.u === 'phys'
+        ? <PdfPages question={question} active={view === 'paper'} />
+        : <Cut id={question.i} kind="cut" active={view === 'paper'} />}
       {question.e
         ? <div className="scheme qwrap" hidden={view !== 'scheme'}><QuestionText className="q" text={question.e} /></div>
         : <Cut id={question.i} kind="scheme" active={view === 'scheme'} />}
       <div className="qwrap" hidden={view !== 'text'}>
         <QuestionText className="q" text={question.t} />
-        {!question.v && <div className="note">Topic tags for this question were assigned automatically and may not be exact.</div>}
+        {!question.v && question.c?.length > 0 && <div className="note">Topic tags for this question were assigned automatically and may not be exact.</div>}
       </div>
     </>
   )
 }
 
-export function QuestionSheet({ open, docs, index, view, question, questions, paper, papers, topics, saved, onClose, onIndex, onView, onStar, onCopy, copied }) {
+export function QuestionSheet({ open, docs, index, view, question, questions, paper, papers, topics, areas = AREAS, saved, onClose, onIndex, onView, onStar, onCopy, onOpenPaper, copied }) {
   const sheetRef = useRef(null)
   const bodyRef = useRef(null)
   const reelRef = useRef(null)
@@ -81,7 +99,7 @@ export function QuestionSheet({ open, docs, index, view, question, questions, pa
               const q = questions[i]
               return (
                 <div key={q ? q.i : 'gap-' + i} className="pane">
-                  {q && <Body question={q} topics={topics} view={view} index={i} total={count} />}
+                  {q && <Body question={q} topics={topics} areas={areas} view={view} index={i} total={count} onOpenPaper={onOpenPaper} />}
                 </div>
               )
             })}

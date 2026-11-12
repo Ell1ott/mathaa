@@ -1,5 +1,4 @@
-import { AREAS, AREA_SHORT } from '../areas.js'
-import { LEVEL_ORDER, LEVELS, MARK_BANDS, SESSIONS, SUBJECTS, topicsIn } from '../bank.js'
+import { LEVEL_ORDER, LEVELS, MARK_BANDS, SESSIONS, SUBJECTS, areaShortFor, areasFor, topicsIn } from '../bank.js'
 import { Chip } from './Chip.jsx'
 import { Segment } from './Segment.jsx'
 
@@ -20,6 +19,7 @@ export function Sidebar({
   openAreas,
   topics,
   savedCount,
+  uncategorizedCount,
   onToggle,
   onToggleArea,
   onToggleTopic,
@@ -30,6 +30,10 @@ export function Sidebar({
   const paperLabel = 'Whole papers, ' + paperTotal
   const papers = mode === 'papers'
   const econ = subject === 'econ'
+  const leveled = subject === 'econ' || subject === 'phys'
+  const areas = areasFor(subject)
+  const areaShort = areaShortFor(subject)
+  const paperOptions = subject === 'phys' ? [1, '1A', '1B', 2, 3] : [1, 2, 3]
   const subjectLabel = SUBJECTS.find((item) => item[0] === subject)?.[1] || SUBJECTS[0][1]
   return (
     <>
@@ -50,7 +54,7 @@ export function Sidebar({
         <h3>Paper</h3>
         <Segment
           label="Paper"
-          options={[1, 2, 3].map((paper) => ({
+          options={paperOptions.map((paper) => ({
             value: paper,
             label: 'Paper ' + paper,
             on: filters.p.has(paper),
@@ -59,7 +63,7 @@ export function Sidebar({
           }))}
         />
       </div>
-      {econ && (
+      {leveled && (
         <div className="grp">
           <h3>Level</h3>
           <div className="chips">
@@ -108,12 +112,12 @@ export function Sidebar({
           </div>
           <div className="grp">
             <h3>Topic</h3>
-            {Object.keys(AREAS).map((area) => (
-              <div key={area} className="area" style={{ '--c': AREAS[area] }}>
+            {Object.keys(areas).map((area) => (
+              <div key={area} className="area" style={{ '--c': areas[area] }}>
                 <div className="arow-w">
                   <button type="button" className={'arow' + (filters.a.has(area) ? ' on' : '')} onClick={() => onToggleArea(area)}>
                     <i className="dot" />
-                    {AREA_SHORT[area] || area}
+                    {areaShort[area] || area}
                     <span className="n">{counts.a[area] || 0}</span>
                   </button>
                   <button type="button" className={'chev' + (openAreas.has(area) ? ' open' : '')} aria-label="Show topics" onClick={() => onToggleOpen(area)}>›</button>
@@ -142,6 +146,7 @@ export function Sidebar({
             <div className="chips">
               <Chip on={filters.saved} count={savedCount} onClick={() => onToggleFlag('saved')}>★ Saved</Chip>
               <Chip on={filters.ver} onClick={() => onToggleFlag('ver')}>Verified topics only</Chip>
+              <Chip on={filters.unc} count={uncategorizedCount} onClick={() => onToggleFlag('unc')}>Uncategorized</Chip>
             </div>
           </div>
         </>

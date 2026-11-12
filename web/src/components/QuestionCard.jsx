@@ -1,9 +1,9 @@
 import { AREAS } from '../areas.js'
-import { label } from '../bank.js'
+import { LEVELS, label } from '../bank.js'
 import { QuestionText } from './QuestionText.jsx'
 import { Tags } from './Tag.jsx'
 
-export function QuestionCard({ question, topics, saved, onOpen, onStar }) {
+export function QuestionCard({ question, topics, areas = AREAS, saved, onOpen, onStar }) {
   return (
     <article
       className="card"
@@ -14,12 +14,12 @@ export function QuestionCard({ question, topics, saved, onOpen, onStar }) {
     >
       <div className="ch">
         <span className="qn">Q{question.n}</span>
-        <span className="src">{label(question)}, Paper {question.p}{question.z ? ', ' + question.z : ''}</span>
+        <span className="src">{question.l ? (LEVELS[question.l] || question.l) + ' · ' : ''}{label(question)}, Paper {question.p}{question.z ? ', ' + question.z : ''}</span>
         {question.m ? <span className="mk">{question.m} marks</span> : null}
       </div>
       <QuestionText className="prev q" text={question.t} limit={420} />
       <div className="foot">
-        <Tags question={question} topics={topics} areas={AREAS} max={2} />
+        <Tags question={question} topics={topics} areas={areas} max={2} />
         <span
           className={'star' + (saved ? ' on' : '')}
           role="button"

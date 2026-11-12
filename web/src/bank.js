@@ -1,4 +1,4 @@
-import { AREAS, AREA_SHORT } from './areas.js'
+import { AREAS, AREA_SHORT, PHYSICS_AREAS, PHYSICS_AREA_SHORT } from './areas.js'
 
 export const MARK_BANDS = [
   ['1–5', (m) => m <= 5],
@@ -11,8 +11,17 @@ export const SESSIONS = ['May', 'November', 'Specimen']
 
 export const SUBJECTS = [
   ['math', 'IB Math AA HL'],
+  ['phys', 'IB Physics'],
   ['econ', 'IB Economics'],
 ]
+
+export function areasFor(subject) {
+  return subject === 'phys' ? PHYSICS_AREAS : AREAS
+}
+
+export function areaShortFor(subject) {
+  return subject === 'phys' ? PHYSICS_AREA_SHORT : AREA_SHORT
+}
 
 export const LEVELS = { hl: 'HL', sl: 'SL', hlsl: 'HL & SL', na: 'Other' }
 export const LEVEL_ORDER = ['hl', 'sl', 'hlsl', 'na']
@@ -29,20 +38,32 @@ export function paperName(p) {
 }
 
 export function calculator(q) {
+  if ((q.u || 'math') !== 'math') return ''
   return q.p === 1 ? 'No calculator' : 'Calculator allowed'
+}
+
+export function paperParts(value) {
+  const match = String(value).match(/^(\d+)([A-Za-z])?$/)
+  if (!match) return [99, '']
+  return [Number(match[1]), (match[2] || '').toUpperCase()]
 }
 
 export function prepare(data) {
   const topics = data.topics || {}
-  const questions = (data.qs || []).map((q, ord) => ({
-    ...q,
-    ord,
-    ar: [...new Set((q.c || []).map((c) => topics[c]?.[1]).filter(Boolean))],
-    h: (q.t + ' ' + label(q) + ' paper ' + q.p + ' ' + (q.z || '') + ' q' + q.n + ' ' + (q.c || []).map((c) => c + ' ' + (topics[c]?.[0] || '')).join(' ')).toLowerCase(),
-  }))
+  const physTopics = data.pt || {}
+  const questions = (data.qs || []).map((q, ord) => {
+    const named = (q.u || 'math') === 'phys' ? physTopics : topics
+    return {
+      ...q,
+      ord,
+      ar: [...new Set((q.c || []).map((c) => named[c]?.[1]).filter(Boolean))],
+      h: (q.t + ' ' + label(q) + ' paper ' + q.p + ' ' + (q.z || '') + ' q' + q.n + ' ' + (q.l || '') + ' ' + (q.c || []).map((c) => c + ' ' + (named[c]?.[0] || '')).join(' ')).toLowerCase(),
+    }
+  })
   const papers = []
   const byId = new Map()
   for (const q of questions) {
+    if ((q.u || 'math') !== 'math') continue
     const i = q.i.replace(/-q\d+$/, '')
     let paper = byId.get(i)
     if (!paper) {
@@ -53,9 +74,12 @@ export function prepare(data) {
     paper.n++
   }
   for (const p of data.ps || []) {
-    papers.push({ i: p.i, y: p.y, s: p.s, p: p.p, z: p.z || '', n: 0, l: p.l || '', u: 'econ' })
+    papers.push({ i: p.i, y: p.y, s: p.s, p: p.p, z: p.z || '', n: p.n || 0, l: p.l || '', u: p.u || 'econ' })
   }
-  return { topics, questions, papers }
+  for (const p of data.pp || []) {
+    papers.push({ i: p.i, y: p.y, s: p.s, p: p.p, z: p.z || '', n: p.n || 0, l: p.l || '', u: 'phys' })
+  }
+  return { topics, physTopics, questions, papers }
 }
 
 export function toggleSet(set, value) {
@@ -66,6 +90,8 @@ export function toggleSet(set, value) {
 }
 
 export function matchesQuestion(q, S, stars, skip, txt) {
+  if ((S.sub || 'math') !== (q.u || 'math')) return false
+  if (skip !== 'l' && S.l.size && q.l && !S.l.has(q.l)) return false
   if (skip !== 'p' && S.p.size && !S.p.has(q.p)) return false
   if (skip !== 'y' && S.y.size && !S.y.has(q.y)) return false
   if (skip !== 's' && S.s.size && !S.s.has(q.s)) return false
@@ -73,6 +99,7 @@ export function matchesQuestion(q, S, stars, skip, txt) {
   if (skip !== 't' && (S.t.size || S.a.size) && !(q.c.some((c) => S.t.has(c)) || q.ar.some((a) => S.a.has(a)))) return false
   if (S.saved && !stars[q.i]) return false
   if (S.ver && !q.v) return false
+  if (!S.unc && !(q.c && q.c.length)) return false
   if (txt) for (const w of txt.split(/\s+/)) if (w && !q.h.includes(w)) return false
   return true
 }
@@ -117,10 +144,15 @@ const PAPER_GROUPS = [
 ]
 
 const AREA_INDEX = Object.fromEntries(Object.keys(AREAS).map((name, i) => [name, i]))
+const PHYS_AREA_INDEX = Object.fromEntries(Object.keys(PHYSICS_AREAS).map((name, i) => [name, i]))
+
+export function areaIndexFor(subject) {
+  return subject === 'phys' ? PHYS_AREA_INDEX : AREA_INDEX
+}
 
 export function groupOptions(mode, subject) {
   if (mode !== 'papers') return QUESTION_GROUPS
-  return subject === 'econ' ? PAPER_GROUPS : PAPER_GROUPS.filter(([id]) => id !== 'level')
+  return subject === 'econ' || subject === 'phys' ? PAPER_GROUPS : PAPER_GROUPS.filter(([id]) => id !== 'level')
 }
 
 export function defaultGroup(mode) {
@@ -146,14 +178,20 @@ function paperCmp(sort) {
   const old = sort === 'old'
   return (a, b) => {
     const d = (a.y - b.y) || ((WHEN[a.s] ?? 9) - (WHEN[b.s] ?? 9))
-    return (d ? (old ? d : -d) : 0) || a.p - b.p || (a.z || '').localeCompare(b.z || '') || (a.l || '').localeCompare(b.l || '')
+    const [ap, asuf] = paperParts(a.p)
+    const [bp, bsuf] = paperParts(b.p)
+    return (d ? (old ? d : -d) : 0) || (ap - bp) || asuf.localeCompare(bsuf) || (a.z || '').localeCompare(b.z || '') || (a.l || '').localeCompare(b.l || '')
   }
 }
 
 function cmpList(a, b) {
   const n = Math.max(a.length, b.length)
   for (let i = 0; i < n; i++) {
-    const d = (a[i] ?? 0) - (b[i] ?? 0)
+    const left = a[i] ?? 0
+    const right = b[i] ?? 0
+    const d = typeof left === 'string' || typeof right === 'string'
+      ? String(left).localeCompare(String(right))
+      : left - right
     if (d) return d
   }
   return 0
@@ -164,18 +202,18 @@ function codeRank(code) {
   return (Number(major) || 0) * 1000 + (Number(minor) || 0)
 }
 
-function questionRank(q, group, sort, topics) {
+function questionRank(q, group, sort, topics, areaIndex) {
   if (group === 'year') return [sort === 'old' ? q.y : -q.y]
-  if (group === 'paper') return [q.p]
+  if (group === 'paper') return paperParts(q.p)
   if (group === 'session') return [WHEN[q.s] ?? 9]
   if (group === 'area') {
     const area = q.ar[0] || ''
-    return [area in AREA_INDEX ? AREA_INDEX[area] : 99]
+    return [area in areaIndex ? areaIndex[area] : 99]
   }
   const code = q.c[0] || ''
   if (!code) return [99, 99]
   const area = topics[code]?.[1] || ''
-  return [area in AREA_INDEX ? AREA_INDEX[area] : 98, codeRank(code)]
+  return [area in areaIndex ? areaIndex[area] : 98, codeRank(code)]
 }
 
 function paperRank(p, group, sort) {
@@ -194,9 +232,9 @@ export function sortPapers(list, sort) {
   return [...list].sort(paperCmp(sort))
 }
 
-export function orderQuestions(list, group, sort, topics) {
+export function orderQuestions(list, group, sort, topics, areaIndex = AREA_INDEX) {
   const key = resolveGroup('questions', 'math', group)
-  return [...list].sort((a, b) => cmpList(questionRank(a, key, sort, topics), questionRank(b, key, sort, topics)) || questionCmp(sort)(a, b))
+  return [...list].sort((a, b) => cmpList(questionRank(a, key, sort, topics, areaIndex), questionRank(b, key, sort, topics, areaIndex)) || questionCmp(sort)(a, b))
 }
 
 export function orderPapers(list, group, sort, subject) {
@@ -248,13 +286,14 @@ export function activePills(S, topics, query) {
   S.p.forEach((v) => push('p', v, 'Paper ' + v))
   S.y.forEach((v) => push('y', v, String(v)))
   S.s.forEach((v) => push('s', v, v))
-  if (S.sub === 'econ') S.l.forEach((v) => push('l', v, LEVELS[v] || v))
+  if (S.sub === 'econ' || S.sub === 'phys') S.l.forEach((v) => push('l', v, LEVELS[v] || v))
   if (S.browse !== 'papers') {
     S.m.forEach((v) => push('m', v, MARK_BANDS[v][0] + ' marks'))
     S.a.forEach((v) => push('a', v, AREA_SHORT[v] || v))
     S.t.forEach((v) => push('t', v, topics[v]?.[0] || v))
     if (S.saved) push('f', 'saved', 'Saved')
     if (S.ver) push('f', 'ver', 'Verified topics')
+    if (S.unc) push('f', 'unc', 'Uncategorized')
   }
   if (query) push('x', '', '“' + query + '”')
   return pills
