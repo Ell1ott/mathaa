@@ -77,7 +77,7 @@ def question_bank(questions: list[dict], subject: str = "math") -> dict:
                 len(text),
             )
             text = text[own.end() : end]
-        else:
+        elif isinstance(number, int):
             nxt = next((header.start() for header in headers if int(header.group(1)) == number + 1), None)
             if nxt:
                 text = text[:nxt]

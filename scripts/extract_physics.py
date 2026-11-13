@@ -22,7 +22,7 @@ LIBRARY = ROOT / "papers" / "library" / "sciences" / "physics"
 QUESTIONS_PATH = ROOT / "data" / "physics" / "questions.json"
 NAME = re.compile(r"^p(\d+)([ab])?(?:-tz(\d+))?\.pdf$", re.I)
 QSTART = re.compile(r"(?m)^[ \t]*(\d{1,2})\.\s+\S")
-LABELED = re.compile(r"(?m)^[ \t]*([A-G])(\d+)\.\s+\S")
+LABELED = re.compile(r"(?m)^[ \t]*([A-J])(\d+)\.\s+\S")
 
 
 def paper_code(match: re.Match[str]) -> str:
@@ -88,6 +88,60 @@ def keep_sequence(starts: list[tuple[int, int, int, int]]) -> list[tuple[int, in
     return kept
 
 
+def keep_labels(starts: list[tuple]) -> list[tuple]:
+    """Keep A1, A2, B1, … and ignore a repeated label inside a later section."""
+    kept = []
+    for item in starts:
+        label = str(item[0])
+        letter, num = label[0], int(label[1:])
+        if not kept:
+            kept.append(item)
+            continue
+        prev = str(kept[-1][0])
+        prev_letter, prev_num = prev[0], int(prev[1:])
+        if letter == prev_letter and num > prev_num:
+            kept.append(item)
+        elif letter > prev_letter and all(str(found[0])[0] != letter for found in kept):
+            kept.append(item)
+    return kept
+
+
+def _inline_number(pages: list[tuple[int, str]], last: tuple, want: int) -> tuple | None:
+    """Find 15. The area when an option line glued it on after D. 2."""
+    pattern = re.compile(rf"(?<!\d){want}\.\s+[A-Z]")
+    page_index, pos = last[1], last[2]
+    for index in range(page_index, len(pages)):
+        start = pos + 1 if index == page_index else 0
+        match = pattern.search(pages[index][1], start)
+        if match:
+            return (want, index, match.start(), pages[index][0])
+    return None
+
+
+def extend_numbered(pages: list[tuple[int, str]], chosen: list[tuple], starts: list[tuple]) -> list[tuple]:
+    """Continue 1, 2, 3 after a missing line-start, including one skipped number."""
+    chosen = list(chosen)
+    for _ in range(80):
+        if not chosen:
+            break
+        last = chosen[-1]
+        want = last[0] + 1
+        later = [item for item in starts if (item[1], item[2]) > (last[1], last[2])]
+        exact = [item for item in later if item[0] == want]
+        inline = _inline_number(pages, last, want)
+        candidates = list(exact)
+        if inline:
+            candidates.append(inline)
+        if candidates:
+            chosen.append(min(candidates, key=lambda item: (item[1], item[2])))
+            continue
+        nxt = [item for item in later if item[0] == want + 1]
+        if not nxt:
+            break
+        chosen.append(min(nxt, key=lambda item: (item[1], item[2])))
+    return chosen
+
+
 def slice_questions(pages: list[tuple[int, str]], chosen: list[tuple]) -> list[dict]:
     questions = []
     for index, (number, page_index, pos, pdf_page) in enumerate(chosen):
@@ -119,14 +173,16 @@ def questions_from_physics(pages: list[tuple[int, str]]) -> list[dict]:
     for index, (pdf_page, text) in enumerate(pages):
         for match in QSTART.finditer(text):
             starts.append((int(match.group(1)), index, match.start(), pdf_page))
-    numbered = slice_questions(pages, keep_sequence(starts))
-    if numbered:
-        return numbered
+    numbered = slice_questions(pages, extend_numbered(pages, keep_sequence(starts), starts))
     labeled = []
     for index, (pdf_page, text) in enumerate(pages):
         for match in LABELED.finditer(text):
             labeled.append((match.group(1) + match.group(2), index, match.start(), pdf_page))
-    return slice_questions(pages, labeled)
+    labeled_questions = slice_questions(pages, keep_labels(labeled))
+    # A table's 1. 2. 3. 4. is shorter than the real D1, E1, F1 questions.
+    if len(labeled_questions) > len(numbered):
+        return labeled_questions
+    return numbered
 
 
 def load_refs() -> list[dict]:

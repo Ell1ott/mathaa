@@ -26,7 +26,7 @@ CACHE = ROOT / "data" / "vl"
 API = "https://api.openparser.dev"
 MODEL = "paddleocr-vl-1.6"
 SOURCE = "paddleocr-vl-1.6"
-NUMBER_LINE = re.compile(r"^(\d{1,2})\.$")
+NUMBER_LINE = re.compile(r"^([A-J]?\d{1,2})\.$")
 WORKERS = 8
 
 
@@ -36,7 +36,7 @@ def line_y(page, number: int) -> float | None:
         lines.setdefault((word[5], word[6]), []).append(word)
     for key in sorted(lines):
         bits = lines[key]
-        if NUMBER_LINE.fullmatch(bits[0][4]) and int(bits[0][4][:-1]) == number:
+        if NUMBER_LINE.fullmatch(bits[0][4]) and bits[0][4][:-1] == str(number):
             return bits[0][1]
     return None
 

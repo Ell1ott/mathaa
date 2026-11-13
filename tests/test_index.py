@@ -164,6 +164,54 @@ class PhysicsExtractTest(unittest.TestCase):
         self.assertIn("graph continues", found[2])
         self.assertIn("force acts", found[3])
 
+    def test_ocr_keeps_going_when_a_number_is_missing(self):
+        found = split_pages(
+            {
+                3: "1. Alpha.\n\n2. Beta.\n\n3. Gamma.\n\n4. A car travels on a banked road.\n\nSphere X falls through a fluid with terminal velocity.",
+                4: "6. A wheel rolls down an incline.",
+            },
+            {5: "Sphere X falls through a fluid with terminal velocity v."},
+        )
+        self.assertIn(5, found)
+        self.assertIn(6, found)
+        self.assertIn("Sphere X", found[5])
+        self.assertNotIn("Sphere X", found[4])
+        self.assertIn("wheel rolls", found[6])
+
+    def test_option_line_does_not_swallow_the_next_question(self):
+        pages = [
+            (1, "1. Alpha question.\n2. Beta question.\n3. Gamma question.\n"),
+            (2, "D. 2. 4. The area under the curve is the count.\n5. Work is done by the gas.\n"),
+        ]
+        questions = questions_from_physics(pages)
+        self.assertEqual([question["number"] for question in questions], [1, 2, 3, 4, 5])
+        self.assertIn("area under", questions[3]["text"])
+        self.assertNotIn("Work is done", questions[3]["text"])
+
+    def test_section_labels_beat_a_short_number_table(self):
+        pages = [
+            (2, "D1. Forces in the arm.\n(a) Draw it.\n"),
+            (4, "1. graviton\n2. Electromagnetic photon\n"),
+            (6, "E1. Models of the universe.\n"),
+            (8, "H1.\nImages in a convex lens\nAn elderly lady buys a lens.\n"),
+        ]
+        questions = questions_from_physics(pages)
+        self.assertEqual([question["number"] for question in questions], ["D1", "E1", "H1"])
+        self.assertIn("Draw it.", questions[0]["text"])
+        self.assertIn("convex lens", questions[2]["text"])
+
+    def test_ocr_splits_section_labels(self):
+        found = split_pages(
+            {
+                2: "A1. This question is about decay.\n\n(a) Describe it.",
+                4: "## ### B1. Section B starts.",
+            }
+        )
+        self.assertEqual(sorted(found), ["A1", "B1"])
+        self.assertIn("Describe it", found["A1"])
+        self.assertIn("Section B", found["B1"])
+        self.assertNotIn("Section B", found["A1"])
+
     def test_colliding_booklets_stay_untagged(self):
         shared = {
             "level": "hl",

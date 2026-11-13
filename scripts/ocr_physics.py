@@ -1,9 +1,9 @@
-"""OCR categorized Physics papers one full page at a time, then split into questions.
+"""OCR every Physics paper one full page at a time, then split into questions.
 
-Only papers that already have an Aimnova topic are sent. Each finished page is
-written under data/vl/physics/<paper-id>/ before the next page starts, and
-questions.json is replaced after every page. Stop the process whenever you like:
-a page that is already on disk is not sent again.
+Papers whose questions are already paddleocr text are skipped. Each finished
+page is written under data/vl/physics/<paper-id>/ before the next page starts,
+and questions.json is replaced after every page. Stop the process whenever you
+like: a page that is already on disk is not sent again.
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from catalog import ROOT
-from extract_physics import QUESTIONS_PATH, keep_sequence
+from extract_physics import QUESTIONS_PATH, keep_labels, keep_sequence
 from transcribe import (
     CONTENT_RIGHT,
     FIGS,
@@ -28,18 +28,17 @@ from transcribe import (
 )
 
 CACHE = ROOT / "data" / "vl" / "physics"
-QSTART = re.compile(r"(?m)^(?:#{1,6}[ \t]+|\*\*)?(\d{1,2})\.(?:\*\*)?(?=\s|$)")
+QSTART = re.compile(r"(?m)^(?:#{1,6}[ \t]+|\*\*)*(\d{1,2})\.(?:\*\*)?(?=\s|$)")
+LSTART = re.compile(r"(?m)^(?:#{1,6}[ \t]+|\*\*)*([A-J]\d{1,2})\.(?:\*\*)?(?=\s|$)")
 PAGE_NOISE = re.compile(r"^(?:\d{1,2}|\d{2}EP\d{2}|\d{4}[-–]\d{4}|[–\-]\s*\d{1,2}\s*[–\-])$")
 
 
-def categorized_papers(payload: dict) -> list[dict]:
+def all_papers(payload: dict) -> list[dict]:
     by_id: dict[str, list[dict]] = defaultdict(list)
     for question in payload.get("questions", []):
         by_id[question["paper_id"]].append(question)
     papers = []
     for paper_id, questions in by_id.items():
-        if not any(question.get("topics") for question in questions):
-            continue
         questions.sort(key=lambda item: item["number"] if isinstance(item["number"], int) else 0)
         pages = sorted({page for question in questions for page in range(question["page_start"], question["page_end"] + 1)})
         papers.append(
@@ -52,6 +51,12 @@ def categorized_papers(payload: dict) -> list[dict]:
         )
     papers.sort(key=lambda paper: paper["id"])
     return papers
+
+
+def _already_scanned(paper: dict) -> bool:
+    return bool(paper["questions"]) and all(
+        question.get("text_source") == "paddleocr-vl-1.6" for question in paper["questions"]
+    )
 
 
 def page_path(paper_id: str, page: int) -> Path:
@@ -95,36 +100,144 @@ def drop_page_noise(text: str) -> str:
     return re.sub(r"\n{3,}", "\n\n", "\n".join(kept)).strip()
 
 
-def split_pages(pages: dict[int, str]) -> dict[int, str]:
-    """Split concatenated page markdown on 1. 2. 3. …, ignoring a later restart."""
+def _opening_words(line: str) -> list[str]:
+    body = re.sub(r"^\d{1,2}\.\s*", "", line.strip())
+    return re.findall(r"[A-Za-z]+", body)[:16]
+
+
+def _find_opening(text: str, words: list[str], start: int, end: int) -> int | None:
+    """Where this question's wording begins, even if the scan ate the first letters."""
+    if len(words) < 3 or end - start < 20:
+        return None
+    region = text[start:end]
+    shortest = 5 if len(words) >= 5 else len(words)
+    for length in range(min(8, len(words)), shortest - 1, -1):
+        for offset in range(0, len(words) - length + 1):
+            chunk = words[offset : offset + length]
+            pattern = r"\b" + r"\b\W{0,25}\b".join(re.escape(word) for word in chunk) + r"\b"
+            match = re.search(pattern, region, re.I)
+            if match is None:
+                continue
+            pos = start + match.start()
+            line_start = text.rfind("\n", start, pos) + 1
+            if pos - line_start < 12:
+                pos = line_start
+            return pos
+    return None
+
+
+def _bridge_gaps(text: str, chosen: list[tuple], starts: list[tuple], openings: dict[int, str]) -> list[tuple]:
+    """Keep going after a missing 5. by finding that question's wording, then the next 6."""
+    if not chosen or not openings:
+        return chosen
+    for _ in range(48):
+        last_number, _page_index, last_pos, _pdf_page = chosen[-1]
+        expect = last_number + 1
+        words = _opening_words(openings.get(expect, ""))
+        later = [item for item in starts if item[2] > last_pos + 30 and item[0] > last_number]
+        exact = [item for item in later if item[0] == expect]
+        if exact:
+            chosen.append(min(exact, key=lambda item: item[2]))
+            continue
+        limit = min((item[2] for item in later if item[0] > expect), default=len(text))
+        pos = _find_opening(text, words, last_pos + 30, limit) if len(words) >= 3 else None
+        if pos is None:
+            # One eaten question should not throw away the numbered questions after it.
+            following = min((item for item in later if item[0] == expect + 1), default=None, key=lambda item: item[2])
+            if following is None:
+                break
+            chosen.append(following)
+            continue
+        chosen.append((expect, 0, pos, 0))
+    return chosen
+
+
+def split_pages(pages: dict[int, str], openings: dict[int, str] | None = None, *, labels: bool | None = None) -> dict:
+    """Split concatenated page markdown into 1. 2. 3. or A1. B1. E3. questions."""
     chunks = []
-    offsets = []
-    cursor = 0
     for page in sorted(pages):
-        offsets.append((page, cursor))
         chunks.append(pages[page].strip())
-        cursor += len(chunks[-1]) + 2
     text = "\n\n".join(chunks)
-    starts = []
-    for match in QSTART.finditer(text):
-        starts.append((int(match.group(1)), 0, match.start(), 0))
-    chosen = keep_sequence(starts)
+    starts = [(int(match.group(1)), 0, match.start(), 0) for match in QSTART.finditer(text)]
+    labeled = [(match.group(1), 0, match.start(), 0) for match in LSTART.finditer(text)]
+    if labels is None:
+        labels = len(keep_labels(labeled)) > len(keep_sequence(starts))
+    if labels:
+        chosen = keep_labels(labeled)
+    else:
+        chosen = _bridge_gaps(text, keep_sequence(starts), starts, openings or {})
     questions = {}
     for index, (number, _page_index, pos, _pdf_page) in enumerate(chosen):
         end = chosen[index + 1][2] if index + 1 < len(chosen) else len(text)
-        piece = drop_page_noise(tidy_question(text[pos:end].strip(), number))
+        piece = drop_page_noise(tidy_question(text[pos:end].strip(), number if isinstance(number, int) else 0))
+        piece = re.sub(rf"^(?!{re.escape(str(number))}\.)\d{{1,2}}\.\s+", "", piece)
         if piece:
             questions[number] = piece
     return questions
 
 
+def _opening_body(lines: list[str], index: int, first: str) -> str:
+    parts = [first]
+    for line in lines[index + 1 : index + 4]:
+        stripped = line.strip()
+        if not stripped or re.match(r"^[A-D]\.\s", stripped) or re.fullmatch(r"\d{1,2}\.", stripped):
+            break
+        parts.append(stripped)
+        if len(" ".join(parts)) > 180:
+            break
+    return " ".join(parts)[:240]
+
+
+def pdf_openings(paper: dict) -> dict[int, str]:
+    """First line of each question in the PDF, used when the scan dropped the number."""
+    cached = paper.get("openings")
+    if cached is not None:
+        return cached
+    import pymupdf
+
+    pdf = ROOT / paper["file"]
+    openings: dict[int, str] = {}
+    if not pdf.is_file():
+        paper["openings"] = openings
+        return openings
+    document = pymupdf.open(pdf)
+    try:
+        for question in paper["questions"]:
+            number = question["number"]
+            if not isinstance(number, int):
+                continue
+            page = document[question["page_start"] - 1]
+            lines = page.get_text().splitlines()
+            for index, line in enumerate(lines):
+                stripped = line.strip()
+                same_line = re.match(rf"{number}\.\s+(\S.*)", stripped)
+                if same_line:
+                    openings[number] = _opening_body(lines, index, same_line.group(1))
+                    break
+                if re.fullmatch(rf"{number}\.", stripped):
+                    nxt = next((item.strip() for item in lines[index + 1 : index + 3] if item.strip()), "")
+                    if nxt:
+                        openings[number] = _opening_body(lines, index + 1, nxt)
+                    break
+    finally:
+        document.close()
+    paper["openings"] = openings
+    return openings
+
+
+def _pages_ready(question: dict, pages: dict[int, str]) -> bool:
+    return all(page in pages for page in range(question["page_start"], question["page_end"] + 1))
+
+
 def apply_split(payload: dict, paper: dict, pages: dict[int, str]) -> int:
-    found = split_pages(pages)
+    use_labels = any(isinstance(question["number"], str) for question in paper["questions"])
+    found = split_pages(pages, None if use_labels else pdf_openings(paper), labels=use_labels)
     updated = 0
     by_number = {question["number"]: question for question in paper["questions"]}
     for number, text in found.items():
         question = by_number.get(number)
-        if question is None or not text:
+        # A half-scanned question would replace the PDF text with its first page only.
+        if question is None or not text or not _pages_ready(question, pages):
             continue
         if question.get("text") == text and question.get("text_source") == "paddleocr-vl-1.6":
             continue
@@ -234,7 +347,7 @@ def attach_diagrams(paper: dict) -> int:
 def refresh_saved() -> None:
     """Re-split cached pages and put diagrams back. Does not call the OCR service."""
     payload = json.loads(QUESTIONS_PATH.read_text())
-    papers = categorized_papers(payload)
+    papers = all_papers(payload)
     for paper in papers:
         held = {}
         for page in paper["pages"]:
@@ -258,9 +371,9 @@ def main() -> None:
     if not key:
         raise SystemExit("Set OPENPARSER_API_KEY. Nothing was sent.")
     payload = json.loads(QUESTIONS_PATH.read_text())
-    papers = categorized_papers(payload)
+    papers = [paper for paper in all_papers(payload) if not _already_scanned(paper)]
     total_pages = sum(len(paper["pages"]) for paper in papers)
-    print(f"{len(papers)} categorized papers, {total_pages} pages", flush=True)
+    print(f"{len(papers)} papers still to scan, {total_pages} pages", flush=True)
     print("Stop whenever you like. A page already saved is not sent again.", flush=True)
     done = 0
     for paper in papers:
