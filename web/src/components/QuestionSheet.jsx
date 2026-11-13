@@ -90,7 +90,7 @@ export function QuestionSheet({ open, docs, index, view, question, questions, pa
     >
       <div ref={bodyRef} className={'sb' + (open && !docs ? ' deck' : '')} id="sbody">
         {open && docs && paper && (
-          <iframe className="pframe" src={'/pdf?paper=' + encodeURIComponent(paper.i)} title={paperName(paper)} />
+          <iframe className="pframe" src={'/doc/' + encodeURIComponent(paper.i) + '.pdf'} title={paperName(paper)} />
         )}
         {open && !docs && (
           <div className="reel" ref={reelRef}>

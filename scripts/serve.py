@@ -18,8 +18,10 @@ PHYSICS_QUESTIONS = ROOT / "data" / "physics" / "questions.json"
 COVERAGE = ROOT / "data" / "coverage.json"
 REVIEWS = ROOT / "data" / "reviews.json"
 THUMBS = ROOT / "data" / "thumbs"
+COVERS = ROOT / "data" / "covers"
 PORT = 8765
 CUT_NAME = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*\.png")
+COVER_NAME = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*-[12]\.jpg")
 HEADER = re.compile(
     r"(?m)^[#\s]*(\d+)\.\s*(?:\\\()?\s*\[Maximum marks?:\s*(\d+)\]\s*(?:\\\))?[ \t]*\n?"
 )
@@ -286,6 +288,34 @@ def thumb_jpeg(path: Path, page: int) -> bytes | None:
         return written.get(page)
 
 
+def subject_pdf(paper_id: str) -> Path | None:
+    """English economics or physics question paper. Markschemes stay out."""
+    if not paper_id.startswith(("econ-", "phy-")):
+        return None
+    if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", paper_id):
+        return None
+    path = paper_files().get(paper_id)
+    if path is None or not path.is_file() or "markscheme" in path.name.lower():
+        return None
+    return path
+
+
+def write_paper_covers(files: dict[str, Path] | None = None, dest: Path | None = None) -> None:
+    """Page 1 and 2 JPEGs named by paper id. An empty page 2 means the PDF is one page."""
+    folder = dest or COVERS
+    folder.mkdir(parents=True, exist_ok=True)
+    for paper_id, path in (paper_files() if files is None else files).items():
+        if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", paper_id):
+            continue
+        targets = [folder / f"{paper_id}-{page}.jpg" for page in (1, 2)]
+        pdf_mtime = path.stat().st_mtime
+        if all(target.is_file() and target.stat().st_mtime >= pdf_mtime for target in targets):
+            continue
+        for page, target in enumerate(targets, start=1):
+            data = thumb_jpeg(path, page)
+            target.write_bytes(data or b"")
+
+
 def _question_mtime() -> tuple[float, float]:
     def stamp(path: Path) -> float:
         return path.stat().st_mtime if path.exists() else 0
@@ -392,6 +422,23 @@ class Handler(BaseHTTPRequestHandler):
                 self.send(404, b"image not on disk", "text/plain; charset=utf-8")
                 return
             self.send(200, path.read_bytes(), "image/png")
+            return
+        if parsed.path.startswith("/doc/"):
+            name = parsed.path.split("/", 2)[2]
+            paper_id = name[:-4] if name.endswith(".pdf") else ""
+            path = subject_pdf(paper_id)
+            if path is None:
+                self.send(404, b"PDF not on disk", "text/plain; charset=utf-8")
+                return
+            self.send(200, path.read_bytes(), "application/pdf")
+            return
+        if parsed.path.startswith("/paper/"):
+            name = parsed.path.split("/", 2)[2]
+            path = (COVERS / name).resolve()
+            if not COVER_NAME.fullmatch(name) or path.parent != COVERS.resolve() or not path.is_file() or path.stat().st_size == 0:
+                self.send(404, b"image not on disk", "text/plain; charset=utf-8")
+                return
+            self.send(200, path.read_bytes(), "image/jpeg", "public, max-age=86400")
             return
         if parsed.path == "/pdf":
             query = parse_qs(parsed.query)

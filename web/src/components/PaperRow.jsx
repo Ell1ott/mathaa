@@ -20,7 +20,7 @@ function Sheets({ src, hideSecond, onHideSecond }) {
 export function PaperRow({ paper, onOpen }) {
   const [hideSecond, setHideSecond] = useState(false)
   const level = paper.l ? (LEVELS[paper.l] || paper.l) : ''
-  const src = '/pdf?paper=' + encodeURIComponent(paper.i) + '&thumb=1&page='
+  const src = '/paper/' + encodeURIComponent(paper.i) + '-'
   const hide = () => setHideSecond(true)
   const clip = 'url(#f-' + paper.i.replace(/[^a-z0-9-]/gi, '') + ')'
   return (

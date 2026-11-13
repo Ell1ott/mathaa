@@ -9,6 +9,8 @@ export default defineConfig({
       '/cut': 'http://127.0.0.1:8765',
       '/fig': 'http://127.0.0.1:8765',
       '/scheme': 'http://127.0.0.1:8765',
+      '/paper': 'http://127.0.0.1:8765',
+      '/doc': 'http://127.0.0.1:8765',
       '/pdf': 'http://127.0.0.1:8765',
     },
   },

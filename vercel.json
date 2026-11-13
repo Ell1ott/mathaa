@@ -1,5 +1,5 @@
 {
   "framework": null,
-  "buildCommand": "cd web && npm ci && npm run build && cd .. && python3 scripts/export_site.py",
+  "buildCommand": "python3 -m pip install pymupdf && cd web && npm ci && npm run build && cd .. && python3 scripts/export_site.py",
   "outputDirectory": "site"
 }

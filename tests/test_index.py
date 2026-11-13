@@ -657,6 +657,31 @@ class BankTest(unittest.TestCase):
             self.assertEqual(thumb_jpeg(path, 1), jpg)
             self.assertIsNone(thumb_jpeg(path, 3))
 
+    def test_write_paper_covers_names_both_pages(self):
+        import tempfile
+
+        import pymupdf
+        from serve import write_paper_covers
+
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            one = root / "one.pdf"
+            two = root / "two.pdf"
+            for path, words in ((one, ("only",)), (two, ("one", "two"))):
+                document = pymupdf.open()
+                for word in words:
+                    document.new_page().insert_text((72, 72), word)
+                document.save(path)
+                document.close()
+            dest = root / "covers"
+            write_paper_covers({"solo": one, "pair": two}, dest)
+            self.assertTrue((dest / "solo-1.jpg").read_bytes().startswith(b"\xff\xd8"))
+            self.assertEqual((dest / "solo-2.jpg").read_bytes(), b"")
+            self.assertTrue((dest / "pair-2.jpg").read_bytes().startswith(b"\xff\xd8"))
+            stamped = (dest / "pair-1.jpg").stat().st_mtime
+            write_paper_covers({"solo": one, "pair": two}, dest)
+            self.assertEqual((dest / "pair-1.jpg").stat().st_mtime, stamped)
+
     def test_economics_papers_skip_markschemes_and_other_languages(self):
         root = Path(__file__).resolve().parents[1] / "papers" / "library" / "societies" / "economics"
         if not any(root.rglob("*.pdf")):

@@ -12,6 +12,9 @@ __pycache__/
 *.pyc
 papers/**/*.pdf
 papers/**/*.mp3
+!papers/library/societies/economics/**/en/p*.pdf
+!papers/library/sciences/physics/**/en/p*.pdf
+papers/**/*markscheme*.pdf
 site/
 data/reviews.json
 data/thumbs/
