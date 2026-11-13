@@ -10,9 +10,9 @@ function Sheets({ src, hideSecond, onHideSecond }) {
     <>
       <svg className="back" viewBox={BOX} aria-hidden="true"><path d={FOLDER} /></svg>
       {!hideSecond && (
-        <span className="fpage p2"><img alt="" src={src + '2'} loading="lazy" onError={onHideSecond} /></span>
+        <span className="fpage p2"><img alt="" src={src + '2.jpg'} loading="lazy" onError={onHideSecond} /></span>
       )}
-      <span className="fpage p1"><img alt="" src={src + '1'} loading="lazy" /></span>
+      <span className="fpage p1"><img alt="" src={src + '1.jpg'} loading="lazy" /></span>
     </>
   )
 }
