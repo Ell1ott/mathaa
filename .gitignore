@@ -1,6 +1,7 @@
 .venv/
 node_modules/
 web/dist/
+web/.cache/
 .env
 .venv_paddleocr/
 .venv_mlx/

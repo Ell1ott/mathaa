@@ -1,17 +1,7 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+import { dataServer } from './dataServer.js'
 
 export default defineConfig({
-  plugins: [react()],
-  server: {
-    proxy: {
-      '/questions.json': 'http://127.0.0.1:8765',
-      '/cut': 'http://127.0.0.1:8765',
-      '/fig': 'http://127.0.0.1:8765',
-      '/scheme': 'http://127.0.0.1:8765',
-      '/paper': 'http://127.0.0.1:8765',
-      '/doc': 'http://127.0.0.1:8765',
-      '/pdf': 'http://127.0.0.1:8765',
-    },
-  },
+  plugins: [react(), dataServer()],
 })

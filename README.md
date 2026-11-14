@@ -18,19 +18,12 @@ Question text and the cutout images in `data/questions.json`, `data/cuts/`, and 
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-python scripts/build.py
-python scripts/serve.py
-```
-
-In another terminal:
-
-```bash
 cd web
 npm install
 npm run dev
 ```
 
-Open the Vite URL, http://127.0.0.1:5173. `serve.py` supplies the question bank, images, and PDFs.
+Open http://127.0.0.1:5173. Vite builds the question bank once, then serves the images and PDFs. `python scripts/build.py` is only for adding or refreshing papers.
 
 `build.py` writes `data/catalog.json`, refreshes Aimnova citations if `data/references.json` is missing, extracts questions, and rewrites the coverage table below. Run `python scripts/build.py --refs` to fetch the citation pages again.
 

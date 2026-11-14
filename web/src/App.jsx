@@ -386,7 +386,6 @@ export default function App() {
     return (
       <div className="empty">
         <b>{error || 'Loading questions'}</b>
-        {error && 'Start python scripts/serve.py, then reload.'}
       </div>
     )
   }
