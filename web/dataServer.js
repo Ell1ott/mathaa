@@ -141,7 +141,7 @@ async function sendPage(res, query) {
 }
 
 function pageCache(abs, page) {
-  const stamp = statSync(abs).mtimeNs.toString()
+  const stamp = statSync(abs, { bigint: true }).mtimeNs.toString()
   const name = createHash('sha1').update(`${abs}:${stamp}:${page}`).digest('hex').slice(0, 20) + '.png'
   return path.join(CACHE, 'pages', name)
 }
@@ -213,7 +213,7 @@ function pageWidth(page) {
 }
 
 function openDoc(abs) {
-  const mtime = statSync(abs).mtimeNs.toString()
+  const mtime = statSync(abs, { bigint: true }).mtimeNs.toString()
   const hit = docs.get(abs)
   if (hit && hit.mtime === mtime) return hit.doc
   if (hit) hit.doc.destroy()

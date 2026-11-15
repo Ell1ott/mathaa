@@ -111,7 +111,13 @@ export function Sidebar({
             />
           </div>
           <div className="grp">
-            <h3>Topic</h3>
+            <h3>
+              Topic
+              <button type="button" className={'sw' + (filters.strict ? ' on' : '')} aria-pressed={filters.strict} title="Hide questions that also cover other areas" onClick={() => onToggleFlag('strict')}>
+                Strict
+                <i />
+              </button>
+            </h3>
             {Object.keys(areas).map((area) => (
               <div key={area} className="area" style={{ '--c': areas[area] }}>
                 <div className="arow-w">

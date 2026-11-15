@@ -96,7 +96,14 @@ export function matchesQuestion(q, S, stars, skip, txt) {
   if (skip !== 'y' && S.y.size && !S.y.has(q.y)) return false
   if (skip !== 's' && S.s.size && !S.s.has(q.s)) return false
   if (skip !== 'm' && S.m.size && !(q.m != null && [...S.m].some((i) => MARK_BANDS[i][1](q.m)))) return false
-  if (skip !== 't' && (S.t.size || S.a.size) && !(q.c.some((c) => S.t.has(c)) || q.ar.some((a) => S.a.has(a)))) return false
+  if (skip !== 't' && (S.t.size || S.a.size)) {
+    const topicHit = q.c.some((c) => S.t.has(c))
+    const areaHit = q.ar.some((a) => S.a.has(a))
+    if (!(topicHit || areaHit)) return false
+    // Strict keeps a question only when every area it covers was selected.
+    if (S.strict && S.a.size && q.ar.some((a) => !S.a.has(a))) return false
+    if (S.strict && S.t.size && !S.a.size && q.c.some((c) => !S.t.has(c))) return false
+  }
   if (S.saved && !stars[q.i]) return false
   if (S.ver && !q.v) return false
   if (!S.unc && !(q.c && q.c.length)) return false
@@ -294,6 +301,7 @@ export function activePills(S, topics, query) {
     if (S.saved) push('f', 'saved', 'Saved')
     if (S.ver) push('f', 'ver', 'Verified topics')
     if (S.unc) push('f', 'unc', 'Uncategorized')
+    if (S.strict) push('f', 'strict', 'Strict areas')
   }
   if (query) push('x', '', '“' + query + '”')
   return pills

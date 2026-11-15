@@ -321,7 +321,7 @@ export default function App() {
     setFilters((S) => ({
       ...S,
       p: new Set(), y: new Set(), s: new Set(), m: new Set(), a: new Set(), t: new Set(), l: new Set(),
-      saved: false, ver: false, unc: false,
+      saved: false, ver: false, unc: false, strict: false,
     }))
     setQuery('')
     setTxt('')

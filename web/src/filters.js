@@ -1,7 +1,7 @@
 import { defaultGroup, resolveGroup } from './bank.js'
 
 export function filtersFrom(search) {
-  const u = new URLSearchParams(search), F = { p: new Set(), y: new Set(), s: new Set(), m: new Set(), a: new Set(), t: new Set(), l: new Set(), saved: false, ver: false, unc: false, q: '', sort: 'new', sub: 'math' }
+  const u = new URLSearchParams(search), F = { p: new Set(), y: new Set(), s: new Set(), m: new Set(), a: new Set(), t: new Set(), l: new Set(), saved: false, ver: false, unc: false, strict: false, q: '', sort: 'new', sub: 'math' }
   for (const k of ['p', 'y', 's', 'm', 'a', 't', 'l']) for (const x of (u.get(k) || '').split(',')) {
     if (!x) continue
     if (k === 'p' && /^\d+[A-Za-z]$/.test(x)) { F.p.add(x.toUpperCase()); continue }
@@ -11,6 +11,7 @@ export function filtersFrom(search) {
   F.saved = u.get('saved') === '1'
   F.ver = u.get('ver') === '1'
   F.unc = u.get('unc') === '1'
+  F.strict = u.get('strict') === '1'
   F.q = u.get('q') || ''
   const sort = u.get('sort')
   if (['old', 'mh', 'ml', 'tp'].includes(sort)) F.sort = sort
@@ -28,6 +29,7 @@ export function filtersTo(S, q, sort, path, open) {
   if (S.saved) u.set('saved', '1')
   if (S.ver) u.set('ver', '1')
   if (S.unc) u.set('unc', '1')
+  if (S.strict) u.set('strict', '1')
   if (q) u.set('q', q)
   if (sort && sort !== 'new') u.set('sort', sort)
   if (S.browse === 'papers') u.set('browse', 'papers')
