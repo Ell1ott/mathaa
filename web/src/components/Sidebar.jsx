@@ -1,6 +1,7 @@
-import { LEVEL_ORDER, LEVELS, MARK_BANDS, SESSIONS, SUBJECTS, areaShortFor, areasFor, topicsIn } from '../bank.js'
+import { LEVEL_ORDER, LEVELS, MARK_BANDS, SESSIONS, SUBJECTS, areaShortFor, areasFor, paperLabel, papersOnly, topicsIn } from '../bank.js'
 import { Chip } from './Chip.jsx'
 import { Segment } from './Segment.jsx'
+import { SubjectPicker } from './SubjectPicker.jsx'
 
 function dim(count, on) {
   return !count && !on
@@ -8,6 +9,9 @@ function dim(count, on) {
 
 export function Sidebar({
   subject,
+  subjects,
+  topSubjects,
+  paperOptions,
   mode,
   questionTotal,
   paperTotal,
@@ -27,36 +31,38 @@ export function Sidebar({
   onToggleFlag,
 }) {
   const questionLabel = 'Questions, ' + questionTotal
-  const paperLabel = 'Whole papers, ' + paperTotal
+  const paperCount = 'Whole papers, ' + paperTotal
   const papers = mode === 'papers'
-  const econ = subject === 'econ'
-  const leveled = subject === 'econ' || subject === 'phys'
+  const only = papersOnly(subject)
+  const leveled = subject !== 'math'
   const areas = areasFor(subject)
   const areaShort = areaShortFor(subject)
-  const paperOptions = subject === 'phys' ? [1, '1A', '1B', 2, 3] : [1, 2, 3]
-  const subjectLabel = SUBJECTS.find((item) => item[0] === subject)?.[1] || SUBJECTS[0][1]
+  const subjectLabel = (subjects || []).flatMap(([, rows]) => rows).find((item) => item[0] === subject)?.[1] || SUBJECTS[0][1]
   return (
     <>
-      <label className="subject">
-        <h1>{subjectLabel}</h1>
-        <select id="subject" aria-label="Subject" value={subject} onChange={(e) => onSubject(e.target.value)}>
-          {SUBJECTS.map(([id, label]) => <option key={id} value={id}>{label}</option>)}
-        </select>
-      </label>
+      <div className="subject-w">
+        <SubjectPicker
+          value={subject}
+          label={subjectLabel}
+          groups={subjects || []}
+          top={topSubjects || []}
+          onPick={onSubject}
+        />
+      </div>
       <label className="browse">
-        <span>{papers ? paperLabel : questionLabel}</span>
+        <span>{papers ? paperCount : questionLabel}</span>
         <select id="browse" aria-label="Browse" value={mode} onChange={(e) => onMode(e.target.value)}>
-          {!econ && <option value="questions">{questionLabel}</option>}
-          <option value="papers">{paperLabel}</option>
+          {!only && <option value="questions">{questionLabel}</option>}
+          <option value="papers">{paperCount}</option>
         </select>
       </label>
       <div className="grp">
         <h3>Paper</h3>
         <Segment
           label="Paper"
-          options={paperOptions.map((paper) => ({
+          options={(paperOptions || []).map((paper) => ({
             value: paper,
-            label: 'Paper ' + paper,
+            label: paperLabel(paper),
             on: filters.p.has(paper),
             dim: dim(counts.p[paper], filters.p.has(paper)),
             onClick: () => onToggle('p', paper),

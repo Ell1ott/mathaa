@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { LEVELS } from '../bank.js'
+import { LEVELS, componentLabel, paperLabel } from '../bank.js'
 
 const FOLDER = 'M28 0H98C112 0 118 4 126 12C134 20 140 24 154 24H192A28 28 0 0 1 220 52V172A28 28 0 0 1 192 200H28A28 28 0 0 1 0 172V28A28 28 0 0 1 28 0Z'
 const FOLDER_BOX = 'M.127273 0H.445455C.509091 0 .536364 .02 .572727 .06C.609091 .1 .636364 .12 .7 .12H.872727A.127273 .14 0 0 1 1 .26V.86A.127273 .14 0 0 1 .872727 1H.127273A.127273 .14 0 0 1 0 .86V.14A.127273 .14 0 0 1 .127273 0Z'
@@ -20,6 +20,7 @@ function Sheets({ src, hideSecond, onHideSecond }) {
 export function PaperRow({ paper, onOpen }) {
   const [hideSecond, setHideSecond] = useState(false)
   const level = paper.l ? (LEVELS[paper.l] || paper.l) : ''
+  const component = paper.p === 'Listening' ? '' : componentLabel(paper.k)
   const src = '/paper/' + encodeURIComponent(paper.i) + '-'
   const hide = () => setHideSecond(true)
   const clip = 'url(#f-' + paper.i.replace(/[^a-z0-9-]/gi, '') + ')'
@@ -34,7 +35,8 @@ export function PaperRow({ paper, onOpen }) {
           <span className="scene"><Sheets src={src} hideSecond={hideSecond} onHideSecond={hide} /></span>
         </span>
         <span className="front" style={{ clipPath: clip }}>
-          <span className="ft">Paper {paper.p}{paper.z ? ' ' + paper.z : ''}</span>
+          <span className="ft">{paperLabel(paper.p)}{paper.z ? ' ' + paper.z : ''}</span>
+          {component ? <span className="fk">{component}</span> : null}
           <span className="fm">{[level, paper.s + ' ' + paper.y].filter(Boolean).join(' · ')}</span>
           {paper.n ? <span className="fs">{paper.n} questions</span> : null}
         </span>

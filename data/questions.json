@@ -1,5 +1,5 @@
 {
-  "built": "2026-11-05",
+  "built": "2026-11-17",
   "questions": [
     {
       "id": "specimen-2021-p1-q1",
@@ -4027,8 +4027,10 @@
           "area": "Geometry and trigonometry"
         }
       ],
-      "status": "matched",
-      "reasons": []
+      "status": "review",
+      "reasons": [
+        "topic words not in question"
+      ]
     },
     {
       "id": "2022-05-p2-tz1-q8",
@@ -5581,7 +5583,7 @@
       "page_start": 4,
       "page_end": 5,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p1-tz1.pdf",
-      "text": "1. [Maximum mark: 5]\nConsider the function \\(f(x) = \\frac{4x^3}{3} - 16x\\), where \\(x \\in \\mathbb{R}\\).\nThe graph of \\(y = f(x)\\) has a local minimum point at \\((p, q)\\) where \\(p > 0\\).\nFind the value of \\(p\\) and the value of \\(q\\).",
+      "text": "1. [Maximum mark: 7]\n\nThe function $f$ is defined by $f(x)=\\frac{7x+7}{2x-4}$ for $x\\in\\mathbb{R}$, $x\\neq2$.\n\n(a) Find the zero of $ f(x) $.\n\n[2]\n\n(b) For the graph of $y=f(x)$, write down the equation of\n\n(i) the vertical asymptote;\n\n(ii) the horizontal asymptote.\n\n[2]\n\n(c) Find $ f^{-1}(x) $, the inverse function of $ f(x) $.\n\n[3]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -5612,7 +5614,7 @@
       "page_start": 5,
       "page_end": 6,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p1-tz1.pdf",
-      "text": "2. [Maximum mark: 7]\n\nBob invests 1000 dinar in an account which pays a nominal annual interest rate of 4%\ncompounded quarterly.\n\nThe amount of money in the account after one complete year can be written as \\(1000(1 + k)^4\\)\nwhere \\(k \\in \\mathbb{Q}\\).\n\n(a) Write down the value of \\(k\\).\n[1]\n\n(b) Expand and simplify \\((1 + x)^4\\).\n[2]\n\n(c) Hence or otherwise, find the amount of money in the account after one complete year,\ngiving your answer correct to the nearest dinar.\n[4]",
+      "text": "2. [Maximum mark: 6]\n\nOn a Monday at an amusement park, a sample of 40 visitors was randomly selected as they were leaving the park. They were asked how many times that day they had been on a ride called The Dragon. This information is summarized in the following frequency table.\n\n| Number of times on The Dragon | Frequency |\n| --- | --- |\n| 0 | 6 |\n| 1 | 16 |\n| 2 | 13 |\n| 3 | 2 |\n| 4 | 3 |\n\nIt can be assumed that this sample is representative of all visitors to the park for the following day.\n\n(a) For the following day, Tuesday, estimate\n\n(i) the probability that a randomly selected visitor will ride The Dragon;\n\n(ii) the expected number of times a visitor will ride The Dragon.\n\n[4]\n\nIt is known that 1000 visitors will attend the amusement park on Tuesday. The Dragon can carry a maximum of 10 people each time it runs.\n\n(b) Estimate the minimum number of times The Dragon must run to satisfy demand.\n\n[2]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -5621,10 +5623,8 @@
           "area": "Statistics and probability"
         }
       ],
-      "status": "review",
-      "reasons": [
-        "topic words not in question"
-      ]
+      "status": "matched",
+      "reasons": []
     },
     {
       "id": "2023-05-p1-tz1-q3",
@@ -5638,7 +5638,7 @@
       "page_start": 6,
       "page_end": 7,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p1-tz1.pdf",
-      "text": "3. [Maximum mark: 4]\nFind the area completely enclosed by the curves \\(y = e^x\\), \\(y = -e^x\\), and the lines x = -1 and x = 1.",
+      "text": "3. [Maximum mark: 6]\n\nSolve $ \\cos 2x = \\sin x $, where $ -\\pi \\leq x \\leq \\pi $.",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -5664,7 +5664,7 @@
       "page_start": 7,
       "page_end": 8,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p1-tz1.pdf",
-      "text": "4. [Maximum mark: 6]\nConsider events \\(A\\) and \\(B\\) such that \\(\\mathrm{P}(A') = \\mathrm{P}(A \\cup B) = \\frac{3}{4}\\) and \\(\\mathrm{P}(B|A) = \\frac{2}{3}\\).\n(a) Find \\(\\mathrm{P}(A \\cap B)\\).\n(b) Show that events \\(A\\) and \\(B\\) are independent.\n[3]\n[3]",
+      "text": "4. [Maximum mark: 6]\n\nFind the range of possible values of $ k $ such that $ e^{2x} + \\ln k = 3e^{x} $ has at least one real solution.",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -5690,7 +5690,7 @@
       "page_start": 8,
       "page_end": 9,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p1-tz1.pdf",
-      "text": "5. [Maximum mark: 8]\n\nConsider a sequence of ten rectangular picture frames \\(F_1, F_2, \\ldots, F_9, F_{10}\\).\n\nPicture frame \\(F_1\\) has width 4 cm and height 5 cm.\n\nThe width and height of picture frame \\(F_n\\), are each increased by 50% to generate the width and height of the next picture frame \\(F_{n+1}\\), for \\(n \\in \\mathbb{Z}^+\\), \\(1 \\leq n \\leq 9\\).\n\n(a) (i) Show that the area of picture frame \\(F_n\\) is \\(20\\left(\\frac{9}{4}\\right)^{n-1} \\, \\text{cm}^2\\).\n\n(ii) Hence, find the mean area of the ten picture frames, giving your answer in the form \\(p\\left(\\left(\\frac{9}{4}\\right)^a - 1\\right) \\, \\text{cm}^2\\), where \\(p \\in \\mathbb{Q}^+\\), \\(a \\in \\mathbb{Z}^+\\).\n\n(b) Find the median area of the ten picture frames, giving your answer in the form \\(q\\left(\\frac{9}{4}\\right)^4 \\, \\text{cm}^2\\), where \\(q \\in \\mathbb{Q}^+\\).\n\n[3]",
+      "text": "5. [Maximum mark: 6]\n\nThe function $f$ is defined by $f(x) = \\sin qx$, where $q > 0$. The following diagram shows part of the graph of $f$ for $0 \\leq x \\leq 4m$, where $x$ is in radians. There are $x$-intercepts at $x = 0$, $2m$ and $4m$.\n\n![](/fig/2023-05-p1-tz1-q5-1.png)\n\n(a) Find an expression for m in terms of q.\n\nThe function g is defined by $ g(x) = 3\\sin\\frac{2qx}{3} $, for $ 0 \\leq x \\leq 6m $.\n\n(b) On the axes above, sketch the graph of g.\n\n[4]\n\n| |\n| --- |",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -5716,7 +5716,7 @@
       "page_start": 9,
       "page_end": 10,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p1-tz1.pdf",
-      "text": "6. [Maximum mark: 6]\n\nThe line \\(L_1\\) has vector equation \\(r = 4i - k + \\lambda(aj + k)\\), where \\(a, \\lambda \\in \\mathbb{R}\\).\n\nThe line \\(L_2\\) has vector equation \\(r = i - bk + \\mu(i + 2j + 3k)\\), where \\(b, \\mu \\in \\mathbb{R}\\).\n\nThe lines \\(L_1\\) and \\(L_2\\) are perpendicular and intersect at a unique point.\n\nFind the value of \\(a\\) and the value of \\(b\\).",
+      "text": "6. [Maximum mark: 5]\n\nThe side lengths, x cm, of an equilateral triangle are increasing at a rate of 4 cm s $ ^{-1} $.\n\nFind the rate at which the area of the triangle, $ A \\, \\text{cm}^2 $, is increasing when the side lengths are $ 5\\sqrt{3} $ cm.",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -5742,7 +5742,7 @@
       "page_start": 10,
       "page_end": 11,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p1-tz1.pdf",
-      "text": "7. [Maximum mark: 5]\nConsider the complex number \\(z = 3^{i-1}\\).\n(a) Write the integer 3 in the form \\(e^a\\) where \\(a \\in \\mathbb{R}\\). [1]\n(b) Hence, giving your answers in the form \\(p \\cos(\\ln q)\\) where \\(p, q \\in \\mathbb{Q}^+\\), find\n(i) \\(\\operatorname{Re}(z)\\);\n(ii) \\(\\operatorname{Re}\\left(\\frac{1}{z}\\right)\\). [4]",
+      "text": "7. [Maximum mark: 6]\n\nConsider $ P(z) = 4m - mz + \\frac{36}{m}z^2 - z^3 $, where $ z \\in \\mathbb{C} $ and $ m \\in \\mathbb{R}^+ $.\n\nGiven that $z-3i$ is a factor of $P(z)$, find the roots of $P(z)=0$.",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -5751,10 +5751,8 @@
           "area": "Number and algebra"
         }
       ],
-      "status": "review",
-      "reasons": [
-        "topic words not in question"
-      ]
+      "status": "matched",
+      "reasons": []
     },
     {
       "id": "2023-05-p1-tz1-q8",
@@ -5768,7 +5766,7 @@
       "page_start": 11,
       "page_end": 13,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p1-tz1.pdf",
-      "text": "8. [Maximum mark: 7]\n\nSeema claims that \\(n > \\log_2 n\\) for \\(n \\in \\mathbb{Z}^+\\).\n\n(a) Show that \\(1 + \\log_2 n \\geq \\log_2 (n + 1)\\) for \\(n \\in \\mathbb{Z}^+\\).\n\n(b) Use mathematical induction and the result from part (a) to prove that Seema's claim is valid.\n\n[2]\n\n[5]",
+      "text": "8. [Maximum mark: 7]\n\nPart of the graph of a function, $f$, is shown in the following diagram. The graph of $y=f(x)$ has a $y$-intercept at $(0,3)$, an $x$-intercept at $(a,0)$ and a horizontal asymptote $y=-2$.\n\n![](/fig/2023-05-p1-tz1-q8-1.png)\n\nConsider the function $ g(x) = |f(|x|)| $.\n\n(a) On the following grid, sketch the graph of $ y = g(x) $, labelling any axis intercepts and giving the equation of the asymptote.\n\n![](/fig/2023-05-p1-tz1-q8-2.png)\n\n(b) Find the possible values of k such that $ (g(x))^{2}=k $ has exactly two solutions.",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -5794,7 +5792,7 @@
       "page_start": 13,
       "page_end": 14,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p1-tz1.pdf",
-      "text": "9. [Maximum mark: 8]\n\nConsider the homogeneous differential equation \\(\\frac{dy}{dx} = \\frac{x - y}{x + y}\\), where x > 0 and \\(y \\neq -x\\).\n\nIt is given that y = 0 when x = 2.\n\nBy using the substitution \\(y = vx\\), show that the solution of the differential equation is \\(x^2 - 2xy - y^2 = 4\\).",
+      "text": "9. [Maximum mark: 7]\n\nThe function $f$ is defined by $f(y) = \\sqrt{r^2 - y^2}$ for $-r \\leq y \\leq r$.\n\nThe region enclosed by the graph of $x=f(y)$ and the $y$-axis is rotated by $360^{\\circ}$ about the $y$-axis to form a solid sphere. The sphere is drilled through along the $y$-axis, creating a cylindrical hole. The resulting spherical ring has height, $h$.\n\nThis information is shown in the following diagrams.\n\ndiagram not to scale\n\n![](/fig/2023-05-p1-tz1-q9-1.png)\n\n![](/fig/2023-05-p1-tz1-q9-2.png)\n\nThe spherical ring has a volume of $ \\pi $ cubic units. Find the value of h.",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -5820,7 +5818,7 @@
       "page_start": 14,
       "page_end": 15,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p1-tz1.pdf",
-      "text": "10. [Maximum mark: 18]\nThe function $f$ is defined by $f(x) = 5(x + 1)(x + 3)$, where $x \\in \\mathbb{R}$.\n(a) Write $f(x)$ in the form $a(x - h)^2 + k$, where $a, h, k \\in \\mathbb{Z}$.\n[4]\n(b) Sketch the graph of $y = f(x)$, showing the values of any intercepts with the axes and the coordinates of the vertex.\n[4]\n(c) Solve the inequality $f(x) \\leq 40$.\n[4]\nThe function $g$ is defined by $g(x) = \\ln x$, where $x \\in \\mathbb{R}$, $x > 0$.\n(d) (i) Write down an expression for $(f \\circ g)(x)$.\n(ii) Solve the inequality $(f \\circ g)(x) \\leq 40$.\n[3]\n(e) Find the domain of $g \\circ f$.\n[3]",
+      "text": "10. [Maximum mark: 14]\n\nConsider the arithmetic sequence $ u_{1}, u_{2}, u_{3}, \\ldots $\n\nThe sum of the first $n$ terms of this sequence is given by $S_{n}=n^{2}+4n$.\n\n(a) (i) Find the sum of the first five terms.\n\n[4]\n\n(ii) Given that $ S_{6}=60 $, find $ u_{6} $.\n\n(b) Find $ u_{1} $\n\n[2]\n\n(c) Hence or otherwise, write an expression for $ u_{n} $ in terms of n.\n\n[3]\n\nConsider a geometric sequence, $ v_n $, where $ v_7 = u_1 $ and $ v_4 = u_6 $.\n\n(d) Find the possible values of the common ratio, r.\n\n[3]\n\n(e) Given that $ v_{99} < 0 $, find $ v_{5} $\n\n[2]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -5834,10 +5832,8 @@
           "area": "Number and algebra"
         }
       ],
-      "status": "review",
-      "reasons": [
-        "topic words not in question"
-      ]
+      "status": "matched",
+      "reasons": []
     },
     {
       "id": "2023-05-p1-tz1-q11",
@@ -5851,7 +5847,7 @@
       "page_start": 15,
       "page_end": 17,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p1-tz1.pdf",
-      "text": "11. [Maximum mark: 17]\n\nThe plane \\(\\Pi_1\\) has equation \\(x + 2y + z = 0\\) and the plane \\(\\Pi_2\\) has equation \\(x - y - 2z = 0\\).\n\nThe acute angle between the planes \\(\\Pi_1\\) and \\(\\Pi_2\\) is \\(\\theta\\).\n\n(a) Show that \\(\\theta = 60^\\circ\\).\n\nA third plane \\(\\Pi_3\\) is perpendicular to both \\(\\Pi_1\\) and \\(\\Pi_2\\).\n\nThe unique point of intersection of all three planes is the point R(5, -5, 5).\n\n(b) Find the Cartesian equation of \\(\\Pi_3\\).\n\nEach of the planes \\(\\Pi_1\\) and \\(\\Pi_2\\) contains a mirror.\n\nA ray of light is directed towards the mirror in \\(\\Pi_1\\). The ray of light forms an angle of \\(45^\\circ\\) with \\(\\Pi_1\\) and meets it at the point P.\n\nThe ray of light is then reflected towards the mirror in \\(\\Pi_2\\), and meets \\(\\Pi_2\\) at the point Q.\n\nThe points P and Q are contained in \\(\\Pi_3\\).\n\nIt is given that PR = 5 cm.\n\nThis information is shown on the following diagram.\n\n(c) (i) Using an appropriate compound angle identity, show that \\(\\sin 75^\\circ = \\frac{\\sqrt{2} + \\sqrt{6}}{4}\\).\n\n(ii) Find QR, giving your answer in the form \\(p(\\sqrt{q} - 1)\\) cm where \\(p, q \\in \\mathbb{Z}\\). [7]",
+      "text": "11. [Maximum mark: 19]\n\nConsider the following diagram, which shows the plan of part of a house.\n\ndiagram not to scale\n\n![](/fig/2023-05-p1-tz1-q11-1.png)\n\nA narrow passageway with width $ \\frac{3}{4} $ m is perpendicular to a room of width 6 m. There is a corner at point C. Points A and B are variable points on the base of the walls such that A, C and B lie on a straight line.\n\nLet L denote the length AB in metres.\n\nLet $ \\alpha $ be the angle that [AB] makes with the room wall, where $ 0 < \\alpha < \\frac{\\pi}{2} $.\n\n(a) Show that $ L = \\frac{3}{4} \\sec\\alpha + 6 \\csc\\alpha $.\n\n[2]\n\n(b) (i) Find $ \\frac{dL}{d\\alpha} $.\n\n(ii) When $ \\frac{dL}{d\\alpha}=0 $, show that $ \\alpha=\\arctan2 $.\n\n[5]\n\n(c) (i) Find $ \\frac{d^{2}L}{d\\alpha^{2}} $.\n\n(ii) When $ \\alpha = \\arctan 2 $, show that $ \\frac{\\mathrm{d}^2 L}{\\mathrm{d}\\alpha^2} = \\frac{45}{4} \\sqrt{5} $.\n\n[7]\n\n(d) (i) Hence, justify that L is a minimum when $ \\alpha = \\arctan 2 $.\n\n(ii) Determine this minimum value of L.\n\n[3]\n\nTwo people need to carry a pole of length 11.25 m from the passageway into the room. It must be carried horizontally.\n\n(e) Determine whether this is possible, giving a reason for your answer.\n\n[2]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -5887,7 +5883,7 @@
       "page_start": 17,
       "page_end": 17,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p1-tz1.pdf",
-      "text": "12. [Maximum mark: 19]\n\nConsider the family of functions \\(f_n(x) = \\cos^n x\\), where \\(x \\in \\mathbb{R}\\) and \\(n \\in \\mathbb{N}\\).\n\n(a) By writing \\(\\cos^n x\\) as \\(\\cos^{n-1} x \\cos x\\), show that\n\n\\(\\int \\cos^n x \\, dx = \\cos^{n-1} x \\sin x + (n-1) \\int \\cos^{n-2} x \\, dx - (n-1) \\int \\cos^n x \\, dx\\) for \\(n > 1\\).\n\n(b) Hence, show that \\(\\int f_n(x) \\, dx = \\frac{1}{n} \\cos^{n-1} x \\sin x + \\frac{n-1}{n} \\int f_{n-2}(x) \\, dx\\) for \\(n > 1\\).\n\n(c) Hence, find an expression for \\(\\int \\cos^4 x \\, dx\\), giving your answer in the form \\(p \\cos^3 x \\sin x + q \\cos x \\sin x + r x + c\\) where \\(p, q, r \\in \\mathbb{Q}^+\\).\n\nThe region R is enclosed by the graph of \\(y = \\cos^2 x\\) and the x-axis where \\(-\\frac{\\pi}{2} \\leq x \\leq \\frac{\\pi}{2}\\), as shown in the following diagram.\n\n![](/fig/2023-05-p1-tz1-q12-1.png)\n\nThe region R is rotated by \\(2\\pi\\) radians around the x-axis to form a solid of revolution.\n\n(d) Find the volume of the solid.\n\n(e) (i) Find the Maclaurin series of \\(f_n(x)\\) up to the term in \\(x^2\\).\n\n(ii) Hence or otherwise, find \\(\\lim_{x \\to 0} \\frac{f_n(x) - 1}{x^2}\\) in terms of \\(n\\).\n\n[4]",
+      "text": "12. [Maximum mark: 21]\n\nTwo lines, $ L_1 $ and $ L_2 $, intersect at point P. Point A(2t, 8, 3), where $ t > 0 $, lies on $ L_2 $. This is shown in the following diagram.\n\ndiagram not to scale\n\n![](/fig/2023-05-p1-tz1-q12-1.png)\n\nThe acute angle between the two lines is $ \\frac{\\pi}{3} $.\n\nThe direction vector of $ L_1 $ is $ \\begin{pmatrix} 1 \\\\ 1 \\\\ 0 \\end{pmatrix} $, and $ \\overrightarrow{\\mathrm{PA}} = \\begin{pmatrix} 2t \\\\ 0 \\\\ 3 + t \\end{pmatrix} $.\n\n(a) Show that $ 4t = \\sqrt{10t^{2} + 12t + 18} $.\n\n[4]\n\n(b) Find the value of t.\n\n[4]\n\n(c) Hence or otherwise, find the shortest distance from A to $ L_{1} $.\n\n[4]\n\nA plane, $ \\Pi $, contains $ L_{1} $ and $ L_{2} $.\n\n(d) Find a normal vector to $ \\Pi $.\n\n[2]\n\nThe base of a right cone lies in $\\Pi$, centred at A such that $L_1$ is a tangent to its base. The volume of the cone is $90\\pi\\sqrt{3}$ cubic units.\n\n(e) Find the two possible positions of the vertex of the cone.\n\n[7]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -5923,7 +5919,7 @@
       "page_start": 3,
       "page_end": 5,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p1-tz2.pdf",
-      "text": "1. [Maximum mark: 5]\nThe function $f$ is defined by $f(x)=\\frac{3x-2}{2x+1}$ for $x\\in\\mathbb{R}$, $x\\neq-\\frac{1}{2}$.\nThe following diagram shows part of the graph of $y=f(x)$.\n\n(a) Write down the value of $f(0)$.\n(b) Write down the equation of the horizontal asymptote.\nThe function $g$ is defined by $g(x)=-f(x)$ for $x\\geq0$.\n(c) Find the range of $g$.",
+      "text": "1. [Maximum mark: 6]\n\nThe following diagram shows a circle with centre O and radius 4 cm.\n\ndiagram not to scale\n\n![](/fig/2023-05-p1-tz2-q1-1.png)\n\nThe points P, Q and R lie on the circumference of the circle and $ \\mathrm{P}\\mathrm{OR}=\\theta $, where $ \\theta $ is measured in radians.\n\nThe length of arc PQR is 10cm.\n\n(a) Find the perimeter of the shaded sector.\n\n[2]\n\n(b) Find $ \\theta $.\n\n[2]\n\n(c) Find the area of the shaded sector.\n\n[2]\n\nage)\n\n\u2026\u2026",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -5932,10 +5928,8 @@
           "area": "Geometry and trigonometry"
         }
       ],
-      "status": "review",
-      "reasons": [
-        "topic words not in question"
-      ]
+      "status": "matched",
+      "reasons": []
     },
     {
       "id": "2023-05-p1-tz2-q2",
@@ -5949,7 +5943,7 @@
       "page_start": 5,
       "page_end": 7,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p1-tz2.pdf",
-      "text": "2. [Maximum mark: 5]\n\nThe line \\(L_1\\) is defined by the Cartesian equation \\(\\frac{x-1}{2} = \\frac{y+2}{3} = z\\).\n\n(a) Find a vector equation of \\(L_1\\). [2]\n\nA second line \\(L_2\\) is defined by the vector equation \\(r = \\begin{pmatrix} 0 \\\\ 4 \\\\ -8 \\end{pmatrix} + t \\begin{pmatrix} 1 \\\\ 0 \\\\ 2 \\end{pmatrix}\\), where \\(t \\in \\mathbb{R}\\).\n\n(b) Find the coordinates of the point where \\(L_1\\) and \\(L_2\\) intersect. [3]",
+      "text": "2. [Maximum mark: 5]\n\nA function $f$ is defined by $f(x)=1-\\frac{1}{x-2}$, where $x\\in\\mathbb{R}$, $x\\neq2$.\n\n(a) The graph of $y = f(x)$ has a vertical asymptote and a horizontal asymptote. Write down the equation of\n\n(i) the vertical asymptote;\n\n(ii) the horizontal asymptote.\n\n(b) Find the coordinates of the point where the graph of $ y = f(x) $ intersects\n\n[2]\n\n(i) the y-axis;\n\n(ii) the x-axis.\n\n(c) On the following set of axes, sketch the graph of $y=f(x)$, showing all the features found in parts (a) and (b).",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -5985,7 +5979,7 @@
       "page_start": 7,
       "page_end": 8,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p1-tz2.pdf",
-      "text": "3. [Maximum mark: 7]\nThe following diagram shows a non-right angled triangle ABC.\ndiagram not to scale\nAB = 5, BC = 6\\(\\sqrt{2}\\), A\\(\\hat{C}\\)B = \\(\\theta\\) and B\\(\\hat{A}\\)C = 2\\(\\theta\\), where \\(0 < \\theta < \\frac{\\pi}{2}\\).\n(a) Using the sine rule, show that \\(\\cos\\theta = \\frac{3\\sqrt{2}}{5}\\).\n(b) Hence, find \\(\\sin\\theta\\).\nPoint D is located on [AC] such that the area of triangle BCD is \\(2\\sqrt{14}\\).\n(c) Find DC.\n[2]",
+      "text": "3. [Maximum mark: 5]\n\nEvents $A$ and $B$ are such that $\\mathrm{P}(A)=0.4$, $\\mathrm{P}(A|B)=0.25$ and $\\mathrm{P}(A\\cup B)=0.55$.\n\nFind $\\mathrm{P}(B)$.",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6009,7 +6003,7 @@
       "page_start": 8,
       "page_end": 9,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p1-tz2.pdf",
-      "text": "4. [Maximum mark: 7]\nEvents A and B are such that \\(P(A \\cup B) = \\frac{5}{8}\\) and \\(P(A \\cap B') = \\frac{7}{24}\\).\n(a) Find P(B). [3]\n(b) Given that events A and B are independent, find P(\\(A' | B\\)). [4]",
+      "text": "4. [Maximum mark: 6]\n\nThe following diagram shows part of the graph of $ y=\\frac{x}{x^{2}+2} $ for $ x\\geq0 $.\n\n![](/fig/2023-05-p1-tz2-q4-1.png)\n\nThe shaded region R is bounded by the curve, the x-axis and the line x = c.\n\nFind the value of c.\n\nThe area of R is $ \\ln 3 $.",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6035,7 +6029,7 @@
       "page_start": 9,
       "page_end": 10,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p1-tz2.pdf",
-      "text": "5. [Maximum mark: 7]\n\nThe quadratic equation \\(x^2 + kx + 15 - k = 0\\) has two distinct real roots.\n\n(a) Find the possible values of \\(k\\).\n\n(b) Find the possible values of \\(k\\) in the case where the two distinct real roots are both positive or both negative.\n\n[5]\n\n[2]",
+      "text": "5. [Maximum mark: 7]\n\nThe functions $ f $ and $ g $ are defined for $ x \\in \\mathbb{R} $ by\n\n$$ f(x)=ax+b,where~a,~b\\in\\mathbb{Z} $$\n\n$$ g(x)=x^{2}+x+3. $$\n\nFind the two possible functions $ f $ such that $ (g \\circ f)(x) = 4x^2 - 14x + 15 $.",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6044,10 +6038,8 @@
           "area": "Functions"
         }
       ],
-      "status": "review",
-      "reasons": [
-        "topic words not in question"
-      ]
+      "status": "matched",
+      "reasons": []
     },
     {
       "id": "2023-05-p1-tz2-q6",
@@ -6061,7 +6053,7 @@
       "page_start": 10,
       "page_end": 11,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p1-tz2.pdf",
-      "text": "6. [Maximum mark: 7]\n\nConsider the function \\(f(x) = \\sqrt{x^2 \\ln x + 4 - x^2}\\), where \\(x \\in \\mathbb{R}\\), x > 0.\n\n(a) Show that the distance, l, between the origin and any point on the graph of f is given by \\(l = \\sqrt{x^2 \\ln x + 4}\\). [1]\n\n(b) Hence, find the x-coordinate of the point on the graph of f which is closest to the origin. [6]",
+      "text": "6. [Maximum mark: 5]\n\nA continuous random variable X has probability density function f defined by\n\n$$ f(x)=\\left\\{\\begin{aligned}&\\frac{1}{2a},&a\\leq x\\leq3a\\\\ &0,&otherwise\\end{aligned}\\right. $$\n\nwhere a is a positive real number.\n\n(a) State $ \\mathrm{E}(X) $ in terms of a.\n\n[1]\n\n(b) Use integration to find $ \\operatorname{Var}(X) $ in terms of a.\n\n[4]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6070,10 +6062,8 @@
           "area": "Statistics and probability"
         }
       ],
-      "status": "review",
-      "reasons": [
-        "topic words not in question"
-      ]
+      "status": "matched",
+      "reasons": []
     },
     {
       "id": "2023-05-p1-tz2-q7",
@@ -6087,7 +6077,7 @@
       "page_start": 11,
       "page_end": 12,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p1-tz2.pdf",
-      "text": "7. [Maximum mark: 5]\nIt is given that \\(x^4 + px^3 - 2x^2 + qx - 3\\) is exactly divisible by \\((x + 1)^2\\).\nFind the value of \\(p\\) and the value of \\(q\\), where \\(p, q \\in \\mathbb{R}\\).",
+      "text": "7. [Maximum mark: 7]\n\nUse mathematical induction to prove that $ \\sum_{r=1}^{n}\\frac{r}{(r+1)!}=1-\\frac{1}{(n+1)!} $ for all integers $ n\\geq1 $.",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6096,10 +6086,8 @@
           "area": "Number and algebra"
         }
       ],
-      "status": "review",
-      "reasons": [
-        "topic words not in question"
-      ]
+      "status": "matched",
+      "reasons": []
     },
     {
       "id": "2023-05-p1-tz2-q8",
@@ -6113,7 +6101,7 @@
       "page_start": 12,
       "page_end": 13,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p1-tz2.pdf",
-      "text": "8. [Maximum mark: 8]\n\nConsider the function \\(f(x) = \\arccos x\\) for \\(-1 \\leq x \\leq 1\\).\n\n(a) On the set of axes below sketch the graph of \\(y = f(x)\\).\n\nOn your sketch clearly indicate the y-intercept and coordinates of the end points.\n\n[2]",
+      "text": "8. [Maximum mark: 7]\n\nThe functions f and g are defined by\n\n$$ f(x)=\\cos x,\\ 0\\leq x\\leq\\frac{\\pi}{2} $$\n\n$$ g(x)=\\tan x,\\ 0\\leq x<\\frac{\\pi}{2}. $$\n\nThe curves $y=f(x)$ and $y=g(x)$ intersect at a point P whose $x$-coordinate is $k$, where $0<k<\\frac{\\pi}{2}$.\n\n(a) Show that $ \\cos^{2}k = \\sin k $.\n\n[1]\n\n(b) Hence, show that the tangent to the curve $y=f(x)$ at P and the tangent to the curve $y=g(x)$ at P intersect at right angles.\n\n[3]\n\n(c) Find the value of $ \\sin k $. Give your answer in the form $ \\frac{a + \\sqrt{b}}{c} $, where $ a, c \\in \\mathbb{Z} $ and $ b \\in \\mathbb{Z}^+ $.\n\n[3]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6149,7 +6137,7 @@
       "page_start": 13,
       "page_end": 14,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p1-tz2.pdf",
-      "text": "9. \\([Maximum mark: 6]\\)\nProve by contradiction that \\(\\frac{1}{x(1-x)} \\geq 4\\) for \\(x \\in \\mathbb{R}\\), \\(0 < x < 1\\).",
+      "text": "9. [Maximum mark: 9]\n\nThe following diagram shows parallelogram OABC with $ \\mathrm{OA} = \\boldsymbol{a} $, $ \\mathrm{OC} = \\boldsymbol{c} $ and $ |\\boldsymbol{c}| = 2|\\boldsymbol{a}| $, where $ |\\boldsymbol{a}| \\neq 0 $.\n\n![](/fig/2023-05-p1-tz2-q9-1.png)\n\nThe angle between OA and OC is $ \\theta $, where $ 0 < \\theta < \\pi $.\n\nPoint M is on [AB] such that $ \\overrightarrow{AM} = k\\overrightarrow{AB} $, where $ 0 \\leq k \\leq 1 $ and $ \\overrightarrow{OM} \\cdot \\overrightarrow{MC} = 0 $.\n\n(a) Express $ \\overrightarrow{OM} $ and $ \\overrightarrow{MC} $ in terms of a and c.\n\n[2]\n\n(b) Hence, use a vector method to show that $ \\left|\\boldsymbol{a}\\right|^2(1-2k)(2\\cos\\theta-(1-2k))=0 $.\n\n[3]\n\n(c) Find the range of values for $ \\theta $ such that there are two possible positions for M.\n\n[4]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6180,7 +6168,7 @@
       "page_start": 14,
       "page_end": 15,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p1-tz2.pdf",
-      "text": "10. [Maximum mark: 17]\n\nThe function $f$ is defined by $f(x) = 4^x$, where $x \\in \\mathbb{R}$.\n\n(a) Find $f^{-1}(8)$. Express your answer in the form $\\frac{p}{q}$ where $p, q \\in \\mathbb{Z}$.\n\nThe function $g$ is defined by $g(x) = 1 + \\log_2 x$, where $x \\in \\mathbb{R}^+$\n\n(b) (i) Find an expression for $g^{-1}(x)$.\n\n(ii) Describe a sequence of transformations that transforms the graph of $y = g^{-1}(x)$ to the graph of $y = f(x)$.\n\n(c) Show that $(f \\circ g)(x) = 4x^2$.\n\nThe function $h$ is defined by $h(x) = \\frac{4x^2}{2x+1}$, $x \\ne -\\frac{1}{2}$.\n\nThe following diagram shows part of the graph of $h$. Let $R$ be the region enclosed by the graph of $h$ and the $x$-axis, between the lines $x = 1$ and $x = 3$.\n\n(d) (i) Show that $2x - 1 + \\frac{1}{2x+1} = \\frac{4x^2}{2x+1}$.\n\n(ii) Hence or otherwise, find the area of $R$, giving your answer in the form $p + q \\ln r$, where $p, q, r \\in \\mathbb{Q}^+$",
+      "text": "10. [Maximum mark: 14]\n\nA circle with equation $ x^{2}+y^{2}=9 $ has centre $ (0,0) $ and radius 3.\n\nA triangle, PQR, is inscribed in the circle with its vertices at P $ (-3, 0) $, Q $ (x, y) $ and R $ (x, -y) $, where Q and R are variable points in the first and fourth quadrants respectively. This is shown in the following diagram.\n\n![](/fig/2023-05-p1-tz2-q10-1.png)\n\n(a) For point Q, show that $ y = \\sqrt{9 - x^{2}} $.\n\n[1]\n\n(b) Hence, find an expression for $A$, the area of triangle PQR, in terms of $x$.\n\n[3]\n\n(c) Show that $ \\frac{\\mathrm{d}A}{\\mathrm{d}x}=\\frac{9-3x-2x^{2}}{\\sqrt{9-x^{2}}} $.\n\n[4]\n\n(d) Hence or otherwise, find the y-coordinate of R such that A is a maximum.\n\n[6]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6221,7 +6209,7 @@
       "page_start": 15,
       "page_end": 16,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p1-tz2.pdf",
-      "text": "11. [Maximum mark: 17]\n(a) Find the first four terms in the binomial expansion of \\(\\sqrt{1+5x}\\) in ascending powers of x. [4]\nConsider the expression \\((1+px)(1+qx)^{-1}\\), where \\(p, q \\in \\mathbb{Q}\\).\n(b) Find the expansion of \\((1+px)(1+qx)^{-1}\\) in ascending powers of x, up to and including the term in \\(x^2\\). [3]\nThe expansions found in parts (a) and (b) are identical up to the first three terms, for a value of p and a value of q.\n(c) Show that \\(q = \\frac{5}{4}\\). [4]\n(d) The expression \\(\\frac{1+px}{1+qx}\\), with \\(p = \\frac{15}{4}\\) and \\(q = \\frac{5}{4}\\), can be used as an approximation for \\(\\sqrt{1+5x}\\) where \\(|x| < \\frac{1}{5}\\).\n(i) Hence, by finding a suitable value for x, find the approximation for \\(\\sqrt{1.2}\\) in the form \\(\\frac{m}{n}\\), where m, n \\(\\in \\mathbb{Z}\\).\n(ii) Now consider the approximation for \\(\\frac{\\sqrt{5}}{2}\\). Explain why the approximation for \\(\\frac{\\sqrt{5}}{2}\\) is not as accurate as the approximation for \\(\\sqrt{1.2}\\). [6]",
+      "text": "11. [Maximum mark: 22]\n\nConsider the complex number $ u = -1 + \\sqrt{3}i $.\n\n(a) By finding the modulus and argument of $u$, show that $u = 2e^{\\frac{i2\\pi}{3}}$\n\n[3]\n\n(b) (i) Find the smallest positive integer n such that $ u^{n} $ is a real number.\n\n(ii) Find the value of $ u^{n} $ when n takes the value found in part (b)(i).\n\n[5]\n\n(c) Consider the equation $ z^3 + 5z^2 + 10z + 12 = 0 $, where $ z \\in \\mathbb{C} $.\n\n(i) Given that u is a root of $ z^{3} + 5z^{2} + 10z + 12 = 0 $, find the other roots.\n\n(ii) By using a suitable transformation from $z$ to $w$, or otherwise, find the roots of the equation $1 + 5w + 10w^2 + 12w^3 = 0$, where $w \\in \\mathbb{C}$.\n\n[9]\n\n(d) Consider the equation $ z^2 = 2z^* $, where $ z \\in \\mathbb{C} $, $ z \\ne 0 $.\n\nBy expressing $ z $ in the form $ a + bi $, find the roots of the equation.\n\n[5]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6262,7 +6250,7 @@
       "page_start": 16,
       "page_end": 17,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p1-tz2.pdf",
-      "text": "12. [Maximum mark: 19]\n(a) Solve \\(z^2 = -1 - \\sqrt{3}i\\), giving your answers in the form \\(z = r(\\cos \\theta + i \\sin \\theta)\\). [4]\nLet \\(z_1\\) and \\(z_2\\) be the square roots of \\(-1 - \\sqrt{3}i\\), where \\(\\mathrm{Re}(z_1) > 0\\).\nLet \\(z_3\\) and \\(z_4\\) be the square roots of \\(-1 + \\sqrt{3}i\\), where \\(\\mathrm{Re}(z_3) > 0\\).\n(b) Expressing your answers in the form \\(z = a + bi\\), where \\(a, b \\in \\mathbb{R}\\),\n(i) find \\(z_1\\) and \\(z_2\\);\n(ii) deduce \\(z_3\\) and \\(z_4\\). [4]\nThe four roots \\(z_1, z_2, z_3\\) and \\(z_4\\) are represented by the points A, B, C and D respectively on an Argand diagram.\n(c) (i) Plot the points A, B, C and D on an Argand diagram.\n(ii) Find the area of the polygon formed by these four points. [4]\nThe four roots \\(z_1, z_2, z_3\\) and \\(z_4\\) satisfy the equation \\(z^4 + 2z^2 + 4 = 0\\).\nThe four roots \\(\\frac{1}{z_1}, \\frac{1}{z_2}, \\frac{1}{z_3}\\) and \\(\\frac{1}{z_4}\\) satisfy the equation \\(pw^4 + qw^2 + r = 0\\) where p, q, \\(r \\in \\mathbb{Z}\\).\n(d) Find the value of p, q and r. [3]\nThe four roots \\(\\frac{1}{z_1}, \\frac{1}{z_2}, \\frac{1}{z_3}\\) and \\(\\frac{1}{z_4}\\) are represented by the points E, F, G and H respectively on an Argand diagram.\n(e) (i) Find \\(\\frac{1}{z_1}\\) in the form \\(z = a + bi\\), where \\(a, b \\in \\mathbb{R}\\).\n(ii) Hence, deduce the area of the polygon formed by these four points. [4]",
+      "text": "12. [Maximum mark: 17]\n\n(a) By using an appropriate substitution, show that $ \\int\\cos\\sqrt{x}\\,\\mathrm{d}x = 2\\sqrt{x}\\sin\\sqrt{x} + 2\\cos\\sqrt{x} + C $.\n\nThe following diagram shows part of the curve $ y = \\cos\\sqrt{x} $ for $ x \\geq 0 $.\n\n[6]\n\n![](/fig/2023-05-p1-tz2-q12-1.png)\n\nThe curve intersects the x-axis at $ x_{1} $, $ x_{2} $, $ x_{3} $, $ x_{4} $, $ \\ldots $.\n\nThe $ n $th $ x $-intercept of the curve, $ x_n $, is given by $ x_n = \\frac{(2n-1)^2 \\pi^2}{4} $, where $ n \\in \\mathbb{Z}^+ $.\n\n(b) Write down a similar expression for $ x_{n+1} $.\n\n[1]\n\nThe regions bounded by the curve and the x-axis are denoted by $ R_{1} $, $ R_{2} $, $ R_{3} $, ..., as shown on the above diagram.\n\n(c) Calculate the area of region $ R_{n} $\n\nGive your answer in the form $ kn\\pi $, where $ k\\in\\mathbb{Z}^{+} $.\n\n[7]\n\n(d) Hence, show that the areas of the regions bounded by the curve and the x-axis, $ R_{1} $, $ R_{2} $, $ R_{3} $, ..., form an arithmetic sequence.\n\n[3]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6281,10 +6269,8 @@
           "area": "Calculus"
         }
       ],
-      "status": "review",
-      "reasons": [
-        "topic words not in question"
-      ]
+      "status": "matched",
+      "reasons": []
     },
     {
       "id": "2023-05-p2-tz1-q1",
@@ -6298,7 +6284,7 @@
       "page_start": 4,
       "page_end": 5,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p2-tz1.pdf",
-      "text": "1. [Maximum mark: 6]\nThe points A and B lie on a circle, with centre O and radius 19.5 cm, such that BOA = 210\u00b0.\nA piece of paper is cut into the shape of the sector BOA.\nA hollow cone with no base is constructed from the sector by joining the points A and B.\nThe sector forms the curved surface of the cone.\nThis is shown in the following diagrams.\n\nFind\n(a) the area of the sector BOA;\n(b) the radius of the cone.\n\n[3]",
+      "text": "1. [Maximum mark: 5]\n\nThe cities Lucknow (L), Jaipur (J) and Delhi (D) are represented in the following diagram. Lucknow lies 500 km directly east of Jaipur, and JLD = $ 25^{\\circ} $.\n\ndiagram not to scale\n\n![](/fig/2023-05-p2-tz1-q1-1.png)\n\nThe bearing of D from J is $ 034^{\\circ} $.\n\n(a) Find J $ \\hat{D} $L.\n\n[2]\n\n(b) Find the distance between Lucknow and Delhi.\n\n[3]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6329,7 +6315,7 @@
       "page_start": 5,
       "page_end": 6,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p2-tz1.pdf",
-      "text": "2. [Maximum mark: 4]\n\nConsider the function \\(f(x) = a \\tan(2x) + b\\), where \\(x \\neq \\frac{(2n+1)\\pi}{4}\\), \\(n \\in \\mathbb{Z}\\) and \\(a, b \\in \\mathbb{R}\\).\n\n(a) Write down the period of \\(f\\).\n\nThe graph of \\(y = f(x)\\) passes through the points \\(\\left(\\frac{\\pi}{12}, 5\\right)\\) and \\(\\left(\\frac{\\pi}{3}, 7\\right)\\).\n\n(b) Find the value of \\(a\\) and the value of \\(b\\).\n\n[3]",
+      "text": "2. [Maximum mark: 5]\n\nThe functions $f$ and $g$ are defined by $f(x)=2x-x^{3}$ and $g(x)=\\tan x$.\n\n(a) Find $ (f \\circ g)(x) $.\n\n[2]\n\n(b) On the following grid, sketch the graph of $ y = (f \\circ g)(x) $ for $ -1 \\leq x \\leq 1 $. Write down and clearly label the coordinates of any local maximum or minimum points.\n\n[3]\n\n![](/fig/2023-05-p2-tz1-q2-1.png)",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6360,7 +6346,7 @@
       "page_start": 6,
       "page_end": 7,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p2-tz1.pdf",
-      "text": "3. [Maximum mark: 6]\n\nA population, \\(P\\), has a rate of change modelled by \\(\\frac{\\mathrm{d}P}{\\mathrm{d}t} = -104000 \\mathrm{e}^{-0.0145 t}\\), where \\(t\\) is the time measured in years since the start of 2022.\n\nAt the start of 2022, the population was \\(6.78 \\times 10^6\\).\n\nBased on this model, find the predicted population at the start of 2026.",
+      "text": "3. [Maximum mark: 7]\n\nThe total number of children, y, visiting a park depends on the highest temperature, $T$, in degrees Celsius ($^\\circ$C). A park official predicts the total number of children visiting his park on any given day using the model $y = -0.6T^2 + 23T + 110$, where $10 \\leq T \\leq 35$.\n\n(a) Use this model to estimate the number of children in the park on a day when the highest temperature is $ 25^{\\circ} $C.\n\nAn ice cream vendor investigates the relationship between the total number of children visiting the park and the number of ice creams sold, x. The following table shows the data collected on five different days.\n\n[2]\n\n| Total number of children (y) | 81 | 175 | 202 | 346 | 360 |\n| --- | --- | --- | --- | --- | --- |\n| Ice creams sold (x) | 15 | 27 | 23 | 35 | 46 |\n\n(b) Find an appropriate regression equation that will allow the vendor to predict the number of ice creams sold on a day when there are y children in the park.\n\n[3]\n\n(c) Hence, use your regression equation to predict the number of ice creams that the vendor sells on a day when the highest temperature is $ 25^{\\circ} $C.\n\n[2]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6396,7 +6382,7 @@
       "page_start": 7,
       "page_end": 8,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p2-tz1.pdf",
-      "text": "4. [Maximum mark: 8]\n\nIn a study, measurements for arm span, \\(A_{cm}\\), and foot length, \\(F_{cm}\\), are taken from a large group of adults.\n\nFor this group, the regression line of F on A is found to be \\(F = 0.335A - 32.6\\), and the regression line of A on F is found to be \\(A = 2.89F + 99.3\\). Each regression line passes through the mean point.\n\n(a) By using an appropriate regression line, find an estimate of the arm span for an adult with a foot length of 19.8 cm.\n\n(b) For this group of adults, find the mean arm span and the mean foot length.\n\n[3]\n\nThe heights, \\(H_{cm}\\), of adults in the group can be modelled by a normal distribution with mean 163 cm and standard deviation \\(\\sigma_{cm}\\).\n\nIt is found that 88% of the group have a height between 153 cm and 173 cm.\n\n(c) Find the value of \\(\\sigma\\).\n\n[3]",
+      "text": "4. [Maximum mark: 5]\n\nA company manufactures metal tubes for bicycle frames. The diameters of the tubes, $ D_{mm} $, are normally distributed with mean 32 and standard deviation $ \\sigma $. The interquartile range of the diameters is 0.28.\n\nFind the value of $ \\sigma $.",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6420,7 +6406,7 @@
       "page_start": 8,
       "page_end": 9,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p2-tz1.pdf",
-      "text": "5. [Maximum mark: 6]\nConsider the function \\(h(x) = 15\\cos\\left(\\frac{\\pi x}{50}\\right) + 15\\), where \\(0 \\leq x \\leq 50\\).\nThe tangent, \\(T_{k}\\), to the curve \\(y = h(x)\\) at the point \\((k, h(k))\\) is shown on the following diagram.\n(a) Find the gradient of \\(T_{k}\\) in terms of k.\nConsider the case where the angle between \\(T_{k}\\) and the x-axis is \\(\\frac{\\pi}{8}\\) radians.\n(b) Find the possible values of k.\n[3]",
+      "text": "5. [Maximum mark: 7]\n\nThe coefficient of $ x^{6} $ in the expansion of $ (ax^{3} + b)^{8} $ is 448.\n\nThe coefficient of $ x^{6} $ in the expansion of $ (ax^{3}+b)^{10} $ is 2880.\n\nFind the value of a and the value of b, where a, b > 0.\n\n| |\n| --- |",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6446,7 +6432,7 @@
       "page_start": 9,
       "page_end": 10,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p2-tz1.pdf",
-      "text": "6. [Maximum mark: 7]\n\nConsider the function \\(f(x) = 4\\cot x + \\sin x\\), where \\(0 < x < \\pi\\).\n\n(a) (i) Write \\(f(x)\\) in terms of \\(\\sin x\\) and \\(\\cos x\\).\n\n(ii) Hence or otherwise, sketch the graph of \\(y = f(x)\\), showing the value of the x-intercept.\n\n(b) Find the value of \\(f^{-1}(2)\\).\n\nIt is given that \\(\\sec\\alpha = 1.5\\), where \\(0 < \\alpha < \\pi\\).\n\n(c) Find the value of \\(f(\\alpha)\\).\n\n[3]",
+      "text": "6. [Maximum mark: 7]\n\nConsider $ z = \\cos \\frac{11\\pi}{18} + i \\sin \\frac{11\\pi}{18} $.\n\n(a) Find the smallest value of $ n $ that satisfies $ z^n = -i $, where $ n \\in \\mathbb{Z}^+ $.\n\n[4]\n\n(b) Hence or otherwise, describe a single geometric transformation applied to $z$ on the Argand diagram that results in $z^{10}$.\n\n[3]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6477,7 +6463,7 @@
       "page_start": 10,
       "page_end": 11,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p2-tz1.pdf",
-      "text": "7. [Maximum mark: 5]\n\nAt 09:00 a helicopter is located at a point (10, 3, 0.5) relative to a point O on horizontal ground. The x-direction is due east, the y-direction is due north and the z-direction is vertically upwards.\n\nAll distances are measured in kilometres.\n\nThe helicopter is flying at a constant height.\n\nThe helicopter\u2019s position relative to the point O is given by \\( r = \\begin{pmatrix} 10 \\\\ 3 \\\\ 0.5 \\end{pmatrix} + 4t \\begin{pmatrix} 10 \\\\ -25 \\\\ 0 \\end{pmatrix} \\), where \\( t \\) represents the time in hours since 09:00.\n\n(a) Find the speed of the helicopter.\n\nAt 10:00 the helicopter begins to descend.\n\nDuring descent the helicopter\u2019s vertical height decreases at a constant rate of \\( 16kmh^{-1} \\) and its horizontal velocity remains unchanged.\n\nThe angle of descent, \\( \\beta \\), is defined as the angle between the helicopter\u2019s direction of travel and the horizontal.\n\n(b) Find \\( \\beta \\), giving your answer in degrees.\n\n[3]",
+      "text": "7. [Maximum mark: 6]\n\nA new test has been developed to identify whether a particular gene, $ G $, is present in a population of parrots. The test returns a correct positive result 95% of the time for parrots with the gene, and a false positive result 2% of the time for parrots without the gene.\n\nThe proportion of the population with the gene is p.\n\n(a) Complete the tree diagram below.\n\n![](/fig/2023-05-p2-tz1-q7-1.png)\n\n(b) A random sample of the population was tested. It was found that 150 tests returned a positive result. Out of the 150 parrots with a positive test result, 18 did not actually have the gene. Find an estimate for p.",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6508,7 +6494,7 @@
       "page_start": 11,
       "page_end": 12,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p2-tz1.pdf",
-      "text": "8. [Maximum mark: 7]\nConsider the functions \\(f, g\\) and \\(h\\) defined as follows for \\(t \\in \\mathbb{R}\\).\n\\[\nf(t) = \\sin(2t + 1)\n\\]\n\\(g(t) = \\sin(2t + 3)\n\\]\n\\(h(t) = f(t) + g(t)\\)\n(a) Show that \\(h(t) = \\text{Im}(\\mathrm{e}^{2\\pi i}(\\mathrm{e}^i + \\mathrm{e}^{3i}))\\). [2]\n(b) Write \\(\\mathrm{e}^i + \\mathrm{e}^{3i}\\) in the form \\(r\\mathrm{e}^{i\\theta}\\), where \\(r > 0\\) and \\(-\\pi 0\\) and \\(0 < q < 2\\pi\\). [3]",
+      "text": "8. [Maximum mark: 7]\n\nThe angle between a line and a plane is $ \\alpha $, where $ \\alpha \\in \\mathbb{R} $, $ 0 < \\alpha < \\frac{\\pi}{2} $.\n\nThe equation of the line is $ \\frac{x-1}{3} = \\frac{y+2}{2} = 5 - z $, and the equation of the plane is $ 4x + (\\cos \\alpha)y + (\\sin \\alpha)z = 1 $.\n\nFind the value of $ \\alpha $.",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6534,7 +6520,7 @@
       "page_start": 12,
       "page_end": 13,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p2-tz1.pdf",
-      "text": "9. [Maximum mark: 6]\n\nConsider the differential equation \\(\\frac{d\\mathbf{y}}{dx} = \\frac{2x}{x^2 + y}\\).\n\nThe solution curve passes through the point \\((1, 0)\\).\n\n(a) Use Euler's method with a step value of 0.25 to estimate the value of y when x = 2.\n\n[3]\n\nPart of the solution curve is shown in the following diagram.\n\n(b) (i) Determine whether your answer to part (a) is an overestimate or an underestimate, justifying your answer.\n\n(ii) Justify why the use of Euler's method starting at \\((1, 0)\\) does not lead to an estimate of the negative value of y when x = 2.\n\n[3]",
+      "text": "9. [Maximum mark: 6]\n\nProve by contradiction that $ p^2 - 8q - 11 \\neq 0 $, for any $ p, q \\in \\mathbb{Z} $.",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6560,7 +6546,7 @@
       "page_start": 13,
       "page_end": 15,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p2-tz1.pdf",
-      "text": "10. [Maximum mark: 16]\n\nRectangular playing cards are stacked in the shape of a pyramid with n rows, where \\(n \\geq 1\\).\n\nSome cards are placed horizontally and some cards are stacked at an angle of \\(60^\\circ\\) to the horizontal.\n\nThe following diagrams represent pyramid stacks for n = 1, n = 2 and n = 3.\n\nLet \\(t_n\\) represent the number of cards used to create a pyramid stack with n rows.\n\n(a) Write down \\(t_3\\).\n\n(b) Find \\(t_4\\).\n\n(c) Show that \\(t_n = \\frac{n(3n+1)}{2}\\).\n\nThere are 52 cards in a full pack of playing cards.\n\n(d) A complete pyramid stack is created using playing cards taken from 14 full packs.\n\nFind the maximum number of rows in this stack.\n\n(e) A complete pyramid stack is created using playing cards taken from full packs with no cards left over. Find the minimum number of rows in this stack.\n\nThe long edge of each playing card measures 88 mm as illustrated in the following diagram.\n\n(f) Find the minimum number of cards needed to create a complete pyramid stack with a vertical height of more than 2 metres. The thickness of the cards may be ignored. [5]",
+      "text": "10. [Maximum mark: 15]\n\nAn engineer is designing a gutter to catch rainwater from the roof of a house.\n\nThe gutter will be open at the top and is made by folding a piece of sheet metal 45 cm wide and 600 cm long.\n\ndiagram not to scale\n\n![](/fig/2023-05-p2-tz1-q10-1.png)\n\nThe cross-section of the gutter is shaded in the following diagram.\n\ndiagram not to scale\n\n![](/fig/2023-05-p2-tz1-q10-2.png)\n\nThe height of both vertical sides is 10 cm. The width of the gutter is w cm.\n\nArc AB lies on the circumference of a circle with centre O and radius 12 cm.\n\nLet $ A\\hat{O}B = \\theta $ radians, where $ 0 < \\theta < \\pi $.\n\n(a) Show that $ \\theta = 2.08 $, correct to three significant figures.\n\n[3]\n\n(b) Find the area of the cross-section of the gutter.\n\nIn a storm, the total volume, in cm\u00b3, of rainwater that enters the gutter can be modelled by a function $ R(t) $, where t is the time, in seconds, since the start of the storm.\n\nIt was determined that the rate at which rainwater entered the gutter could be modelled by\n\n$$ R^{\\prime}(t)=50\\cos\\left(\\frac{2\\pi t}{5}\\right)+3000\\ ,t\\geq0. $$\n\nDuring any 60-second period, if the volume of rainwater entering the gutter is greater than the volume of the gutter, it will overflow.\n\n(c) Determine whether the gutter overflowed in this storm. Justify your answer.",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6591,7 +6577,7 @@
       "page_start": 15,
       "page_end": 16,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p2-tz1.pdf",
-      "text": "11. [Maximum mark: 19]\n\nIn a marathon race, the random variable \\(T\\) represents the time, in hours, taken for a runner to complete the race. No runner completes the race in less than 2.25 hours, and no runner completes it in more than 7.5 hours.\n\nThe probability density function for \\(T\\) is modelled by \\(f\\), defined by\n\n\\[ f(t) = \\begin{cases} \\dfrac{4}{21} \\left(1 - \\cos\\left(\\dfrac{4\\pi}{9}(t - 2.25)\\right)\\right), & 2.25 \\leq t 0.\n\nConsider the random variable P which represents the score of a runner. It is given that \\(E(P) = 100\\) and the maximum possible score is 150.\n\n(e) Use \\(E(T) = 4.723\\) to determine the value of a and the value of b, giving your answers to the nearest integer. [5]\n\n(f) Given also that \\(\\text{Var}(T) = 0.906\\), find \\(\\text{Var}(P)\\). [2]",
+      "text": "11. [Maximum mark: 19]\n\nA continuous random variable, X, has a probability density function defined by\n\n$$ f(x)=\\left\\{\\begin{aligned}\\frac{6}{\\pi\\sqrt{16-x^{2}}},\\quad&0\\leq x\\leq2\\\\ 0,\\quad&otherwise.\\end{aligned}\\right. $$\n\n(a) Find the exact value of E(X).\n\n[5]\n\n(b) Find P(X<0.5).\n\nA laboratory trial may require up to 2 millilitres of reagent. The amount of reagent used has been found to have a probability distribution that can be modelled by $ f(x) $, where X is the amount of reagent in millilitres.\n\nEach laboratory trial is independent. A trial is considered a success when X < 0.5.\n\n[2]\n\n(c) Determine the least number of trials required to be 99% sure of at least one success.\n\nTen trials were conducted.\n\n(d) Find the probability that exactly three trials were successful.\n\n[3]\n\n[2]\n\n(e) Write down the number of ways these three successful trials could have occurred consecutively.\n\nNow consider n trials where it is given that exactly three successes have occurred.\n\n(f) (i) Write down an expression for the number of ways these three successful trials could have occurred consecutively.\n\n[1]\n\n(ii) Find the greatest value of n such that the probability of three consecutive successful trials is more than 0.05.\n\n[6]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6627,7 +6613,7 @@
       "page_start": 16,
       "page_end": 17,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p2-tz1.pdf",
-      "text": "12. [Maximum mark: 20]\n\nConsider the family of functions \\(f_n\\) defined by \\(f_n(x) = \\sum_{r=0}^{n} (-2x^2)^r\\), where \\(x \\in \\mathbb{R}\\) and \\(n \\in \\mathbb{N}\\).\n\n(a) Show that \\(f_n\\) is an even function for all values of \\(n\\).\n\n(b) (i) Show that \\(f_3(x) = 1 - 2x^2 + 4x^4 - 8x^6\\).\n\n(ii) Write down a similar expression for \\(f_4(x)\\) in ascending powers of \\(x\\).\n\nConsider the function \\(f(x) = \\lim_{n \\to \\infty} f_n(x)\\) defined over the domain \\(-k 0\\).\n\nThe largest possible value of \\(k\\) is \\(K\\).\n\n(c) (i) Find the value of \\(K\\), giving your answer in exact form.\n\n(ii) Express \\(f(x)\\) as a rational function in the form \\(\\frac{1}{a + bx^2}\\), where \\(a\\) and \\(b\\) are constants to be determined.\n\nThe function \\(g\\) is defined as \\(g(x) = f(x)\\) for \\(0 \\leq x < K\\).\n\n(d) (i) Justify that \\(g^{-1}\\) exists.\n\n(ii) Find \\(g^{-1}(x)\\), giving its domain.\n\nThe region \\(R\\) is completely enclosed by the curves \\(y = g(x)\\), \\(y = g^{-1}(x)\\) and the \\(x\\)- and \\(y\\)-axes, as shown on the following diagram.\n\n(e) Find the area of \\(R\\).\n\n[4]",
+      "text": "12. [Maximum mark: 21]\n\nConsider the differential equation $ \\frac{dy}{dx} = \\frac{x^2 y - y}{x^2 + 1} $, where y > 0 and y = 3 when x = 0.\n\n(a) Use Euler's method, with a step length of 0.03, to find an approximate value for y when x = 0.15. Give your answer correct to six significant figures.\n\n[4]\n\n(b) (i) Write down the value of $ \\frac{\\mathrm{d}y}{\\mathrm{d}x} $ when x = 0.\n\n(ii) Show that $ \\frac{d^{2}y}{dx^{2}}=3 $ when x=0.\n\n[5]\n\n(c) (i) Given that $ \\frac{d^{3}y}{dx^{3}}=9 $ when x=0, find the first four terms of the Maclaurin series for y.\n\n(ii) Use the Maclaurin series to find an approximate value for y when x = 0.15. Give your answer correct to six significant figures.\n\n[3]\n\n(d) (i) It is given that $ \\frac{x^2 - 1}{x^2 + 1} \\equiv 1 - \\frac{2}{x^2 + 1} $.\n\nSolve the differential equation $ \\frac{dy}{dx} = \\frac{x^2 y - y}{x^2 + 1} $, where $ y > 0 $ and $ y = 3 $ when $ x = 0 $.\n\nGive your answer in the form $ y = f(x) $.\n\n(ii) Hence, find the value of y when x = 0.15. Give your answer correct to six significant figures.\n\n[7]\n\n(e) For $ 0 \\leq x < 1 $, explain why the approximate value for y obtained using Euler's method will always be less than the actual value for y.\n\n[2]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6668,7 +6654,7 @@
       "page_start": 3,
       "page_end": 4,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p2-tz2.pdf",
-      "text": "1. [Maximum mark: 4]\nThe following table shows the number of hours of play time, x, and sleep time, y, for a group of six children, over the period of one week.\n\n| Play time (x) | 11 | 13 | 14 | 17 | 22 | 24 |\n|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|------------------|\n| Sleep time (y) | 62 | 65 | 68 | 75 | 84 | 87 |\n\nThe regression line of y on x for this data can be written in the form \\(y = ax + b\\).\n\n(a) Find the value of a and the value of b.\n[2]\n\n(b) Use the equation of the regression line to estimate the sleep time of a child whose weekly play time is 20 hours.\n[2]",
+      "text": "1. [Maximum mark: 4]\n\nA botanist is conducting an experiment which studies the growth of plants.\n\nThe heights of the plants are measured on seven different days.\n\nThe following table shows the number of days, d, that the experiment has been running and the average height, h cm, of the plants on each of those days.\n\n| Number of days (d) | 2 | 5 | 13 | 24 | 33 | 37 | 42 |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| Average height (h) | 10 | 16 | 30 | 59 | 76 | 79 | 82 |\n\nThe value of Pearson's product-moment correlation coefficient, r, for this data is 0.991, correct to three significant figures.\n\n(a) The regression line of h on d for this data can be written in the form $ h = ad + b $.\n\nFind the value of a and the value of b.\n\n(b) Use your regression line to estimate the average height of the plants when the experiment has been running for 20 days.\n\n[2]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6697,7 +6683,7 @@
       "page_start": 4,
       "page_end": 5,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p2-tz2.pdf",
-      "text": "2. [Maximum mark: 6]\nThe following diagram shows a square-based right-pyramid with vertex V(1, 7, 0).\nPoint X(-3, 4, 2) is the centre of the base ABCD.\ndiagram not to scale\n(a) Find VX.\nThe square base has side length 5 cm.\n(b) Find AC.\n(c) Find the size of the angle between the edge [VC] and the base of the pyramid.\n[2]",
+      "text": "2. [Maximum mark: 6]\n\nThe following diagram shows two buildings situated on level ground.\n\nFrom point P on the ground directly between the two buildings, the angle of elevation to the top of each building is $ \\theta $.\n\ndiagram not to scale\n\n![](/fig/2023-05-p2-tz2-q2-1.png)\n\nThe distance from point P to point A at the top of the taller building is 150 metres.\n\nThe distance from point P to point B at the top of the shorter building is 90 metres.\n\nThe distance between A and B is 154 metres.\n\nFind the height, h, of the taller building.",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6723,7 +6709,7 @@
       "page_start": 5,
       "page_end": 6,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p2-tz2.pdf",
-      "text": "3. [Maximum mark: 6]\nThe derivative of a function \\(f\\) is given by \\(f'(x) = 4 + 2x - 3e^x\\), where \\(x \\in \\mathbb{R}\\).\n(a) Find the values of \\(x\\) for which \\(f\\) is decreasing.\n[3]\n(b) Find the values of \\(x\\) for which the graph of \\(f\\) is concave-up.\n[3]",
+      "text": "3. [Maximum mark: 8]\n\nThe weights, W grams, of bags of rice packaged in a factory can be modelled by a normal distribution with mean 204 grams and standard deviation 5 grams.\n\n(a) A bag of rice is selected at random.\n\nFind the probability that it weighs more than 210 grams. [2]\n\n(b) Find the probability that a randomly selected bag of rice weighs less than w grams. [2]\n\nAccording to this model, 80% of the bags of rice weigh between w grams and 210 grams.\n\n(c) Find the value of w. [2]\n\n(d) Ten bags of rice are selected at random.\n\nFind the probability that exactly one of the bags weighs less than w grams. [2]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6742,10 +6728,8 @@
           "area": "Statistics and probability"
         }
       ],
-      "status": "review",
-      "reasons": [
-        "topic words not in question"
-      ]
+      "status": "matched",
+      "reasons": []
     },
     {
       "id": "2023-05-p2-tz2-q4",
@@ -6759,7 +6743,7 @@
       "page_start": 6,
       "page_end": 7,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p2-tz2.pdf",
-      "text": "4. [Maximum mark: 6]\n\nAlex purchases a car for \u20ac30000. The value of the car depreciates at 15% per annum.\n\n(a) Find the value of the car after ten years. Give your answer to two decimal places. [2]\n\nAlex invests \u20ac50000 in a bank account that pays a compound interest rate of 1.5% per month.\n\nInflation over the same time period was 0.8% per month.\n\n(b) Find the number of months required for the real value of the investment to first exceed \u20ac55000. [4]",
+      "text": "4. [Maximum mark: 7]\n\nThe expansion of $ (x + h)^8 $, where $ h \\in \\mathbb{Q}^+ $, can be written as $ x^8 + ax^7 + bx^6 + cx^5 + dx^4 + \\ldots + h^8 $, where $ a, b, c, d, \\ldots \\in \\mathbb{R} $.\n\nGiven that the coefficients, a, b and d, are the first three terms of a geometric sequence, find the value of h.",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6785,7 +6769,7 @@
       "page_start": 7,
       "page_end": 8,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p2-tz2.pdf",
-      "text": "5. [Maximum mark: 7]\n\nA particle P moves in a straight line. The velocity \\(v \\, \\text{m/s}^{-1}\\) of P, at time t seconds is given by \\(v(t) = e^{-\\sin t} \\cos(2t)\\), for \\(0 \\leq t \\leq 5\\).\n\n(a) Find the maximum speed of P.\n[2]\n(b) Find the total distance travelled by P.\n[2]\n(c) Find the acceleration when P changes direction for the second time.\n[3]",
+      "text": "5. [Maximum mark: 6]\n\nA particle moves in a straight line such that its velocity, $ \\nu m s^{-1} $, at time $ t $ seconds is given by $ \\nu(t) = 4e^{-\\frac{t}{3}} \\cos\\left(\\frac{t}{2} - \\frac{\\pi}{4}\\right) $, for $ 0 \\leq t \\leq 4\\pi $. The graph of $ \\nu $ is shown in the following diagram.\n\n![](/fig/2023-05-p2-tz2-q5-1.png)\n\nLet $ t_{1} $ be the first time when the particle's acceleration is zero.\n\n(a) Find the value of $ t_{1} $\n\n[2]\n\n_et $ t_{2} $ be the second time when the particle is instantaneously at rest.\n\n(b) Find the value of $ t_{2} $\n\n[2]\n\n(c) Find the distance travelled by the particle between $ t = t_{1} $ and $ t = t_{2} $.\n\n[2]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6811,7 +6795,7 @@
       "page_start": 8,
       "page_end": 9,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p2-tz2.pdf",
-      "text": "6. [Maximum mark: 6]\n\nThe following diagram shows a circle with centre O and radius \\(r \\, \\text{cm}\\). Points A and B lie on the circle and AOB = \\(\\theta\\) radians.\n\nSector OAB is divided into two regions, a shaded segment P and a triangle Q.\n\nThe area of the shaded segment P is \\(12.8 \\, \\text{cm}^2\\).\n\nThe areas of P and Q are in the ratio 3:5.\n\nFind the value of \\(r\\).",
+      "text": "6. [Maximum mark: 8]\n\nConsider the two planes\n\n$$ \\Pi_{1}:2x-y+2z=6 $$\n\n$$ \\Pi_{2}:4x+3y-z=2 $$\n\nLet $L$ be the line of intersection of $\\Pi_1$ and $\\Pi_2$.\n\n(a) Verify that a vector equation of $L$ is $r = \\begin{pmatrix} 0 \\\\ 2 \\\\ 4 \\end{pmatrix} + \\lambda \\begin{pmatrix} 1 \\\\ -2 \\\\ -2 \\end{pmatrix}$, where $\\lambda \\in \\mathbb{R}$.\n\n[3]\n\n(b) Find the coordinates of the point P on L that is nearest to the origin.\n\n[5]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6825,10 +6809,8 @@
           "area": "Geometry and trigonometry"
         }
       ],
-      "status": "review",
-      "reasons": [
-        "topic words not in question"
-      ]
+      "status": "matched",
+      "reasons": []
     },
     {
       "id": "2023-05-p2-tz2-q7",
@@ -6842,7 +6824,7 @@
       "page_start": 9,
       "page_end": 10,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p2-tz2.pdf",
-      "text": "7. [Maximum mark: 7]\n\nA geometric sequence has first term 80 and fourth term 0.74088.\n\n(a) Find the second term.\n[3]\n\nThe first two terms of this geometric sequence are also the first term and eleventh term respectively, of an arithmetic sequence.\n\nLet \\(S_n\\) denote the sum of the first \\(n\\) terms of the arithmetic sequence.\n\n(b) Find the greatest value of \\(S_n\\), giving your answer to two decimal places.\n[4]",
+      "text": "7. [Maximum mark: 5]\n\nA function $f$ is defined as $f(x) = \\arctan(x - 2)$, where $2 \\leq x \\leq 2 + \\sqrt{3}$.\n\nThe region bounded by the curve, the y-axis, the x-axis and the line $ y=\\frac{\\pi}{3} $ is rotated $ 360^{\\circ} $ about the y-axis to form a solid of revolution.\n\nFind the volume of the solid.",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6851,10 +6833,8 @@
           "area": "Calculus"
         }
       ],
-      "status": "review",
-      "reasons": [
-        "topic words not in question"
-      ]
+      "status": "matched",
+      "reasons": []
     },
     {
       "id": "2023-05-p2-tz2-q8",
@@ -6868,7 +6848,7 @@
       "page_start": 10,
       "page_end": 12,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p2-tz2.pdf",
-      "text": "8. [Maximum mark: 7]\n\nThe marks obtained by students in a class quiz are shown in the following table where \\( p, q \\in \\mathbb{Z}^+ \\).\n\nMarks | Frequency\n20 | 12\n35 | q\np | 8\n\nThe mean and variance of the marks are 31 and 124 respectively.\n\nFind the value of \\( p \\) and the value of \\( q \\).",
+      "text": "8. [Maximum mark: 7]\n\nA function $g$ is defined by $g(x) = \\frac{2x - 5}{x^2 - 3}$, where $x \\in \\mathbb{R}$, $x \\neq \\pm\\sqrt{3}$.\n\n(a) Determine the range of g.\n\n[4]\n\nA function $h$ is defined by $h(x) = g(|x|)\\cos t$, where $x \\in \\mathbb{R}$, $x \\neq \\pm\\sqrt{3}$ and $t$ is a constant where $\\frac{\\pi}{2} < t \\leq \\pi$.\n\n(b) Find the set of values of x such that $ h(x) \\leq 0 $.\n\n[3]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6899,7 +6879,7 @@
       "page_start": 12,
       "page_end": 13,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p2-tz2.pdf",
-      "text": "9. [Maximum mark: 8]\n\nA line \\(L_1\\) has vector equation \\(\\boldsymbol{r} = \\begin{pmatrix} 0 \\\\ 0 \\\\ 2 \\end{pmatrix} + t \\begin{pmatrix} 1 \\\\ 0 \\\\ 1 \\end{pmatrix}\\) where \\(t \\in \\mathbb{R}\\).\n\nThe plane \\(\\Pi_1\\) contains the line \\(L_1\\) and passes through the point \\((2, 1, 5)\\).\n\n(a) Show that the Cartesian equation of the plane \\(\\Pi_1\\) is \\(x + y - z = -2\\). [4]\n\nConsider the three planes\n\n\\(\\Pi_1 : x + y - z = -2\\)\n\n\\(\\Pi_2 : 2x + by - z = 3\\)\n\n\\(\\Pi_3 : x - y + 2z = d\\)\n\nwhere \\(b, d \\in \\mathbb{Q}^+\\).\n\nThe three planes intersect in a line.\n\n(b) Find the value of \\(b\\) and the value of \\(d\\). [4]",
+      "text": "9. [Maximum mark: 5]\n\nLet S be the set of 30 positive integers $ \\{1, 2, 3, \\ldots, 28, 29, 30\\} $.\n\nRaghu randomly selects three positive integers from S without replacement. He then adds them together and determines whether the sum is divisible by 3.\n\nDetermine the total number of selections Raghu can make to obtain a sum that is divisible by 3.\n\nYou may assume that order is not important, for example,\n\n{1,2,3},{1,3,2},{2,3,1},{2,1,3},{3,1,2},{3,2,1} are all considered to be the\n\nsame selection.",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6925,7 +6905,7 @@
       "page_start": 13,
       "page_end": 15,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p2-tz2.pdf",
-      "text": "10. [Maximum mark: 17]\n\nAt Adam\u2019s Apple Orchard the weights of apples, \\(W\\), in grams, are normally distributed with a mean 175 grams and standard deviation 8 grams.\n\n(a) Find the probability that a randomly chosen apple weighs less than 170 grams. [2]\n\n(b) It is found that 20% of the apples weigh more than 170 grams. Find \\(w\\), correct to four significant figures. [2]\n\nAll orchards classify an apple as a premium when it is the 170 and 185 grams.\n\n(c) Find the percentage of apples that are classified as premium at Adam\u2019s Apple Orchard. [2]\n\nAfter orders are completed, there are many apples left over. Boxes are filled with randomly chosen left-over apples. Each box contains 40 apples.\n\n(d) Find the probability that a randomly chosen box contains at least 30 premium apples. [3]\n\n(e) If 10 of these boxes are randomly selected, find the probability that the 4 boxes have at least 30 premium apples. [2]\n\nAt a neighbouring orchard the weights of apples, \\(M\\), in grams, are normally distributed with a mean \\(\\mu\\) and standard deviation \\(\\sigma\\). It is known that:\n\n- 82% of their apples are classified as premium\n- the percentage of apples that weigh less than 170 grams is twice the percentage of apples that weigh more than 185 grams.\n\n(f) Find the value of \\(\\mu\\). [6]",
+      "text": "10. [Maximum mark: 13]\n\nA weight suspended on a spring is pulled down and released, so that it moves up and down vertically.\n\nThe height, $ H $ metres, of the base of the weight above the ground can be modelled by the function $ H(t) = a\\cos(7.8t) + b $, for $ a, b \\in \\mathbb{R} $ and $ 0 \\leq t \\leq 10 $, where $ t $ is the time in seconds after the weight is released.\n\n(a) Find the period of the function.\n\n[2]\n\nThe weight is released when its base is at a minimum height of 1 metre above the ground, and it reaches a maximum height of 1.8 metres above the ground. The graph of H is shown in the following diagram.\n\n| t | H |\n| --- | --- |\n| 0 | 1.00 |\n| 1 | 1.75 |\n| 2 | 1.00 |\n| 3 | 1.75 |\n| 4 | 1.00 |\n| 5 | 1.75 |\n| 6 | 1.00 |\n| 7 | 1.75 |\n| 8 | 1.00 |\n| 9 | 1.75 |\n| 10 | 1.00 |\n\n(b) Find the value of\n\n(i) a;\n\n[3]\n\n(c) Find the number of times that the weight reaches its maximum height in the first five seconds of its motion.\n\n(d) Find the first time that the base of the weight reaches a height of 1.5 metres.\n\nA camera is set to take a picture of the weight at a random time during the first five seconds of its motion.\n\n(e) Find the probability that the height of the base of the weight is greater than 1.5 metres at the time the picture is taken.",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6961,7 +6941,7 @@
       "page_start": 15,
       "page_end": 16,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p2-tz2.pdf",
-      "text": "11. [Maximum mark: 14]\n\nA mathematics class of 15 students plays a game which requires three equal size teams.\n\n(a) Find the total number of ways that the three teams can be chosen. [3]\n\nThe game involves the spinning of a top.\n\nThe time, \\(T\\), in minutes that the spinning top is in motion can be modelled by the probability density function \\(f\\) where\n\n\\(f(t) = \\begin{cases} kte^{-3t}, & t \\geq 0 \\\\ 0, & \\text{otherwise} \\end{cases}\\)\n\nand \\(k \\in \\mathbb{Z}^+\\).\n\n(b) Show that \\(\\int_0^a f(t) \\, dt = \\frac{k}{9} \\left[ 1 - (3a + 1)e^{-3a} \\right]\\), where \\(a \\in \\mathbb{R}^+\\). [4]\n\n(c) (i) Use \\(l'H\u00f4pital's\\) rule to find \\(\\lim_{x \\to x} (3x + 1)e^{-3x}\\).\n\n(ii) Hence, by considering \\(\\lim_{a \\to x} \\int_0^a f(t) \\, dt\\), find the value of \\(k\\). [5]\n\n(d) Find the median length of time that a spinning top is in motion. [2]",
+      "text": "11. [Maximum mark: 20]\n\nA game of chance involves drawing two balls at random out of a box without replacement. The box initially contains r red balls and y yellow balls.\n\nLet P(YY) represent the probability of drawing two yellow balls from the box without replacement.\n\nConsider a version of this game where it is known that $ \\mathrm{P}(YY)=\\frac{1}{3} $.\n\n$$ (a)\\quad Show~that~2y^{2}-2(r+1)y+r-r^{2}=0. $$\n\n[4]\n\n$$ (b)\\quad\\text{By solving the equation in part}(a),\\text{show that}y=\\frac{\\left(r+1\\right)+\\sqrt{3r^{2}+1}}{2}. $$\n\n[4]\n\n$$ (c)\\quad\\textrm{Find two pairs of values for}r\\textrm{ and}y\\textrm{ that satisfy the condition}P\\bigl(Y Y\\bigr)=\\frac{1}{3}. $$\n\n[4]\n\nNow consider a similar game of chance that involves drawing three balls out of a box without replacement. The box initially contains 10 red balls and y yellow balls.\n\nLet P(YYY) represent the probability of drawing three yellow balls from the box without replacement.\n\n(d) Find an expression for P(YYY) in terms of y.\n\nA yellow ball is added so that the box now contains 10 red balls and $ (y+1) $ yellow balls. The probability of drawing three yellow balls from the box without replacement is now twice the probability expressed in part (d).\n\n[3]\n\n(e) Find the initial number of yellow balls in the box.\n\n[5]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -6992,7 +6972,7 @@
       "page_start": 16,
       "page_end": 17,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p2-tz2.pdf",
-      "text": "12. [Maximum mark: 22]\nThe curve C has equation \\(4x^2 + y^2 - 24x + 4y + 20 = 0\\).\nThe following diagram shows C with a maximum point at A.\n\n(a) Use implicit differentiation to show that \\(\\frac{dy}{dx} = \\frac{4(3-x)}{y+2}\\).\n\n(b) Hence, determine the domain of C. Give your answer in the form \\(3 - \\sqrt{a} \\leq x \\leq 3 + \\sqrt{a}\\), where \\(a \\in \\mathbb{Z}^+\\).\n\n(c) Find \\((x_A, y_A)\\), the coordinates of A.\n\nA line y = mx is a tangent to C, where \\(m \\in \\mathbb{Z}\\).\n\n(d) Find the possible values of m.\n\nThe line y = -4x touches C at point B.\n\n(e) Find \\(y_B\\), the y-coordinate of B.\n\nThe region bounded by the curve C, the y-axis and the lines y = y_A and y = y_B, is rotated \\(360^\\circ\\) about the y-axis to form a solid of revolution.\n\n(f) Find the volume of the solid formed.\n\n[4]",
+      "text": "12. [Maximum mark: 21]\n\nConsider the differential equation $ \\frac{dy}{dx}=\\frac{x^{2}+3y^{2}}{xy} $, where x>0, y>0.\n\nIt is given that y=2 when x=1.\n\n(a)\n\n(b) By solving the differential equation, show that $ y = x\\sqrt{\\frac{9x^{4}-1}{2}} $.\n\n[8]\n\n(c) Find the value of y when x = 1.1.\n\n[1]\n\n(d) With reference to the concavity of the graph of $y = x\\sqrt{\\frac{9x^{4}-1}{2}}$ for $1 \\leq x \\leq 1.1$, explain why the value of $y$ found in part (c) is greater than the approximate value of $y$ found in part (a).\n\n[2]\n\nThe graph of $y = x\\sqrt{\\frac{9x^{4}-1}{2}}$ for $\\frac{\\sqrt{3}}{3} 0 $, $ y > 0 $.\n\n(f) Use this expression for $ \\frac{\\mathrm{d}^{2}y}{\\mathrm{d}x^{2}} $ to show that point P lies on the straight line y = mx where the exact value of m is to be determined.\n\n[6]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -7023,7 +7003,7 @@
       "page_start": 4,
       "page_end": 5,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p3-tz1.pdf",
-      "text": "1. [Maximum mark: 23]\n\nThis question asks you to use polynomial functions to model some situations in probability.\n\nTwo unbiased tetrahedral (four-sided) dice with faces labelled 1, 2, 3 and 4 are thrown and the scores recorded.\n\nThe random variable M denotes the maximum of these two scores.\n\nThe probability distribution of M is given in the following table.\n\n(a) Find E(M).\n\nAn alternative way to represent the probability distribution of M is to use a polynomial function, G, where \\(G(t) = \\sum_{m=1}^{4} \\mathrm{P}(M = m)t^{m}\\).\n\nHence, for the distribution of M, \\(G(t) = \\frac{1}{16}t + \\frac{3}{16}t^{2} + \\frac{5}{16}t^{3} + \\frac{7}{16}t^{4}\\).\n\n(b) Find G(1).\n\n(c) (i) Find \\(G'(t)\\).\n\n(ii) Hence, show that \\(G'(1) = \\mathrm{E}(M)\\).\n\nA bag contains two red balls and three yellow balls.\n\nTwo balls are selected at random without replacement from the bag.\n\nThe random variable $X$ denotes the total number of red balls selected.\n\nThe probability distribution of $X$ can be represented by the polynomial function, $G_{X}$, where\n\n$$G_{X}(t) = \\sum_{x=0}^{2} \\mathrm{P}(X = x)t^{x}.$$\n\n(d) Show that $G_{X}(t) = \\frac{3}{10} + \\frac{3}{5}t + \\frac{1}{10}t^{2}$, making it clear how the coefficients of $G_{X}(t)$ have been determined.\n\nAn unbiased coin and a biased coin are tossed.\n\nThe probability of obtaining a tail on the biased coin is $p$.\n\nThe random variable $Y$ denotes the total number of tails obtained from tossing both coins.\n\nThe probability distribution of $Y$ can be represented by the polynomial function, $G_{Y}$, where\n\n$$G_{Y}(t) = \\sum_{y=0}^{2} \\mathrm{P}(Y = y)t^{y}.$$\n\n(e) Given that the coefficient of $t^{2}$ in $G_{Y}(t)$ is $\\frac{1}{3}$, find\n\n(i) the value of $p$;\n\n(ii) an expression for $G_{Y}(t)$.\n\nThe random variable $Z$ denotes the sum of the total number of red balls selected, $X$, and the total number of tails obtained from tossing both coins, $Y$.\n\nThe probability distribution of $Z$ can be represented by the function, $G_{Z}$, where\n\n$$G_{Z}(t) = G_{X}(t)G_{Y}(t).$$\n\n(f) For random variable $Z$, it can be shown that $G_{Z}^{\\prime}(1) = \\mathrm{E}(Z)$.\n\nUse this result to find $\\mathrm{E}(Z)$.\n\n[4]",
+      "text": "1. [Maximum mark: 25]\n\nIn this question, you will be investigating the family of functions of the form $ f(x) = x^{n} \\mathrm{e}^{-x} $.\n\nConsider the family of functions $ f_n(x) = x^n \\mathrm{e}^{-x} $, where $ x \\geq 0 $ and $ n \\in \\mathbb{Z}^+ $.\n\nWhen $n=1$, the function $f_1(x)=x\\mathrm{e}^{-x}$, where $x\\geq0$.\n\n(a) Sketch the graph of $ y = f_1(x) $, stating the coordinates of the local maximum point.\n\n[4]\n\n(b) Show that the area of the region bounded by the graph $ y = f_1(x) $, the x-axis and the line $ x = b $, where $ b > 0 $, is given by $ \\frac{\\mathrm{e}^b - b - 1}{\\mathrm{e}^b} $.\n\n[6]\n\nYou may assume that the total area, $ A_n $, of the region between the graph $ y = f_n(x) $ and the $ x $-axis can be written as $ A_n = \\int_0^\\infty f_n(x) \\, dx $ and is given by $ \\lim_{b \\to \\infty} \\int_0^b f_n(x) \\, dx $.\n\n(c) (i) Use $ l' $ H\u00f4pital's rule to find $ \\lim_{b \\to \\infty} \\frac{e^b - b - 1}{e^b} $. You may assume that the condition for applying $ l' $ H\u00f4pital's rule has been met.\n\n[2]\n\n(ii) Hence write down the value of $ A_{1} $\n\nYou are given that $ A_{2}=2 $ and $ A_{3}=6 $.\n\n[1]\n\n(d) Use your graphic display calculator, and an appropriate value for the upper limit, to determine the value of\n\n$$ A_{4}; $$\n\n[2]\n\n(ii)\n\n[1]\n\n$$ A_{5}. $$\n\n(e) Suggest an expression for $ A_n $ in terms of $ n $, where $ n \\in \\mathbb{Z}^+ $.\n\n[1]\n\n(f) Use mathematical induction to prove your conjecture from part (e). You may assume that, for any value of m, $ \\lim x^m e^{-x} = 0 $.\n\n[8]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -7074,7 +7054,7 @@
       "page_start": 5,
       "page_end": 6,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p3-tz1.pdf",
-      "text": "2. [Maximum mark: 32]\n\nInformally, the curvature of a curve can be thought of as the amount by which the curve deviates from being a straight line. In this question, you will investigate the curvature of a variety of functions.\n\nConsider any function \\(f\\) that can be differentiated twice.\n\nThe curvature, \\(k\\), of any function \\(f\\) is defined by \\(k(x) = \\frac{|f''(x)|}{\\left(1 + \\left(f'(x)\\right)^2\\right)^{\\frac{3}{2}}}\\).\n\nConsider the family of linear functions \\(g(x) = mx + c\\), where \\(x \\in \\mathbb{R}\\) and \\(m, c \\in \\mathbb{R}\\).\n\n(a) Show that \\(k(x) = 0\\) for this family of linear functions. [2]\n\nConsider the family of quadratic functions \\(h(x) = ax^2 + bx + c\\) for \\(x \\in \\mathbb{R}\\), where \\(a \\in \\mathbb{R}\\), \\(a \\neq 0\\) and \\(b, c \\in \\mathbb{R}\\).\n\nFor this family of quadratic functions, it is given that\n\n\\[ k(x) = \\frac{2|a|}{\\left(1 + \\left(2ax + b\\right)^2\\right)^{\\frac{3}{2}}} \\] and\n\n\\[ k'(x) = -\\frac{12a|a|(2ax + b)}{\\left(1 + \\left(2ax + b\\right)^2\\right)^{\\frac{5}{2}}} \\]\n\nThe maximum value of \\(k(x)\\) is denoted by \\(k_{\\max}\\).\n\n(b) (i) By solving \\(k'(x) = 0\\), find the value of \\(x\\) where \\(k_{\\max}\\) occurs.\n\nYou are not required to justify that this value of \\(x\\) leads to a maximum. [1]\n\n(ii) Determine an expression for \\(k_{\\max}\\), in terms of \\(a\\) only. [2]\n\n(iii) State the value of \\(\\lim_{x \\to x_0} k(x)\\) and explain briefly the significance of this result. [2]\n\n(iv) Consider the quadratic functions\n\n\\[ p(x) = -2x^2 + 2x - 10 \\] where \\(x \\in \\mathbb{R}\\) and\n\n\\[ q(x) = 2x^2 + 5x + 25 \\) where \\(x \\in \\mathbb{R}\\).\n\nState which one of the following statements is true and justify your answer.\n\nA. \\(k_{\\max}\\) of \\(p > k_{\\max}\\) of \\(q\\)\n\nB. \\(k_{\\max}\\) of \\(p 0\\).\n\nFor \\(v\\), it is given that\n\n\\[k(x) = \\frac{x}{\\left(1 + x^2\\right)^{\\frac{3}{2}}}\\) and\n\n\\[k'(x) = \\frac{1 - 2x^2}{\\left(1 + x^2\\right)^{\\frac{5}{2}}}\\).\n\n(c) (i) Determine the exact value of \\(x\\) where \\(k_{\\max}\\) occurs.\n\nYou are not required to justify that this value of \\(x\\) leads to a maximum. [2]\n\n(ii) Show that \\(k_{\\max} = \\frac{2\\sqrt{3}}{9}\\). [4]\n\nConsider the function \\(w(x) = e^x\\), where \\(x \\in \\mathbb{R}\\).\n\nFor \\(w\\), it is given that\n\n\\[k(x) = \\frac{e^x}{\\left(1 + e^{2x}\\right)^{\\frac{3}{2}}}\\) and\n\n\\[k'(x) = \\frac{e^x \\left(1 - 2e^{2x}\\right)}{\\left(1 + e^{2x}\\right)^{\\frac{5}{2}}}\\).\n\n(d) (i) Show that \\(k_{\\max} = \\frac{2\\sqrt{3}}{9}\\). [5]\n\n(ii) Suggest a reason why \\(v\\) and \\(w\\) have the same \\(k_{\\max}\\). [1]\n\nConsider a family of curves \\(y = \\sqrt{r^2 - x^2}\\), where \\(-r 0\\) and \\(r\\) is a positive constant.\n\n(e) (i) Show that \\(\\frac{\\mathrm{d}^2 y}{\\mathrm{d}x^2} = -\\frac{r^2}{y^3}\\). [6]\n\n(ii) Hence, show that the curvature, \\(k\\), is constant for this family of curves. [5]",
+      "text": "2. [Maximum mark: 30]\n\nIn this question, you will investigate the maximum product of positive real numbers with a given sum\n\nConsider the two numbers $ x_1, x_2 \\in \\mathbb{R}^+ $, such that $ x_1 + x_2 = 12 $.\n\n(a) Find the product of $ x_{1} $ and $ x_{2} $ as a function, f, of $ x_{1} $ only.\n\n[2]\n\n(b) (i) Find the value of $ x_{1} $ for which the function is maximum.\n\n[1]\n\n$$ x_{1} $$\n\n$$ x_{2} $$\n\n[1]\n\nConsider $ M_n(S) $ to be the maximum product of $ n $ positive real numbers with a sum of $ S $, where $ n \\in \\mathbb{Z}^+ $ and $ S \\in \\mathbb{R}^+ $.\n\nFor $n=2$, the maximum product can be expressed as $M_{2}(S)=\\left(\\frac{S}{2}\\right)^{2}$.\n\n(c) Verify that $ M_{2}(S)=\\left(\\frac{S}{2}\\right)^{2} $ is true for S=12.\n\n[1]\n\nConsider $n$ positive real numbers, $x_{1}, x_{2}, \\ldots, x_{n}$.\n\nThe geometric mean is defined as $ (x_1 \\times x_2 \\times \\ldots \\times x_n)^{\\frac{1}{n}} $. It is given that the geometric mean is always less than or equal to the arithmetic mean, so $ (x_1 \\times x_2 \\times \\ldots \\times x_n)^{\\frac{1}{n}} \\leq \\frac{(x_1 + x_2 + \\ldots + x_n)}{n} $.\n\n(d) (i) Show that the geometric mean and arithmetic mean are equal when $ x_{1}=x_{2}=\\ldots=x_{n} $.\n\n[2]\n\n(ii) Use this result to prove that $ M_{n}(S)=\\left(\\frac{S}{n}\\right)^{n} $.\n\n[4]\n\n(e) Hence determine the value of\n\nThe quick brown fox jumps over the lazy dog.\n\n$$ (i)\\quad M_{3}(12); $$\n\n[1]\n\n$$ (ii)\\quad M_{4}(12); $$\n\n[1]\n\nThe quick brown fox jumps over the lazy dog.\n\n$$ (iii)\\quad M_{5}(12). $$\n\n[1]\n\nFor $ n \\in \\mathbb{Z}^+ $, let $ P(S) $ denote the maximum value of $ M_n(S) $ across all possible values of $ n $.\n\n(f) Write down the value of $ P(12) $ and the value of n at which it occurs. [2]\n\n(g) Determine the value of $ P(20) $ and the value of n at which it occurs. [3]\n\nConsider the function $ g $, defined by $ \\ln(g(x)) = x \\ln\\left(\\frac{S}{x}\\right) $, where $ x \\in \\mathbb{R}^+ $.\n\nA sketch of the graph of $y = g(x)$ is shown in the following diagram. Point A is the maximum point on this graph.\n\n![](/fig/2023-05-p3-tz1-q2-1.png)\n\n(h) Find, in terms of S, the x-coordinate of point A.\n\n[6]\n\n(i) Verify that $ g(x) = M_x(S) $, when $ x \\in \\mathbb{Z}^+ $.\n\n[2]\n\n(j) Use your answer to part (h) to find the largest possible product of positive numbers whose sum is 100. Give your answer in the form $ a \\times 10^k $, where $ 1 \\leq a < 10 $ and $ k \\in \\mathbb{Z}^+ $",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -7130,7 +7110,7 @@
       "page_start": 3,
       "page_end": 5,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p3-tz2.pdf",
-      "text": "1. [Maximum mark: 28]\n\nThe following question explores features of a family of curves. The family is then linked to a homogeneous differential equation.\n\nConsider the curve given by \\( y = \\frac{x(x^2 - 16)}{x^2 + 16} \\).\n\n(a) (i) Sketch the curve of \\( y \\) for \\(-10 \\leq x \\leq 10\\). [1]\n\n(ii) State the coordinates of the points where the curve crosses the x-axis. [1]\n\n(iii) State the coordinates of the local maximum point and the coordinates of the local minimum point. [2]\n\n(b) State whether the function \\( f(x) = \\frac{x(x^2 - 16)}{x^2 + 16} \\) is odd, even or neither. Justify your answer. [2]\n\nNow consider the general curve given by \\( y = \\frac{x(x^2 - A)}{x^2 + A} \\), where \\( A \\) is a positive constant and \\( x \\in \\mathbb{R} \\).\n\n(c) Given \\( f(x) = \\frac{x(x^2 - A)}{x^2 + A} \\), prove that \\( f'(\\sqrt{A}) \\) is independent of \\( A \\). [4]\n\n(d) (i) Show that \\( x - \\frac{2Ax}{x^2 + A} \\equiv \\frac{x(x^2 - A)}{x^2 + A} \\). [2]\n\n(ii) Hence, determine the equation of the oblique asymptote to the curve. [1]\n\n(iii) Write down the coordinates of a point on the curve where the oblique asymptote is parallel to the tangent to the curve at that point. [1]\n\nNow consider the differential equation \\(x^2 \\frac{dy}{dx} = x(x+y) - y^2\\), where \\(x \\ne 0\\), \\(y \\ne \\pm x\\).\n\nUsing the substitution \\(y = vx\\), the differential equation can be written as \\(x \\frac{dv}{dx} = 1 - v^2\\).\n\n(e) Using partial fractions, show that \\(\\int \\frac{1}{1-v^2} dv = \\frac{1}{2} \\ln \\left| \\frac{A(1+v)}{1-v} \\right|\\), where \\(A\\) is a positive constant.\n\n(f) Hence, show that a solution to the original differential equation may be expressed in the form \\(x^2 = \\left| \\frac{A(x+y)}{x-y} \\right|\\), where \\(A\\) is a positive constant.\n\nNow consider only the case where \\(\\frac{A(x+y)}{x-y} > 0\\).\n\n(g) Show that a solution to the original differential equation is \\(y = \\frac{x(x^2 - A)}{x^2 + A}\\).\n\n[4]",
+      "text": "1. [Maximum mark: 24]\n\nThis question asks you to examine the number and nature of intersection points of the graph of $ y = \\log_a x $ where $ a \\in \\mathbb{R}^+ $, $ a \\neq 1 $ and the line $ y = x $ for particular sets of values of $ a $.\n\nIn this question you may either use the change of logarithm base formula $ \\log_{a}x=\\frac{\\ln x}{\\ln a} $ or a graphic display calculator \u201clogarithm to any base feature\u201d.\n\nThe function f is defined by\n\n$$ f(x)=\\log_{a}x\\mathrm{~w h e r e~}x\\in\\mathbb{R}^{+}\\mathrm{~a n d~}a\\in\\mathbb{R}^{+},a\\neq1. $$\n\n(a) Consider the cases a=2 and a=10. On the same set of axes, sketch the following three graphs:\n\n$$ y=1\\log_{2}x $$\n\n$$ y=log_{10}x $$\n\n$$ y=x. $$\n\nClearly label each graph with its equation and state the value of any non-zero x-axis intercepts.\n\n[4]\n\nage)\n\nIn parts (b) and (c), consider the case where $ a = e $. Note that $ \\ln x \\equiv \\log_{e} x $.\n\n(b) Use calculus to find the minimum value of the expression $ x - \\ln x $, justifying that this value is a minimum.\n\n[5]\n\n(c) Hence deduce that $ x > \\ln x $.\n\n[1]\n\n(d) There exist values of $a$ for which the graph of $y = \\log_a x$ and the line $y = x$ do have intersection points. The following table gives three intervals for the value of $a$.\n\n| Interval | Number of intersection points |\n| --- | --- |\n| 0 < a < 1 | p |\n| 1 < a < 1.4 | q |\n| 1.5 < a < 2 | r |\n\nBy investigating the graph of $ y = \\log_a x $ for different values of $ a $, write down the values of $ p $, $ q $ and $ r $.\n\n[4]\n\nIn parts (e) and (f), consider $ a \\in \\mathbb{R}^+ $, $ a \\neq 1 $.\n\nFor $ 1.4 \\leq a \\leq 1.5 $, a value of $ a $ exists such that the line $ y = x $ is a tangent to the graph of $ y = \\log_a x $ at a point P.\n\n(e) Find the exact coordinates of P and the exact value of a.\n\n[8]\n\n(f) Write down the exact set of values for $a$ such that the graphs of $y=\\log_{a}x$ and $y=x$ have\n\n(i) two intersection points;\n\n[1]\n\n(ii) no intersection points.\n\n[1]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -7176,7 +7156,7 @@
       "page_start": 5,
       "page_end": 6,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2023-05/en/p3-tz2.pdf",
-      "text": "2. [Maximum mark: 27]\n\nThe following question compares the distance and direction between cities on a flat surface to the distance and direction between cities on a sphere.\n\nConsider a model where the cities of Bogot\u00e1, Moscow, and Nairobi lie on a flat surface. In this model, Nairobi is 6000 km due south of Moscow and Bogot\u00e1 is 12500 km due west of Nairobi, as shown in the following diagram.\n\ndiagram not to scale\n\n(a) (i) Find the distance from Bogot\u00e1 to Moscow.\n(ii) Find the bearing of Moscow from Bogot\u00e1. Give your answer in degrees.\n\nIn reality, these three cities lie on the curved surface of the Earth which will change the distances and directions found in part (a).\n\nNow consider a curved model using a coordinate system \\((x, y, z)\\) with its origin, O, at the centre of the Earth. The units of this system are thousands of kilometres and the Earth is modelled as a sphere with radius 6000 km. The North Pole, P, lies on the z-axis, and Nairobi, N, is modelled as being on the equator and lying on the y-axis.\n\nP has position vector \\(\\overrightarrow{OP} = p = \\begin{pmatrix} 0 \\\\ 0 \\\\ 6 \\end{pmatrix}\\) and N has position vector \\(\\overrightarrow{ON} = n = \\begin{pmatrix} 0 \\\\ 6 \\\\ 0 \\end{pmatrix}\\).\n\n(b) (i) Use the scalar product to find the angle between p and n. [2]\n(ii) Show that the distance between P and N along the arc from P to N is \\(3000\\pi km\\). [2]\n\nPoint A, which is also on the equator, has position vector \\(\\boldsymbol{a} = \\begin{pmatrix} 6 \\\\ 0 \\\\ 0 \\end{pmatrix}\\) as shown in the following diagram.\n\nP, N and A, and the arcs connecting them, form a spherical triangle.\n\nThe angle at vertex A is defined as the angle between the vectors \\(\\boldsymbol{a} \\times \\boldsymbol{p}\\) and \\(\\boldsymbol{a} \\times \\boldsymbol{n}\\).\n\n(c) (i) Find the vector \\(\\boldsymbol{a} \\times \\boldsymbol{p}\\).\n\n(ii) Show that the angle at vertex A in the spherical triangle is \\(90^\\circ\\).\n\n[2]\n\n[3]\n\nMoscow, M, has position vector \\(\\overrightarrow{\\text{OM}} = m = \\begin{pmatrix} 0 \\\\ 6\\cos\\theta \\\\ 6\\sin\\theta \\end{pmatrix}\\), as shown in the following diagram.\n\nThe shortest distance between two points on the sphere lies along an arc of a circle on the sphere with centre O. In this model the shortest distance from Moscow to Nairobi is 6000 km.\n\n(d) Show that \\(\\theta = 57.3^\\circ\\), correct to three significant figures.\n\nBogot\u00e1, B, is west of Nairobi and has position vector \\(\\overrightarrow{\\text{OB}} = b = \\begin{pmatrix} 6\\sin120^\\circ \\\\ 6\\cos120^\\circ \\\\ 0 \\end{pmatrix}\\).\n\n(e) Find the shortest distance from Bogot\u00e1 to Moscow on the sphere.\n\nThe bearing from B to M is defined as the angle at vertex B in the spherical triangle containing B, M and P. It is given that \\(b \\times p = \\begin{pmatrix} 36\\cos120^\\circ \\\\ -36\\sin120^\\circ \\\\ 0 \\end{pmatrix}\\).\n\n(f) Using the method from part (c), find the bearing from Bogot\u00e1 to Moscow.\n\n[6]",
+      "text": "2. [Maximum mark: 31]\n\nThis question asks you to examine linear and quadratic functions constructed in systematic ways using arithmetic sequences.\n\nConsider the function $ L(x) = mx + c $ for $ x \\in \\mathbb{R} $ where $ m, c \\in \\mathbb{R} $ and $ m, c \\neq 0 $.\n\nLet $ r \\in \\mathbb{R} $ be the root of $ L(x) = 0 $.\n\nIf m, r and c, in that order, are in arithmetic sequence then $ L(x) $ is said to be an AS-linear function.\n\n(a) Show that $ L(x) = 2x - 1 $ is an AS-linear function.\n\n[2]\n\nConsider $L(x)=mx+c$.\n\n(b) (i) Show that $ r = -\\frac{c}{m} $.\n\n[1]\n\n(ii) Given that $L(x)$ is an AS-linear function, show that $L(x)=mx-\\frac{m^{2}}{m+2}$.\n\n[4]\n\n(iii) State any further restrictions on the value of m.\n\n[1]\n\nThere are only three integer sets of values of $m$, $r$ and $c$, that form an AS-linear function. One of these is $L(x) = -x - 1$.\n\n(c) Use part (b) to determine the other two AS-linear functions with integer values of m, r and c.\n\n[3]\n\nConsider the function $ Q(x) = ax^2 + bx + c $ for $ x \\in \\mathbb{R} $ where $ a \\in \\mathbb{R} $, $ a \\ne 0 $ and $ b $, $ c \\in \\mathbb{R} $.\n\nLet $ r_1 $, $ r_2 \\in \\mathbb{R} $ be the roots of $ Q(x) = 0 $.\n\n(d) Write down an expression for\n\n(i) the sum of roots, $ r_{1} + r_{2} $, in terms of a and b.\n\n[1]\n\n(ii) the product of roots, $ r_{1}r_{2} $, in terms of a and c.\n\n[1]\n\nIf $a$, $r_1$, $b$, $r_2$ and $c$, in that order, are in arithmetic sequence, then $Q(x)$ is said to be an AS-quadratic function.\n\n(e) Given that $ Q(x) $ is an AS-quadratic function,\n\n(i) write down an expression for $ r_{2}-r_{1} $ in terms of a and b;\n\n[1]\n\n$$ \\mathrm{(i i)}\\quad\\mathrm{u s e~y o u r~a n s w e r s~t o~p a r t s~(d)(i)~a n d~(e)(i)~t o~s h o w~t h a t~r_{1}=\\frac{a^{2}-a b-b}{2a}~;} $$\n\n[2]\n\n(iii) use the result from part (e)(ii) to show that $b = 0$ or $a = -\\frac{1}{2}$. Consider the case where $b = 0$.\n\n[3]\n\n(f) Determine the two AS-quadratic functions that satisfy this condition.\n\n[5]\n\nNow consider the case where $ a = -\\frac{1}{2} $.\n\n(g) (i) Find an expression for $ r_{1} $ in terms of b.\n\n[2]\n\n(ii) Hence or otherwise, determine the exact values of b and c such that AS-quadratic functions are formed.\n\n$$ \\mathrm{G i v e~y o u r~a n s w e r s~i n~t h e~f o r m~}\\frac{-p\\pm q\\sqrt{s}}{2}\\mathrm{~w h e r e~}p,q,s\\in\\mathbb{Z}^{+}. $$\n\n[5]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -13911,7 +13891,7 @@
       "page_start": 5,
       "page_end": 6,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2025-11/en/p2-tz3.pdf",
-      "text": "2. [Maximum mark: 6]\n\nA teacher sets her class of 30 pupils a quiz.\n\nAiden and Brett were absent on the day of the quiz.\n\nThe following box and whisker diagram shows the results of the 28 pupils who took the quiz on the day.\n\n| Quiz Score | Value |\n| --- | --- |\n| 6 - 7 | 6 |\n| 7 - 8 | 0 |\n| 8 - 9 | 0 |\n| 9 - 10 | 0 |\n| 10 - 11 | 0 |\n| 11 - 12 | 0 |\n| 12 - 13 | 0 |\n| 13 - 14 | 0 |\n| 14 - 15 | 0 |\n| 15 - 16 | 0 |\n| 16 - 17 | 0 |\n\nAiden and Brett take the quiz when they return.\n\nAiden scores less than 6.\n\nBrett scores more than 17.\n\n(a) Explain, briefly, why the median score for all 30 pupils would still be 10.5.\n\n[1]\n\nThe mean score of the 28 pupils was 10.5.\n\nThe mean score for all 30 pupils is now 10.6.\n\nThe range of scores for all 30 pupils is 14.\n\n(b) Determine Aiden's score and Brett's score.\n\n[5]\n\n| Category | Value |\n| --- | --- |\n| 1 | 100 |\n| 2 | 100 |\n| 3 | 100 |\n| 4 | 100 |\n| 5 | 100 |\n| 6 | 100 |\n| 7 | 100 |\n| 8 | 100 |\n| 9 | 100 |\n| 10 | 100 |\n| 11 | 100 |\n| 12 | 100 |\n| 13 | 100 |\n| 14 | 100 |\n| 15 | 100 |\n| 16 | 100 |\n| 17 | 100 |\n| 18 | 100 |\n| 19 | 100 |\n| 20 | 100 |\n| 21 | 100 |\n| 22 | 100 |\n| 23 | 100 |\n| 24 | 100 |\n| 25 | 100 |\n| 26 | 100 |\n| 27 | 100 |\n| 28 | 100 |\n| 29 | 100 |\n| 30 | 100 |\n| 31 | 100 |\n| 32 | 100 |\n| 33 | 100 |\n| 34 | 100 |\n| 35 | 100 |\n| 36 | 100 |\n| 37 | 100 |\n| 38 | 100 |\n| 39 | 100 |\n| 40 | 100 |\n| 41 | 100 |\n| 42 | 100 |\n| 43 | 100 |\n| 44 | 100 |\n| 45 | 100 |\n| 46 | 100 |\n| 47 | 100 |\n| 48 | 100 |\n| 49 | 100 |\n| 50 | 100 |\n| 51 | 100 |\n| 52 | 100 |\n| 53 | 100 |\n| 54 | 100 |\n| 55 | 100 |\n| 56 | 100 |\n| 57 | 100 |\n| 58 | 100 |\n| 59 | 100 |\n| 60 | 100 |\n| 61 | 100 |\n| 62 | 100 |\n| 63 | 100 |\n| 64 | 100 |\n| 65 | 100 |\n| 66 | 100 |\n| 67 | 100 |\n| 68 | 100 |\n| 69 | 100 |\n| 70 | 100 |\n| 71 | 100 |\n| 72 | 100 |\n| 73 | 100 |\n| 74 | 100 |\n| 75 | 100 |\n| 76 | 100 |\n| 77 | 100 |\n| 78 | 100 |\n| 79 | 100 |\n| 80 | 100 |\n| 81 | 100 |\n| 82 | 100 |\n| 83 | 100 |\n| 84 | 100 |\n| 85 | 100 |\n| 86 | 100 |\n| 87 | 100 |\n| 88 | 100 |\n| 89 | 100 |\n| 90 | 100 |\n| 91 | 100 |\n| 92 | 100 |\n| 93 | 100 |\n| 94 | 100 |\n| 95 | 100 |\n| 96 | 100 |\n| 97 | 100 |\n| 98 | 100 |\n| 99 | 100 |\n| 100 | 100 |",
+      "text": "2. [Maximum mark: 6]\n\nA teacher sets her class of 30 pupils a quiz.\n\nAiden and Brett were absent on the day of the quiz.\n\nThe following box and whisker diagram shows the results of the 28 pupils who took the quiz on the day.\n\n| Quiz Score | Value |\n| --- | --- |\n| 6 - 7 | 6 |\n| 7 - 8 | 0 |\n| 8 - 9 | 0 |\n| 9 - 10 | 0 |\n| 10 - 11 | 0 |\n| 11 - 12 | 0 |\n| 12 - 13 | 0 |\n| 13 - 14 | 0 |\n| 14 - 15 | 0 |\n| 15 - 16 | 0 |\n| 16 - 17 | 0 |\n\nAiden and Brett take the quiz when they return.\n\nAiden scores less than 6.\n\nBrett scores more than 17.\n\n(a) Explain, briefly, why the median score for all 30 pupils would still be 10.5.\n\n[1]\n\nThe mean score of the 28 pupils was 10.5.\n\nThe mean score for all 30 pupils is now 10.6.\n\nThe range of scores for all 30 pupils is 14.\n\n(b) Determine Aiden's score and Brett's score.\n\n[5]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -15096,7 +15076,7 @@
       "page_start": 3,
       "page_end": 5,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2026-05/en/p1-tz3.pdf",
-      "text": "1. [Maximum mark: 6]\n\nA school has 600 students across four grade levels as shown in the following table.\n\n| Grade | Number of students |\n| --- | --- |\n| 9 | 114 |\n| 10 | 179 |\n| 11 | 137 |\n| 12 | 170 |\n\nA group of 60 students was surveyed using a stratified sampling technique, such that each grade in the sample was proportional to the population. Each student was asked how much allowance, in Singapore dollars ($), they received per week.\n\n(a) Find the number of Grade 12 students in the sample.\n\nThe results of the survey are summarized in the following box and whisker diagram.\n\n[2]\n\n| Category | Value |\n| --- | --- |\n| 1 | 28 |\n| 2 | 66 |\n| 3 | 80 |\n| 4 | a |\n| 5 | 110 |\n\nSurvey of allowances from 60 students\n\n(b) State the median.\n\n[1]\n\nThe interquartile range is $24.\n\n(c) Write down the value of a.\n\n[1]\n\nAn outlier is a value that is less than $ Q_1 - 1.5 \\times \\text{IQR} $ or greater than $ Q_3 + 1.5 \\times \\text{IQR} $.\n\n(d) Determine the smallest possible allowance, from the sample, that is not an outlier.\n\n[2]\n\n\u2026\u2026",
+      "text": "1. [Maximum mark: 6]\n\nA school has 600 students across four grade levels as shown in the following table.\n\n| Grade | Number of students |\n| --- | --- |\n| 9 | 114 |\n| 10 | 179 |\n| 11 | 137 |\n| 12 | 170 |\n\nA group of 60 students was surveyed using a stratified sampling technique, such that each grade in the sample was proportional to the population. Each student was asked how much allowance, in Singapore dollars ($), they received per week.\n\n(a) Find the number of Grade 12 students in the sample.\n\nThe results of the survey are summarized in the following box and whisker diagram.\n\n[2]\n\nSurvey of allowances from 60 students\n\n(b) State the median.\n\n[1]\n\nThe interquartile range is $24.\n\n(c) Write down the value of a.\n\n[1]\n\nAn outlier is a value that is less than $ Q_1 - 1.5 \\times \\text{IQR} $ or greater than $ Q_3 + 1.5 \\times \\text{IQR} $.\n\n(d) Determine the smallest possible allowance, from the sample, that is not an outlier.\n\n[2]\n\n\u2026\u2026",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -16278,7 +16258,7 @@
       "page_start": 8,
       "page_end": 9,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2026-05/en/p2-tz3.pdf",
-      "text": "4. [Maximum mark: 7]\n\nTwo circles have a common centre, O. Points A and B lie on the circumference of the larger circle, which has radius OA = R. Points C and D lie on [OB] and [OA] respectively, and they also lie on the circumference of the smaller circle. The smaller circle has radius OC = r and the acute angle D\u0302OC = A\u0302OB = \u03b8 radians.\n\nThis is shown in the following diagram.\n\ndiagram not to scale\n\n![](/fig/2026-05-p2-tz3-q4-1.png)\n\nThe area of the sector OAB is 50 cm\u00b2 and its perimeter is 40 cm. The area of the sector ODC is 18 cm\u00b2.\n\n(a) Find the value of $ \\theta $.\n\n(b) Hence, find the value of r.\n\n| 10000000000000000001 |\n| --- |",
+      "text": "4. [Maximum mark: 7]\n\nTwo circles have a common centre, O. Points A and B lie on the circumference of the larger circle, which has radius OA = R. Points C and D lie on [OB] and [OA] respectively, and they also lie on the circumference of the smaller circle. The smaller circle has radius OC = r and the acute angle D\u0302OC = A\u0302OB = \u03b8 radians.\n\nThis is shown in the following diagram.\n\ndiagram not to scale\n\n![](/fig/2026-05-p2-tz3-q4-1.png)\n\nThe area of the sector OAB is 50 cm\u00b2 and its perimeter is 40 cm. The area of the sector ODC is 18 cm\u00b2.\n\n(a) Find the value of $ \\theta $.\n\n(b) Hence, find the value of r.",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {
@@ -16359,7 +16339,7 @@
       "page_start": 11,
       "page_end": 12,
       "file": "papers/library/mathematics/mathematics-analysis-and-approaches/hl/2026-05/en/p2-tz3.pdf",
-      "text": "7. [Maximum mark: 7]\n\nThe continuous random variable X has a probability density function f, given by\n\n$$ f(x)=\\left\\{\\begin{aligned}\\frac{3}{4}x^{2}(2-x)\\quad&0\\leq x\\leq2\\\\ 0\\quad&\\text{otherwise}.\\end{aligned}\\right. $$\n\n(a) Find P(0.5 \u2264 X < 1.5).\n\n[2]\n\nThe discrete random variable Y is defined as the continuous random variable X rounded to the nearest integer. Hence, Y can only take the value 0, 1 or 2.\n\nThe probability distribution for Y is given in the following table.\n\n| y | 0 | 1 | 2 |\n| --- | --- | --- | --- |\n| $ \\mathbf{P}(Y=y) $ | a | b | c |\n\n(b) (i) Write down the value of b.\n\n(ii) Find the value of a and the value of c.\n\n[3]\n\n(c) Find E(Y).\n\n[2]\n\n| 10000000000000000001 |\n| --- |",
+      "text": "7. [Maximum mark: 7]\n\nThe continuous random variable X has a probability density function f, given by\n\n$$ f(x)=\\left\\{\\begin{aligned}\\frac{3}{4}x^{2}(2-x)\\quad&0\\leq x\\leq2\\\\ 0\\quad&\\text{otherwise}.\\end{aligned}\\right. $$\n\n(a) Find P(0.5 \u2264 X < 1.5).\n\n[2]\n\nThe discrete random variable Y is defined as the continuous random variable X rounded to the nearest integer. Hence, Y can only take the value 0, 1 or 2.\n\nThe probability distribution for Y is given in the following table.\n\n| y | 0 | 1 | 2 |\n| --- | --- | --- | --- |\n| $ \\mathbf{P}(Y=y) $ | a | b | c |\n\n(b) (i) Write down the value of b.\n\n(ii) Find the value of a and the value of c.\n\n[3]\n\n(c) Find E(Y).\n\n[2]",
       "text_source": "paddleocr-vl-1.6",
       "topics": [
         {

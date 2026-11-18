@@ -9,11 +9,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from catalog import ROOT  # noqa: E402
-from serve import PHYSICS_QUESTIONS, QUESTIONS, bank_json, load_json, paper_files  # noqa: E402
+from serve import PHYSICS_QUESTIONS, QUESTIONS, bank_json, load_json, load_library, paper_files  # noqa: E402
 
 CACHE = ROOT / "web" / ".cache"
 SCHEMES = ROOT / "data" / "schemes"
-ECON = ROOT / "papers" / "library" / "societies" / "economics"
+LIBRARY = ROOT / "papers" / "library"
 
 
 def newest(path: Path) -> float:
@@ -29,7 +29,23 @@ def newest(path: Path) -> float:
 
 
 def sources_mtime() -> float:
-    return max(newest(QUESTIONS), newest(PHYSICS_QUESTIONS), newest(SCHEMES), newest(ECON))
+    return max(
+        newest(QUESTIONS),
+        newest(PHYSICS_QUESTIONS),
+        newest(SCHEMES),
+        newest(LIBRARY),
+        (ROOT / "scripts" / "serve.py").stat().st_mtime,
+        newest_mp3(ROOT / "papers" / "ib"),
+    )
+
+
+def newest_mp3(path: Path) -> float:
+    if not path.is_dir():
+        return 0
+    latest = 0.0
+    for child in path.rglob("*.mp3"):
+        latest = max(latest, child.stat().st_mtime)
+    return latest
 
 
 def rel(path: Path) -> str | None:
@@ -64,13 +80,23 @@ def file_index() -> dict[str, str]:
     return files
 
 
+def audio_index() -> dict[str, list[str]]:
+    files: dict[str, list[str]] = {}
+    for paper_id, paths in load_library()[3].items():
+        names = [name for path in paths if (name := rel(path)) and name.lower().endswith(".mp3")]
+        if names:
+            files[paper_id] = names
+    return files
+
+
 def main() -> None:
     CACHE.mkdir(parents=True, exist_ok=True)
     stamp_path = CACHE / "stamp"
     bank_path = CACHE / "questions.json"
     files_path = CACHE / "files.json"
+    audio_path = CACHE / "audio.json"
     latest = sources_mtime()
-    if bank_path.is_file() and files_path.is_file() and stamp_path.is_file():
+    if bank_path.is_file() and files_path.is_file() and audio_path.is_file() and stamp_path.is_file():
         try:
             if float(stamp_path.read_text()) >= latest:
                 return
@@ -78,6 +104,7 @@ def main() -> None:
             pass
     bank_path.write_bytes(bank_json())
     files_path.write_text(json.dumps(file_index(), separators=(",", ":")))
+    audio_path.write_text(json.dumps(audio_index(), separators=(",", ":")))
     stamp_path.write_text(repr(latest))
 
 

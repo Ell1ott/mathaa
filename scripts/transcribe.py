@@ -8,6 +8,7 @@ shortcut: a cache file of 20 bytes or less is sent again, so a short successful 
 
 from __future__ import annotations
 
+import hashlib
 import html
 import json
 import os
@@ -23,11 +24,111 @@ from catalog import ROOT
 from extract import markscheme_questions, markscheme_ranges
 
 CACHE = ROOT / "data" / "vl"
+TOKENS = CACHE / "crop-tokens.json"
 API = "https://api.openparser.dev"
 MODEL = "paddleocr-vl-1.6"
 SOURCE = "paddleocr-vl-1.6"
 NUMBER_LINE = re.compile(r"^([A-J]?\d{1,2})\.$")
+_MAX_MARK = re.compile(r"Maximum marks?\s*:\s*(\d+)", re.I)
+_STEM_WORD = re.compile(r"[A-Za-z]{5,}")
+# Page furniture. Question words such as "function" stay, so a swapped paper still fails.
+_FURNITURE = {
+    "advised",
+    "answers",
+    "assessments",
+    "awarded",
+    "baccalaureate",
+    "booklet",
+    "candidate",
+    "candidates",
+    "continues",
+    "continued",
+    "disclaimer",
+    "explanations",
+    "international",
+    "marked",
+    "maximum",
+    "necessary",
+    "please",
+    "provided",
+    "question",
+    "questions",
+    "section",
+    "solutions",
+    "therefore",
+    "within",
+    "working",
+    "written",
+}
 WORKERS = 8
+
+
+def _stem_words(text: str) -> list[str]:
+    """The first distinctive words of a question, ignoring page furniture."""
+    found = []
+    seen = set()
+    for word in _STEM_WORD.findall((text or "")[:500]):
+        word = word.lower()
+        if word in _FURNITURE or word in seen:
+            continue
+        seen.add(word)
+        found.append(word)
+        if len(found) == 3:
+            break
+    return found
+
+
+def cache_matches(pdf_text: str, markdown: str) -> bool:
+    """Cached OCR still describes this crop.
+
+    A replaced PDF can keep an older timestamp than the cache, so the file
+    date is not enough. The mark and the opening words have to agree.
+    """
+    pdf_mark = _MAX_MARK.search(pdf_text or "")
+    md_mark = _MAX_MARK.search(markdown or "")
+    if pdf_mark and md_mark and pdf_mark.group(1) != md_mark.group(1):
+        return False
+    words = _stem_words(pdf_text)
+    if len(words) < 2:
+        return True
+    haystack = (markdown or "").lower()
+    return sum(word in haystack for word in words) >= 2
+
+
+def _crop_text(doc, question: dict, next_question: dict | None) -> str:
+    import pymupdf
+
+    parts = []
+    for page, top, bottom in bands(doc, question, next_question):
+        parts.append(page.get_text("text", clip=pymupdf.Rect(0, top, page.rect.x1, bottom)))
+    return "\n".join(parts)
+
+
+def crop_token(doc, question: dict, next_question: dict | None) -> str:
+    """Identity of the crop. Changes when the PDF text or the bounds change."""
+    import pymupdf
+
+    digest = hashlib.sha256()
+    for page, top, bottom in bands(doc, question, next_question):
+        digest.update(f"{page.number}:{round(top, 1)}:{round(bottom, 1)}\n".encode())
+        clip = pymupdf.Rect(0, top, page.rect.x1, bottom)
+        digest.update(page.get_text("text", clip=clip).encode())
+    return digest.hexdigest()[:16]
+
+
+def _load_tokens() -> dict:
+    if not TOKENS.is_file():
+        return {}
+    try:
+        data = json.loads(TOKENS.read_text())
+    except json.JSONDecodeError:
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _save_tokens(tokens: dict) -> None:
+    TOKENS.parent.mkdir(parents=True, exist_ok=True)
+    TOKENS.write_text(json.dumps(tokens, indent=2, sort_keys=True) + "\n")
 
 
 def line_y(page, number: int) -> float | None:
@@ -816,14 +917,31 @@ def _one(images: list[Path], dest: Path, key: str) -> str:
 def _apply_cache(papers: list[dict]) -> None:
     render_figures(papers)
     for paper in papers:
-        for question in paper.get("questions") or []:
-            dest = CACHE / f"{_key(paper, question)}.md"
-            if dest.is_file() and dest.stat().st_size > 20:
+        path = ROOT / paper.get("file", "")
+        doc = None
+        if path.is_file():
+            import pymupdf
+
+            doc = pymupdf.open(path)
+        try:
+            questions = paper.get("questions") or []
+            for index, question in enumerate(questions):
+                dest = CACHE / f"{_key(paper, question)}.md"
+                if not dest.is_file() or dest.stat().st_size <= 20:
+                    continue
+                raw = dest.read_text()
+                if doc is not None:
+                    nxt = questions[index + 1] if index + 1 < len(questions) else None
+                    if not cache_matches(_crop_text(doc, question, nxt), raw):
+                        continue
                 urls = figure_urls(_key(paper, question))
                 question["text"] = tidy_question(
-                    splice_question(dest.read_text(), question["number"], urls), question["number"]
+                    splice_question(raw, question["number"], urls), question["number"]
                 )
                 question["text_source"] = SOURCE
+        finally:
+            if doc is not None:
+                doc.close()
 
 
 def transcribe(papers: list[dict]) -> None:
@@ -834,7 +952,9 @@ def transcribe(papers: list[dict]) -> None:
         _apply_cache(papers)
         _report_figures(papers)
         return
+    tokens = _load_tokens()
     pending = []
+    adopted = False
     for paper in papers:
         if not paper.get("questions"):
             continue
@@ -847,29 +967,50 @@ def transcribe(papers: list[dict]) -> None:
         try:
             questions = paper["questions"]
             for index, question in enumerate(questions):
-                dest = CACHE / f"{_key(paper, question)}.md"
-                if dest.is_file() and dest.stat().st_size > 20:
-                    continue
+                name = _key(paper, question)
+                dest = CACHE / f"{name}.md"
                 nxt = questions[index + 1] if index + 1 < len(questions) else None
+                token = crop_token(doc, question, nxt)
+                raw = dest.read_text() if dest.is_file() and dest.stat().st_size > 20 else ""
+                if raw and tokens.get(name) == token:
+                    continue
+                if raw and name not in tokens and cache_matches(_crop_text(doc, question, nxt), raw):
+                    tokens[name] = token
+                    adopted = True
+                    continue
                 pages = clips(doc, question, nxt)
                 if not pages:
                     continue
-                folder = CACHE / "crops" / _key(paper, question)
+                folder = CACHE / "crops" / name
                 folder.mkdir(parents=True, exist_ok=True)
                 names = []
                 for nth, pix in enumerate(pages, 1):
                     image = folder / f"{nth}.png"
                     pix.save(image)
                     names.append(image)
-                pending.append((names, dest))
+                pending.append((names, dest, token))
         finally:
             doc.close()
+    token_of = {dest.stem: token for _names, dest, token in pending}
+    failed = []
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
-        futures = [pool.submit(_one, images, dest, key) for images, dest in pending]
+        futures = [pool.submit(_one, images, dest, key) for images, dest, _token in pending]
         for nth, future in enumerate(as_completed(futures), 1):
-            print(f"{nth}/{len(pending)} {future.result()}", flush=True)
+            try:
+                stem = future.result()
+            except Exception as error:
+                failed.append(error)
+                print(f"{nth}/{len(pending)} failed: {error}", flush=True)
+                continue
+            tokens[stem] = token_of[stem]
+            adopted = True
+            print(f"{nth}/{len(pending)} {stem}", flush=True)
+    if adopted:
+        _save_tokens(tokens)
     _apply_cache(papers)
     _report_figures(papers)
+    if failed:
+        raise RuntimeError(f"{len(failed)} question reads failed")
 
 
 def transcribe_schemes(questions: list[dict]) -> None:

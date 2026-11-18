@@ -15,6 +15,7 @@ const IMAGE_DIR = { cut: 'cuts', fig: 'figs', scheme: 'schemes' }
 
 let ready
 let files
+let clips
 let mupdf
 let loading
 let tail = Promise.resolve()
@@ -74,10 +75,13 @@ async function handle(req, res, next) {
   ready ??= ensureBank()
   await ready
   files ??= JSON.parse(await readFile(path.join(CACHE, 'files.json'), 'utf8'))
+  const audioPath = path.join(CACHE, 'audio.json')
+  clips ??= existsSync(audioPath) ? JSON.parse(await readFile(audioPath, 'utf8')) : {}
   if (route.kind === 'bank') return sendStream(req, res, path.join(CACHE, 'questions.json'), 'application/json')
   if (route.kind === 'image') return sendImage(res, imagePath(ROOT, route.dir, route.name))
   if (route.kind === 'cover') return sendCover(res, route.name)
   if (route.kind === 'doc') return sendDoc(req, res, route.id)
+  if (route.kind === 'audio') return sendAudio(req, res, route.id, route.index)
   if (route.kind === 'page') return sendPage(res, url.searchParams)
   return next()
 }
@@ -90,6 +94,8 @@ function routeOf(pathname) {
   if (pathname.startsWith('/doc/') && pathname.endsWith('.pdf')) {
     return { kind: 'doc', id: pathname.slice('/doc/'.length, -'.pdf'.length) }
   }
+  const audio = /^\/audio\/([^/]+)(?:\/(\d+))?$/.exec(pathname)
+  if (audio) return { kind: 'audio', id: audio[1], index: audio[2] ? Number(audio[2]) : 0 }
   if (pathname === '/pdf') return { kind: 'page' }
   return null
 }
@@ -122,8 +128,16 @@ async function sendCover(res, name) {
   return sendStream(null, res, file, 'image/jpeg', 'public, max-age=86400')
 }
 
+function sendAudio(req, res, id, index) {
+  const entry = clips[id]
+  const rel = Array.isArray(entry) ? entry[index] : entry
+  if (typeof rel !== 'string') return sendText(res, 404, 'audio not on disk')
+  const file = pdfPath(ROOT, { hit: rel }, 'hit')
+  if (!file || !file.toLowerCase().endsWith('.mp3') || !existsSync(file)) return sendText(res, 404, 'audio not on disk')
+  return sendStream(req, res, file, 'audio/mpeg')
+}
+
 function sendDoc(req, res, id) {
-  if (!id.startsWith('econ-') && !id.startsWith('phy-')) return sendText(res, 404, 'PDF not on disk')
   const pdf = pdfPath(ROOT, files, id)
   if (!pdf || !existsSync(pdf) || pdf.toLowerCase().includes('markscheme')) return sendText(res, 404, 'PDF not on disk')
   return sendStream(req, res, pdf, 'application/pdf')

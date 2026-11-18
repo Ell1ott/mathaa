@@ -12,10 +12,14 @@ import {
   orderPapers,
   orderQuestions,
   paperBucket,
+  paperParts,
+  papersOnly,
   prepare,
   questionBucket,
   resolveGroup,
+  subjectMenu,
   tally,
+  topSubjects,
   toggleSet,
   yearsOf,
 } from './bank.js'
@@ -38,7 +42,7 @@ function saveStars(stars) {
 
 function initialFilters() {
   const filters = filtersFrom(location.search)
-  if ((filters.browse === 'papers' || filters.sub === 'econ') && !['new', 'old'].includes(filters.sort)) filters.sort = 'new'
+  if ((filters.browse === 'papers' || papersOnly(filters.sub)) && !['new', 'old'].includes(filters.sort)) filters.sort = 'new'
   return filters
 }
 
@@ -151,6 +155,8 @@ export default function App() {
 
   const topics = bank ? (filters.sub === 'phys' ? bank.physTopics : bank.topics) : {}
   const areas = areasFor(filters.sub)
+  const subjectGroups = useMemo(() => subjectMenu(bank?.subs), [bank])
+  const subjectTop = useMemo(() => topSubjects(subjectGroups, bank?.counts), [subjectGroups, bank])
 
   const questions = useMemo(() => {
     if (!bank) return []
@@ -246,9 +252,9 @@ export default function App() {
 
   function onSubject(sub) {
     setFilters((S) => {
-      const econ = sub === 'econ'
-      const browse = econ ? 'papers' : S.browse
-      const sort = econ && !['new', 'old'].includes(S.sort) ? 'new' : S.sort
+      const only = papersOnly(sub)
+      const browse = only ? 'papers' : S.browse
+      const sort = only && !['new', 'old'].includes(S.sort) ? 'new' : S.sort
       return {
         ...S,
         sub,
@@ -267,7 +273,7 @@ export default function App() {
 
   function onMode(browse) {
     setFilters((S) => {
-      if (S.sub === 'econ' && browse !== 'papers') return S
+      if (papersOnly(S.sub) && browse !== 'papers') return S
       const sort = browse === 'papers' && !['new', 'old'].includes(S.sort) ? 'new' : S.sort
       return { ...S, browse, sort, group: resolveGroup(browse, S.sub, S.group) }
     })
@@ -417,6 +423,11 @@ export default function App() {
   const noun = papersMode ? 'paper' : 'question'
   const visible = papersMode ? papers.length : questions.length
   const total = papersMode ? subjectPapers.length : subjectQuestions.length
+  const paperOptions = [...new Set(subjectPapers.map((paper) => paper.p))].sort((a, b) => {
+    const [an, al] = paperParts(a)
+    const [bn, bl] = paperParts(b)
+    return an - bn || String(al).localeCompare(String(bl)) || String(a).localeCompare(String(b))
+  })
   const scrim = sideOpen || sheet.open
   const sheetPapers = sheet.docId ? subjectPapers : papers
 
@@ -426,6 +437,9 @@ export default function App() {
         <aside id="side" aria-label="Filters" className={sideOpen ? 'on' : ''}>
           <Sidebar
             subject={filters.sub}
+            subjects={subjectGroups}
+            topSubjects={subjectTop}
+            paperOptions={paperOptions}
             mode={filters.browse}
             questionTotal={subjectQuestions.length}
             paperTotal={subjectPapers.length}

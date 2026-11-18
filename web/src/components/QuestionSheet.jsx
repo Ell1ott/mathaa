@@ -6,6 +6,24 @@ import { QuestionText } from './QuestionText.jsx'
 import { Segment } from './Segment.jsx'
 import { Tags } from './Tag.jsx'
 
+function Listen({ paper }) {
+  const count = paper.au || 0
+  const src = (index) => '/audio/' + encodeURIComponent(paper.i) + (count > 1 ? '/' + index : '')
+  if (count < 2) {
+    return <audio key={paper.i} className="listen" controls preload="none" src={src(0)} />
+  }
+  return (
+    <div className="listen tracks" key={paper.i}>
+      {Array.from({ length: count }, (_, index) => (
+        <label key={index}>
+          Track {index + 1}
+          <audio controls preload="none" src={src(index)} />
+        </label>
+      ))}
+    </div>
+  )
+}
+
 function Icon({ children }) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">{children}</svg>
@@ -92,6 +110,7 @@ export function QuestionSheet({ open, docs, index, view, question, questions, pa
         {open && docs && paper && (
           <iframe className="pframe" src={'/doc/' + encodeURIComponent(paper.i) + '.pdf'} title={paperName(paper)} />
         )}
+        {open && docs && paper?.au ? <Listen paper={paper} /> : null}
         {open && !docs && (
           <div className="reel" ref={reelRef}>
             {[-1, 0, 1].map((delta) => {

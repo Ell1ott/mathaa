@@ -26,9 +26,50 @@ HEADER = re.compile(
     r"(?m)^[#\s]*(\d+)\.\s*(?:\\\()?\s*\[Maximum marks?:\s*(\d+)\]\s*(?:\\\))?[ \t]*\n?"
 )
 SESSION_ORDER = {"November": 0, "May": 1, "Specimen": 2}
-ECON_ROOT = ROOT / "papers" / "library" / "societies" / "economics"
+LIBRARY = ROOT / "papers" / "library"
+ECON_ROOT = LIBRARY / "societies" / "economics"
 ECON_NAME = re.compile(r"^p(\d+)(?:-(tz\d+))?\.pdf$", re.I)
 ECON_MONTH = {"05": "May", "11": "November"}
+# Physics and Economics already have their own banks. Math AA HL stays on the question bank.
+LIBRARY_SKIP = {("sciences", "physics"), ("societies", "economics")}
+MATH_AA = ("mathematics", "mathematics-analysis-and-approaches")
+LIBRARY_GROUPS = (
+    ("mathematics", "Mathematics"),
+    ("sciences", "Sciences"),
+    ("societies", "Individuals and societies"),
+    ("language-acquisition", "Language acquisition"),
+    ("language-literature", "Studies in language and literature"),
+    ("arts", "Arts"),
+)
+_LABEL_SMALL = {"ab", "and", "of", "the", "in", "initio"}
+_PAPER_STEM = re.compile(r"^p(\d+)([ab])?(?:-(tz\d+))?(?:-(.+))?$", re.I)
+_LISTEN_STEM = re.compile(r"^listening(?:-(tz\d+))?(?:-(.+))?$", re.I)
+_ID_PART = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+IB_AUDIO = ROOT / "papers" / "ib"
+# m242abspaslispatz0xxl: May 2024, language B Spanish, SL, no time zone.
+_AUDIO_NAME = re.compile(r"^([mn])(\d{2})\d([a-z]{2})([a-z]{3})(hl|sl)i[a-z]{3}tz(\d)([a-z]{2})l$", re.I)
+_AUDIO_LANG = {
+    "spa": "spanish",
+    "eng": "english",
+    "fre": "french",
+    "ger": "german",
+    "jpn": "japanese",
+    "ind": "indonesian",
+    "ita": "italian",
+    "ara": "arabic",
+    "kor": "korean",
+    "swe": "swedish",
+    "rus": "russian",
+    "nor": "norwegian",
+    "fin": "finnish",
+    "dan": "danish",
+    "dut": "dutch",
+    "hin": "hindi",
+    "por": "portuguese",
+    "heb": "hebrew",
+    "tam": "tamil",
+    "mal": "malay",
+}
 
 
 def load_json(path: Path, fallback):
@@ -121,6 +162,190 @@ def question_bank(questions: list[dict], subject: str = "math") -> dict:
     return {"topics": topics, "qs": out}
 
 
+def subject_label(slug: str) -> str:
+    words = []
+    for index, word in enumerate(slug.split("-")):
+        if len(word) == 1:
+            words.append(word.upper())
+        elif index and word in _LABEL_SMALL:
+            words.append(word)
+        else:
+            words.append(word[:1].upper() + word[1:])
+    return " ".join(words)
+
+
+def parse_library_name(name: str) -> tuple[str, int | str, str, str] | None:
+    """Return (id fragment, paper, tz, component). None skips markschemes and odd names."""
+    if not name.lower().endswith(".pdf") or "markscheme" in name.lower() or "--" in name:
+        return None
+    stem = name[:-4]
+    heard = _LISTEN_STEM.fullmatch(stem)
+    numbered = _PAPER_STEM.fullmatch(stem)
+    if heard:
+        tz = (heard.group(1) or "").lower()
+        component = (heard.group(2) or "").lower()
+        paper: int | str = "Listening"
+        fragment = "listening"
+    elif numbered:
+        tz = (numbered.group(3) or "").lower()
+        component = (numbered.group(4) or "").lower()
+        letter = (numbered.group(2) or "").lower()
+        fragment = f"p{numbered.group(1)}{letter}"
+        paper = f"{numbered.group(1)}{letter.upper()}" if letter else int(numbered.group(1))
+    else:
+        return None
+    if component and not _ID_PART.fullmatch(component):
+        return None
+    if tz:
+        fragment += f"-{tz}"
+    if component:
+        fragment += f"-{component}"
+    if not _ID_PART.fullmatch(fragment):
+        return None
+    return fragment, paper, tz, component
+
+
+def audio_subjects(kind: str, lang: str, variant: str) -> list[str]:
+    """IB audio codes use ab for language B and an for ab initio."""
+    if kind == "ab" and lang == "chi" and variant == "ca":
+        return ["chinese-b-cantonese"]
+    if kind == "ab" and lang == "chi":
+        return ["chinese-b"]
+    if (kind == "an" and lang == "man") or (kind == "ab" and lang == "cma"):
+        return ["mandarin-ab-initio"]
+    if kind == "ab" and lang == "cca":
+        return ["chinese-b-cantonese"]
+    if lang == "swa":
+        tail = "b" if kind == "ab" else "ab-initio"
+        return [f"swahili-{tail}", f"kiswahili-{tail}"]
+    name = _AUDIO_LANG.get(lang)
+    if not name or kind not in {"ab", "an"}:
+        return []
+    return [f"{name}-b" if kind == "ab" else f"{name}-ab-initio"]
+
+
+def _prefer_audio(old: Path | None, new: Path) -> Path:
+    if old is None or ("HTML" in old.parts and "HTML" not in new.parts):
+        return new
+    return old
+
+
+def listening_audio(root: Path | None = None) -> dict[tuple, Path]:
+    """Map (subject, level, year, session, time zone) to one mp3."""
+    base = IB_AUDIO if root is None else root
+    found: dict[tuple, Path] = {}
+    if not base.is_dir():
+        return found
+    for path in base.rglob("*.mp3"):
+        match = _AUDIO_NAME.match(path.stem)
+        if match is None:
+            continue
+        session, yy, kind, lang, level, tz, variant = (part.lower() for part in match.groups())
+        tail = (
+            level,
+            2000 + int(yy),
+            "May" if session == "m" else "November",
+            "" if tz == "0" else f"TZ{tz}",
+        )
+        for subject in audio_subjects(kind, lang, variant):
+            key = (subject, *tail)
+            found[key] = _prefer_audio(found.get(key), path)
+    return found
+
+
+_TRACK_NAME = re.compile(r"^track (\d+)$", re.I)
+_TRACK_SESSION = re.compile(r"(May|November) (20\d\d)")
+
+
+def music_tracks(root: Path | None = None) -> dict[tuple[int, str], list[Path]]:
+    """Session tracks named Track 1.mp3 and so on, shared by the music listening papers."""
+    base = IB_AUDIO if root is None else root
+    found: dict[tuple[int, str], dict[int, Path]] = {}
+    if not base.is_dir():
+        return {}
+    for path in base.rglob("*.mp3"):
+        match = _TRACK_NAME.match(path.stem)
+        where = _TRACK_SESSION.search(str(path))
+        if match is None or where is None:
+            continue
+        key = (int(where.group(2)), where.group(1))
+        slot = found.setdefault(key, {})
+        number = int(match.group(1))
+        slot[number] = _prefer_audio(slot.get(number), path)
+    return {key: [slot[number] for number in sorted(slot)] for key, slot in found.items()}
+
+
+def library_catalog(
+    root: Path | None = None, audio: dict[tuple, Path] | None = None
+) -> tuple[list[dict], dict[str, Path], list[list[str]], dict[str, list[Path]]]:
+    """English question papers for every course that is not already its own bank."""
+    base = LIBRARY if root is None else root
+    papers: list[dict] = []
+    files: dict[str, Path] = {}
+    heard: dict[str, list[Path]] = {}
+    found: dict[str, list[str]] = {}
+    clips = audio if audio is not None else (listening_audio() if root is None else {})
+    tracks = music_tracks() if root is None and audio is None else {}
+    if not base.is_dir():
+        return papers, files, [], heard
+    for path in sorted(base.rglob("*.pdf")):
+        if path.parent.name != "en":
+            continue
+        rel = path.relative_to(base)
+        if len(rel.parts) != 6:
+            continue
+        group, subject, level, session, _lang, name = rel.parts
+        if (group, subject) in LIBRARY_SKIP:
+            continue
+        parsed = parse_library_name(name)
+        if parsed is None:
+            continue
+        year_s, _, month = session.partition("-")
+        session_name = ECON_MONTH.get(month)
+        if not year_s.isdigit() or session_name is None or not _ID_PART.fullmatch(level):
+            continue
+        if (group, subject) == MATH_AA:
+            if level != "sl":
+                continue
+            sid, label = "math-aa-sl", "Math AA SL"
+        else:
+            if not _ID_PART.fullmatch(subject):
+                continue
+            sid, label = subject, subject_label(subject)
+        fragment, paper, tz, component = parsed
+        pid = f"{sid}-{level}-{year_s}-{month}-{fragment}"
+        if not _ID_PART.fullmatch(pid) or pid in files:
+            continue
+        files[pid] = path
+        row = {
+            "i": pid,
+            "y": int(year_s),
+            "s": session_name,
+            "p": paper,
+            "z": tz.upper() if tz else "",
+            "l": level,
+            "u": sid,
+        }
+        if component:
+            row["k"] = component
+        if row["p"] == "Listening" and sid == "music":
+            pieces = tracks.get((int(year_s), session_name))
+            if pieces:
+                row["au"] = len(pieces)
+                heard[pid] = pieces
+        elif row["p"] == "Listening":
+            clip = clips.get((sid, level, int(year_s), session_name, row["z"]))
+            if clip is not None:
+                row["au"] = 1
+                heard[pid] = [clip]
+        papers.append(row)
+        found.setdefault(sid, [label, dict(LIBRARY_GROUPS).get(group, "Other")])
+    group_order = {name: index for index, (_key, name) in enumerate(LIBRARY_GROUPS)}
+    subs = [[sid, label, group] for sid, (label, group) in found.items()]
+    subs.sort(key=lambda row: (group_order.get(row[2], 9), row[1].lower()))
+    return papers, files, subs, heard
+
+
 def economics_catalog(root: Path | None = None) -> tuple[list[dict], dict[str, Path]]:
     """English economics question papers. Markschemes and other languages stay out."""
     base = ECON_ROOT if root is None else root
@@ -172,6 +397,24 @@ def load_economics() -> tuple[list[dict], dict[str, Path]]:
     return _econ_cache
 
 
+_library_cache: tuple[list[dict], dict[str, Path], list[list[str]]] | None = None
+
+
+def load_library() -> tuple[list[dict], dict[str, Path], list[list[str]], dict[str, list[Path]]]:
+    global _library_cache
+    if _library_cache is None:
+        _library_cache = library_catalog()
+    return _library_cache
+
+
+def shipped_paper_files() -> dict[str, Path]:
+    """Math, Physics, and Economics only. The rest of the library stays on this machine."""
+    files = dict(paper_files())
+    for paper_id in load_library()[1]:
+        files.pop(paper_id, None)
+    return files
+
+
 def physics_papers(payload: dict, counts: dict[str, int]) -> list[dict]:
     rows = []
     for paper in payload.get("papers", []):
@@ -202,9 +445,13 @@ def bank_json() -> bytes:
         counts[question["paper_id"]] = counts.get(question["paper_id"], 0) + 1
     if physics.get("papers"):
         bank["pp"] = physics_papers(physics, counts)
-    papers, _files = load_economics()
+    econ_papers, _files = load_economics()
+    library_papers, _lib_files, subs, _audio = load_library()
+    papers = econ_papers + library_papers
     if papers:
         bank["ps"] = papers
+    if subs:
+        bank["subs"] = subs
     return json.dumps(bank, ensure_ascii=False, separators=(",", ":")).encode()
 
 
@@ -288,10 +535,23 @@ def thumb_jpeg(path: Path, page: int) -> bytes | None:
         return written.get(page)
 
 
-def subject_pdf(paper_id: str) -> Path | None:
-    """English economics or physics question paper. Markschemes stay out."""
-    if not paper_id.startswith(("econ-", "phy-")):
+def listening_audio_file(paper_id: str, index: int = 0) -> Path | None:
+    if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", paper_id) or index < 0:
         return None
+    group = load_library()[3].get(paper_id) or []
+    if index >= len(group):
+        return None
+    path = group[index]
+    if not path.is_file() or path.suffix.lower() != ".mp3":
+        return None
+    resolved = path.resolve()
+    if ROOT.resolve() not in resolved.parents:
+        return None
+    return resolved
+
+
+def subject_pdf(paper_id: str) -> Path | None:
+    """Question paper for any subject. Markschemes stay out."""
     if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", paper_id):
         return None
     path = paper_files().get(paper_id)
@@ -348,6 +608,8 @@ def paper_files() -> dict[str, Path]:
         _remember_pdf(files, root, paper.get("id"), paper.get("file"))
     _papers, econ = load_economics()
     files.update(econ)
+    _library, library, _subs, _audio = load_library()
+    files.update(library)
     _PAPER_FILES = files
     _PAPER_MTIME = mtime
     return files
@@ -422,6 +684,18 @@ class Handler(BaseHTTPRequestHandler):
                 self.send(404, b"image not on disk", "text/plain; charset=utf-8")
                 return
             self.send(200, path.read_bytes(), "image/png")
+            return
+        if parsed.path.startswith("/audio/"):
+            rest = parsed.path[len("/audio/") :]
+            paper_id, _, index_s = rest.partition("/")
+            if index_s and not index_s.isdigit():
+                self.send(404, b"audio not on disk", "text/plain; charset=utf-8")
+                return
+            path = listening_audio_file(paper_id, int(index_s) if index_s else 0)
+            if path is None:
+                self.send(404, b"audio not on disk", "text/plain; charset=utf-8")
+                return
+            self.send(200, path.read_bytes(), "audio/mpeg")
             return
         if parsed.path.startswith("/doc/"):
             name = parsed.path.split("/", 2)[2]

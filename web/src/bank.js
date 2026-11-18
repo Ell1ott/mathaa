@@ -10,10 +10,35 @@ export const MARK_BANDS = [
 export const SESSIONS = ['May', 'November', 'Specimen']
 
 export const SUBJECTS = [
-  ['math', 'IB Math AA HL'],
-  ['phys', 'IB Physics'],
-  ['econ', 'IB Economics'],
+  ['math', 'IB Math AA HL', 'Mathematics'],
+  ['phys', 'IB Physics', 'Sciences'],
+  ['econ', 'IB Economics', 'Individuals and societies'],
 ]
+
+export function papersOnly(subject) {
+  return subject !== 'math' && subject !== 'phys'
+}
+
+export function subjectMenu(subs) {
+  const grouped = new Map()
+  for (const row of SUBJECTS.concat(subs || [])) {
+    const name = row[2] || 'Other'
+    if (!grouped.has(name)) grouped.set(name, [])
+    const list = grouped.get(name)
+    if (!list.some(([id]) => id === row[0])) list.push(row)
+  }
+  return [...grouped]
+}
+
+export function paperLabel(paper) {
+  return paper === 'Listening' ? 'Listening' : 'Paper ' + paper
+}
+
+export function componentLabel(component) {
+  if (typeof component !== 'string' || !component) return ''
+  const [first, ...rest] = component.split('-')
+  return [first.charAt(0).toUpperCase() + first.slice(1), ...rest].join(' ')
+}
 
 export function areasFor(subject) {
   return subject === 'phys' ? PHYSICS_AREAS : AREAS
@@ -34,7 +59,8 @@ export function label(q) {
 
 export function paperName(p) {
   const level = p.l ? (LEVELS[p.l] || p.l) + ' ' : ''
-  return level + p.s + ' ' + p.y + ', Paper ' + p.p + (p.z ? ', ' + p.z : '')
+  const component = p.p === 'Listening' ? '' : componentLabel(p.k)
+  return level + p.s + ' ' + p.y + ', ' + paperLabel(p.p) + (p.z ? ', ' + p.z : '') + (component ? ', ' + component : '')
 }
 
 export function calculator(q) {
@@ -74,12 +100,28 @@ export function prepare(data) {
     paper.n++
   }
   for (const p of data.ps || []) {
-    papers.push({ i: p.i, y: p.y, s: p.s, p: p.p, z: p.z || '', n: p.n || 0, l: p.l || '', u: p.u || 'econ' })
+    const paper = { i: p.i, y: p.y, s: p.s, p: p.p, z: p.z || '', n: p.n || 0, l: p.l || '', u: p.u || 'econ', k: p.k || '' }
+    if (p.au) paper.au = 1
+    papers.push(paper)
   }
   for (const p of data.pp || []) {
-    papers.push({ i: p.i, y: p.y, s: p.s, p: p.p, z: p.z || '', n: p.n || 0, l: p.l || '', u: 'phys' })
+    papers.push({ i: p.i, y: p.y, s: p.s, p: p.p, z: p.z || '', n: p.n || 0, l: p.l || '', u: 'phys', k: '' })
   }
-  return { topics, physTopics, questions, papers }
+  const counts = {}
+  for (const item of questions.concat(papers)) {
+    const id = item.u || 'math'
+    counts[id] = (counts[id] || 0) + 1
+  }
+  return { topics, physTopics, questions, papers, subs: data.subs || [], counts }
+}
+
+export function topSubjects(groups, counts, n = 10) {
+  return groups
+    .flatMap(([, rows]) => rows)
+    .map((row, index) => ({ row, index, count: (counts && counts[row[0]]) || 0 }))
+    .sort((a, b) => b.count - a.count || a.index - b.index)
+    .slice(0, n)
+    .map(({ row }) => row)
 }
 
 export function toggleSet(set, value) {
@@ -123,7 +165,7 @@ export function matchesPaper(p, S, skip, txt) {
 
 function paperHay(p) {
   const level = p.l === 'hlsl' ? 'hl sl' : (p.l || '')
-  return (level + ' ' + p.s + ' ' + p.y + ' paper ' + p.p + ' ' + (p.z || '')).toLowerCase()
+  return (level + ' ' + p.s + ' ' + p.y + ' paper ' + p.p + ' ' + (p.z || '') + ' ' + (p.k || '').replace(/-/g, ' ')).toLowerCase()
 }
 
 export function tally(items, ok, fn) {
@@ -159,7 +201,7 @@ export function areaIndexFor(subject) {
 
 export function groupOptions(mode, subject) {
   if (mode !== 'papers') return QUESTION_GROUPS
-  return subject === 'econ' || subject === 'phys' ? PAPER_GROUPS : PAPER_GROUPS.filter(([id]) => id !== 'level')
+  return subject === 'math' ? PAPER_GROUPS.filter(([id]) => id !== 'level') : PAPER_GROUPS
 }
 
 export function defaultGroup(mode) {
@@ -252,7 +294,7 @@ export function orderPapers(list, group, sort, subject) {
 // shortcut: first topic only, duplicate a question into each subtopic if cross-listed ones should show twice
 export function questionBucket(q, group, topics) {
   if (group === 'year') return { id: 'y' + q.y, label: String(q.y) }
-  if (group === 'paper') return { id: 'p' + q.p, label: 'Paper ' + q.p }
+  if (group === 'paper') return { id: 'p' + q.p, label: paperLabel(q.p) }
   if (group === 'session') return { id: 's' + q.s, label: q.s }
   if (group === 'area') {
     const area = q.ar[0] || ''
@@ -266,7 +308,7 @@ export function questionBucket(q, group, topics) {
 export function paperBucket(p, group) {
   if (group === 'year') return { id: 'y' + p.y, label: String(p.y) }
   if (group === 'session') return { id: 's' + p.s, label: p.s }
-  if (group === 'paper') return { id: 'p' + p.p, label: 'Paper ' + p.p }
+  if (group === 'paper') return { id: 'p' + p.p, label: paperLabel(p.p) }
   return { id: 'l' + (p.l || ''), label: LEVELS[p.l] || 'Other' }
 }
 
@@ -290,10 +332,10 @@ export function topicsIn(topics, area) {
 export function activePills(S, topics, query) {
   const pills = []
   const push = (group, value, label) => pills.push({ id: group + ':' + value, group, value, label })
-  S.p.forEach((v) => push('p', v, 'Paper ' + v))
+  S.p.forEach((v) => push('p', v, paperLabel(v)))
   S.y.forEach((v) => push('y', v, String(v)))
   S.s.forEach((v) => push('s', v, v))
-  if (S.sub === 'econ' || S.sub === 'phys') S.l.forEach((v) => push('l', v, LEVELS[v] || v))
+  if (S.sub !== 'math') S.l.forEach((v) => push('l', v, LEVELS[v] || v))
   if (S.browse !== 'papers') {
     S.m.forEach((v) => push('m', v, MARK_BANDS[v][0] + ' marks'))
     S.a.forEach((v) => push('a', v, AREA_SHORT[v] || v))

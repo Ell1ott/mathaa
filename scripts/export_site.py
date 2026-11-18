@@ -9,7 +9,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from catalog import ROOT  # noqa: E402
-from serve import bank_json, paper_files, subject_pdf, write_paper_covers  # noqa: E402
+from serve import bank_json, shipped_paper_files, subject_pdf, write_paper_covers  # noqa: E402
 
 SITE = ROOT / "site"
 DIST = ROOT / "web" / "dist"
@@ -31,11 +31,12 @@ def main() -> None:
         shutil.rmtree(SITE)
     shutil.copytree(DIST, SITE)
     (SITE / "questions.json").write_bytes(bank_json())
-    write_paper_covers()
+    shipped = shipped_paper_files()
+    write_paper_covers(shipped)
     copy_dir(ROOT / "data" / "covers", SITE / "paper")
     docs = SITE / "doc"
     docs.mkdir(parents=True, exist_ok=True)
-    for paper_id in paper_files():
+    for paper_id in shipped:
         path = subject_pdf(paper_id)
         if path is not None:
             shutil.copy2(path, docs / f"{paper_id}.pdf")

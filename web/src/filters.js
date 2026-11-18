@@ -1,10 +1,11 @@
-import { defaultGroup, resolveGroup } from './bank.js'
+import { defaultGroup, papersOnly, resolveGroup } from './bank.js'
 
 export function filtersFrom(search) {
   const u = new URLSearchParams(search), F = { p: new Set(), y: new Set(), s: new Set(), m: new Set(), a: new Set(), t: new Set(), l: new Set(), saved: false, ver: false, unc: false, strict: false, q: '', sort: 'new', sub: 'math' }
   for (const k of ['p', 'y', 's', 'm', 'a', 't', 'l']) for (const x of (u.get(k) || '').split(',')) {
     if (!x) continue
     if (k === 'p' && /^\d+[A-Za-z]$/.test(x)) { F.p.add(x.toUpperCase()); continue }
+    if (k === 'p' && x === 'Listening') { F.p.add(x); continue }
     if (k === 'p' || k === 'y' || k === 'm') { const n = +x; if (Number.isFinite(n)) F[k].add(n) }
     else F[k].add(x)
   }
@@ -16,8 +17,9 @@ export function filtersFrom(search) {
   const sort = u.get('sort')
   if (['old', 'mh', 'ml', 'tp'].includes(sort)) F.sort = sort
   F.browse = u.get('browse') === 'papers' ? 'papers' : 'questions'
-  F.sub = u.get('sub') === 'econ' ? 'econ' : u.get('sub') === 'phys' ? 'phys' : 'math'
-  if (F.sub === 'econ') F.browse = 'papers'
+  const sub = u.get('sub') || 'math'
+  F.sub = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(sub) ? sub : 'math'
+  if (papersOnly(F.sub)) F.browse = 'papers'
   F.group = resolveGroup(F.browse, F.sub, u.get('g') || '')
   return F
 }
@@ -25,7 +27,7 @@ export function filtersFrom(search) {
 export function filtersTo(S, q, sort, path, open) {
   const u = new URLSearchParams()
   for (const k of ['p', 'y', 's', 'm', 'a', 't', 'l']) if (S[k]?.size) u.set(k, [...S[k]].join(','))
-  if (S.sub === 'econ' || S.sub === 'phys') u.set('sub', S.sub)
+  if (S.sub && S.sub !== 'math') u.set('sub', S.sub)
   if (S.saved) u.set('saved', '1')
   if (S.ver) u.set('ver', '1')
   if (S.unc) u.set('unc', '1')

@@ -6,9 +6,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from catalog import build_catalog  # noqa: E402
-from serve import economics_catalog, question_bank  # noqa: E402
+from serve import economics_catalog, library_catalog, question_bank  # noqa: E402
 from transcribe import (  # noqa: E402
     tidy_scheme,
+    cache_matches,
     diagram_rects,
     job_id,
     line_y,
@@ -456,6 +457,13 @@ class ExtractTest(unittest.TestCase):
 
 
 class OpenParserTest(unittest.TestCase):
+    def test_cached_read_must_match_the_crop(self):
+        pdf = "10. [Maximum mark: 14]\nConsider the arithmetic sequence of payments."
+        same = "10. [Maximum mark: 14]\nConsider the arithmetic sequence."
+        other = "10. [Maximum mark: 18]\nThe function f is defined by a quadratic."
+        self.assertTrue(cache_matches(pdf, same))
+        self.assertFalse(cache_matches(pdf, other))
+
     def test_tidy_scheme_drops_page_furniture(self):
         cleaned = tidy_scheme(
             "– 8 –\n1. (a) \\(d=-6\\) (M1)\nQuestion 1 continued.\ncontinued…\nTurn over\nTotal [6 marks]\n"
@@ -682,6 +690,24 @@ class BankTest(unittest.TestCase):
             write_paper_covers({"solo": one, "pair": two}, dest)
             self.assertEqual((dest / "pair-1.jpg").stat().st_mtime, stamped)
 
+    def test_subject_pdf_serves_math_and_skips_markschemes(self):
+        import tempfile
+        from unittest.mock import patch
+
+        from serve import subject_pdf
+
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            paper = root / "p1.pdf"
+            scheme = root / "p1-markscheme.pdf"
+            paper.write_bytes(b"%PDF")
+            scheme.write_bytes(b"%PDF")
+            files = {"hl-2021-05-p1-tz1": paper, "econ-hl-2024-05-p1-tz1": scheme}
+            with patch("serve.paper_files", return_value=files):
+                self.assertEqual(subject_pdf("hl-2021-05-p1-tz1"), paper)
+                self.assertIsNone(subject_pdf("econ-hl-2024-05-p1-tz1"))
+                self.assertIsNone(subject_pdf("../x"))
+
     def test_economics_papers_skip_markschemes_and_other_languages(self):
         root = Path(__file__).resolve().parents[1] / "papers" / "library" / "societies" / "economics"
         if not any(root.rglob("*.pdf")):
@@ -696,6 +722,92 @@ class BankTest(unittest.TestCase):
         sample = next(paper for paper in papers if paper["l"] == "hl" and paper["z"] == "TZ1")
         self.assertTrue(sample["i"].startswith("econ-hl-"))
         self.assertIn("-p", sample["i"])
+
+    def test_library_catalog_keeps_spanish_booklets_apart(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            spanish = root / "language-acquisition" / "spanish-b" / "hl" / "2020-11"
+            (spanish / "en").mkdir(parents=True)
+            (spanish / "es").mkdir()
+            for name in (
+                "p1.pdf",
+                "p2-reading-comprehension-text-booklet.pdf",
+                "p1-markscheme.pdf",
+                "listening.pdf",
+                "p1--2.pdf",
+            ):
+                (spanish / "en" / name).write_bytes(b"%PDF")
+            (spanish / "es" / "p1.pdf").write_bytes(b"%PDF")
+            aa = root / "mathematics" / "mathematics-analysis-and-approaches"
+            (aa / "hl" / "2021-05" / "en").mkdir(parents=True)
+            (aa / "sl" / "2021-05" / "en").mkdir(parents=True)
+            (aa / "hl" / "2021-05" / "en" / "p1.pdf").write_bytes(b"%PDF")
+            (aa / "sl" / "2021-05" / "en" / "p1-tz1.pdf").write_bytes(b"%PDF")
+            (root / "sciences" / "physics" / "hl" / "2024-05" / "en").mkdir(parents=True)
+            (root / "sciences" / "physics" / "hl" / "2024-05" / "en" / "p1.pdf").write_bytes(b"%PDF")
+            (root / "societies" / "economics" / "hl" / "2024-05" / "en").mkdir(parents=True)
+            (root / "societies" / "economics" / "hl" / "2024-05" / "en" / "p1.pdf").write_bytes(b"%PDF")
+            papers, files, subs, heard = library_catalog(root)
+            self.assertEqual(heard, {})
+            ids = {paper["i"]: paper for paper in papers}
+            self.assertEqual(
+                set(ids),
+                {
+                    "spanish-b-hl-2020-11-p1",
+                    "spanish-b-hl-2020-11-p2-reading-comprehension-text-booklet",
+                    "spanish-b-hl-2020-11-listening",
+                    "math-aa-sl-sl-2021-05-p1-tz1",
+                },
+            )
+            booklet = ids["spanish-b-hl-2020-11-p2-reading-comprehension-text-booklet"]
+            self.assertEqual(booklet["k"], "reading-comprehension-text-booklet")
+            self.assertEqual(booklet["p"], 2)
+            self.assertEqual(ids["spanish-b-hl-2020-11-listening"]["p"], "Listening")
+            self.assertEqual(ids["math-aa-sl-sl-2021-05-p1-tz1"]["z"], "TZ1")
+            self.assertTrue(all(path.parent.name == "en" and "markscheme" not in path.name for path in files.values()))
+            labels = {row[0]: row[1] for row in subs}
+            self.assertEqual(labels["spanish-b"], "Spanish B")
+            self.assertEqual(labels["math-aa-sl"], "Math AA SL")
+            self.assertNotIn("physics", labels)
+            self.assertNotIn("economics", labels)
+
+    def test_listening_audio_matches_the_paper(self):
+        import tempfile
+
+        from serve import listening_audio
+
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            audio = root / "audio"
+            html = audio / "HTML"
+            html.mkdir(parents=True)
+            (audio / "m242abspaslispatz0xxl.mp3").write_bytes(b"ID3real")
+            (html / "m242abspaslispatz0xxl.mp3").write_bytes(b"ID3copy")
+            (audio / "m242anspaslispatz0xxl.mp3").write_bytes(b"ID3ab")
+            (audio / "m252abenghliengtz0xxl.mp3").write_bytes(b"ID3eng")
+            library = root / "library"
+            for subject, level, session, name in (
+                ("spanish-b", "sl", "2024-05", "listening.pdf"),
+                ("spanish-ab-initio", "sl", "2024-05", "listening.pdf"),
+                ("spanish-b", "hl", "2024-05", "listening.pdf"),
+                ("english-b", "hl", "2025-05", "listening.pdf"),
+                ("english-b", "hl", "2025-05", "listening-tz1.pdf"),
+            ):
+                dest = library / "language-acquisition" / subject / level / session / "en"
+                dest.mkdir(parents=True, exist_ok=True)
+                (dest / name).write_bytes(b"%PDF")
+            papers, _files, _subs, heard = library_catalog(library, listening_audio(audio))
+            by_id = {paper["i"]: paper for paper in papers}
+            spanish = by_id["spanish-b-sl-2024-05-listening"]
+            self.assertEqual(spanish["au"], 1)
+            self.assertEqual(heard[spanish["i"]][0].name, "m242abspaslispatz0xxl.mp3")
+            self.assertNotIn("HTML", heard[spanish["i"]][0].parts)
+            self.assertEqual(by_id["spanish-ab-initio-sl-2024-05-listening"]["au"], 1)
+            self.assertNotIn("au", by_id["spanish-b-hl-2024-05-listening"])
+            self.assertEqual(by_id["english-b-hl-2025-05-listening"]["au"], 1)
+            self.assertNotIn("au", by_id["english-b-hl-2025-05-listening-tz1"])
 
     def test_browser_keeps_economics_out_of_math(self):
         script = r"""
@@ -800,6 +912,13 @@ if (!matchesQuestion(bare, { ...off, unc: true }, {}, null, "")) process.exit(29
 const opened = filtersTo(filtersFrom("?y=2024"), "", "new", "/", "2024-05-p1-tz1-q3");
 if (opened !== "/?y=2024&open=2024-05-p1-tz1-q3") process.exit(30);
 if (filtersTo(filtersFrom("?open=2024-05-p1-q1"), "", "new", "/") !== "/") process.exit(31);
+const spanish = filtersFrom("?sub=spanish-b&browse=questions&sort=mh&p=Listening");
+if (spanish.sub !== "spanish-b" || spanish.browse !== "papers" || spanish.sort !== "mh") process.exit(32);
+if ([...spanish.p].join(",") !== "Listening") process.exit(33);
+const spanishUrl = filtersTo(spanish, "", "new", "/");
+if (!spanishUrl.includes("sub=spanish-b") || !spanishUrl.includes("p=Listening")) process.exit(34);
+if (filtersFrom("?sub=spanish-b&g=level").group !== "level") process.exit(35);
+if (filtersFrom("?sub=../x").sub !== "math") process.exit(36);
 """
         root = Path(__file__).resolve().parents[1]
         run = subprocess.run(["node", "--input-type=module", "-e", script], cwd=root, capture_output=True, text=True)
