@@ -6,8 +6,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from catalog import build_catalog  # noqa: E402
-from serve import economics_catalog, library_catalog, question_bank  # noqa: E402
+from serve import economics_catalog, library_catalog, question_bank, shipped_paper_files  # noqa: E402
+from physics_scheme import read_scheme  # noqa: E402
 from transcribe import (  # noqa: E402
+    scheme_body,
     tidy_scheme,
     cache_matches,
     diagram_rects,
@@ -267,6 +269,57 @@ class PhysicsExtractTest(unittest.TestCase):
         older = got[("phy-hl-2016-05-p2", 1)]
         self.assertEqual(older["status"], "matched")
         self.assertEqual(older["topics"][0]["topic"], "Forces and momentum")
+
+
+class PhysicsSchemeTest(unittest.TestCase):
+    def test_answer_key_and_table_and_labels(self):
+        import pymupdf
+
+        key = pymupdf.open()
+        page = key.new_page()
+        for number in range(1, 21):
+            letter = "ABCD"[(number - 1) % 4]
+            page.insert_text((40 + ((number - 1) // 10) * 160, 80 + ((number - 1) % 10) * 22), f"{number}. {letter}")
+        letters, spans = read_scheme(key)
+        key.close()
+        self.assertEqual(letters[1], "A")
+        self.assertEqual(letters[2], "B")
+        self.assertEqual(spans, {})
+
+        table = pymupdf.open()
+        notes = table.new_page()
+        notes.insert_text((61, 150), "1. Each row is one marking point")
+        notes.insert_text((61, 180), "2. The total is in the last column")
+        body = table.new_page()
+        body.insert_text((51, 120), "1")
+        body.insert_text((80, 120), "(a)")
+        body.insert_text((51, 200), "1")
+        body.insert_text((80, 200), "b")
+        body.insert_text((51, 320), "2")
+        body.insert_text((80, 320), "a")
+        body.insert_text((51, 420), "3")
+        body.insert_text((80, 420), "open")
+        letters, spans = read_scheme(table)
+        table.close()
+        self.assertIsNone(letters)
+        self.assertEqual(set(spans), {1, 2, 3})
+        self.assertEqual(spans[1]["page_start"], 2)
+        self.assertEqual(spans[1]["bottom"], spans[2]["top"])
+        self.assertLess(spans[1]["top"], spans[1]["bottom"])
+
+        labeled = pymupdf.open()
+        sheet = labeled.new_page()
+        sheet.insert_text((42, 110), "A1. (a) no")
+        sheet.insert_text((42, 240), "A2. (a) impulse")
+        sheet.insert_text((42, 400), "B1. Part 1 Fields")
+        letters, spans = read_scheme(labeled)
+        labeled.close()
+        self.assertEqual(list(spans), ["A1", "A2", "B1"])
+        self.assertIsNone(spans["B1"]["bottom"])
+
+    def test_multiple_choice_letter_survives_tidy(self):
+        self.assertEqual(scheme_body("B\n"), "B")
+        self.assertNotEqual(tidy_scheme("B\n"), "B")
 
 
 class ExtractTest(unittest.TestCase):
@@ -707,6 +760,26 @@ class BankTest(unittest.TestCase):
                 self.assertEqual(subject_pdf("hl-2021-05-p1-tz1"), paper)
                 self.assertIsNone(subject_pdf("econ-hl-2024-05-p1-tz1"))
                 self.assertIsNone(subject_pdf("../x"))
+
+    def test_shipped_papers_keep_recent_subjects_and_math(self):
+        import tempfile
+        from unittest.mock import patch
+
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            old = root / "sciences" / "biology" / "hl" / "2019-05" / "en" / "p1.pdf"
+            recent = root / "sciences" / "biology" / "hl" / "2025-05" / "en" / "p1.pdf"
+            math = root / "mathematics" / "mathematics-analysis-and-approaches" / "hl" / "2021-05" / "en" / "p1.pdf"
+            econ = root / "econ.pdf"
+            for path in (old, recent, math, econ):
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(b"%PDF")
+            files = {"bio-old": old, "bio-new": recent, "math-old": math, "econ": econ}
+            library = {"bio-old": old, "bio-new": recent, "math-old": math}
+            with patch("serve.paper_files", return_value=files), patch(
+                "serve.load_library", return_value=([], library, [], {})
+            ):
+                self.assertEqual(set(shipped_paper_files()), {"bio-new", "math-old", "econ"})
 
     def test_economics_papers_skip_markschemes_and_other_languages(self):
         root = Path(__file__).resolve().parents[1] / "papers" / "library" / "societies" / "economics"

@@ -2,7 +2,7 @@
 
 Local browser for IB Mathematics: analysis and approaches HL papers. It filters by syllabus area, topic, year, session, paper, and time zone, shows the question text, and opens the PDF on the page where the question starts.
 
-Question text and the cutout images in `data/questions.json`, `data/cuts/`, and `data/figs/` are committed. The PDFs in `papers/` stay gitignored.
+Question text and the cutout images in `data/questions.json`, `data/cuts/`, and `data/figs/` are committed. Physics, Economics, and Math AA question papers are committed in full. Every other subject ships its English question papers from 2025 on. Older papers stay on this machine.
 
 ## Deploy
 

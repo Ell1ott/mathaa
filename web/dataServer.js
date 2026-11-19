@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url'
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const CACHE = path.join(ROOT, 'web', '.cache')
 const COVERS = path.join(ROOT, 'data', 'covers')
-const CUT_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*\.png$/
+const CUT_NAME = /^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*\.png$/
 const COVER_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*-[12]\.jpg$/
 const ID_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const IMAGE_DIR = { cut: 'cuts', fig: 'figs', scheme: 'schemes' }

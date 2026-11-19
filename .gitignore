@@ -15,7 +15,14 @@ papers/**/*.pdf
 papers/**/*.mp3
 !papers/library/societies/economics/**/en/p*.pdf
 !papers/library/sciences/physics/**/en/p*.pdf
+!papers/library/mathematics/mathematics-analysis-and-approaches/**/en/p*.pdf
+!papers/library/**/2025-*/en/p*.pdf
+!papers/library/**/2025-*/en/listening*.pdf
+!papers/library/**/2026-*/en/p*.pdf
+!papers/library/**/2026-*/en/listening*.pdf
+!papers/official/dp-mathematics-analysis-and-approaches-specimen-papers-en.pdf
 papers/**/*markscheme*.pdf
+papers/**/*--*.pdf
 site/
 data/reviews.json
 data/thumbs/

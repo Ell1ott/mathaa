@@ -12,6 +12,10 @@ test('image paths stay in the data folders', () => {
   )
   assert.equal(imagePath(root, 'fig', '../secrets.png'), null)
   assert.equal(imagePath(root, 'scheme', 'Bad.PNG'), null)
+  assert.equal(
+    imagePath(root, 'scheme', 'phy-hl-2009-05-p2-tz1-qA1.png'),
+    path.join(root, 'data', 'schemes', 'phy-hl-2009-05-p2-tz1-qA1.png'),
+  )
   assert.equal(imagePath(root, 'cut', 'a/b.png'), null)
 })
 

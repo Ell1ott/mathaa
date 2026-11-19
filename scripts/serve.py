@@ -11,7 +11,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from catalog import ROOT
-from transcribe import tidy_question, tidy_scheme
+from transcribe import scheme_body, tidy_question
 
 QUESTIONS = ROOT / "data" / "questions.json"
 PHYSICS_QUESTIONS = ROOT / "data" / "physics" / "questions.json"
@@ -20,7 +20,7 @@ REVIEWS = ROOT / "data" / "reviews.json"
 THUMBS = ROOT / "data" / "thumbs"
 COVERS = ROOT / "data" / "covers"
 PORT = 8765
-CUT_NAME = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*\.png")
+CUT_NAME = re.compile(r"[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*\.png")
 COVER_NAME = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*-[12]\.jpg")
 HEADER = re.compile(
     r"(?m)^[#\s]*(\d+)\.\s*(?:\\\()?\s*\[Maximum marks?:\s*(\d+)\]\s*(?:\\\))?[ \t]*\n?"
@@ -127,7 +127,7 @@ def question_bank(questions: list[dict], subject: str = "math") -> dict:
         for topic in question["topics"]:
             topics[topic["code"]] = [topic["topic"], topic["area"]]
         scheme_md = ROOT / "data" / "schemes" / f"{question['id']}.md"
-        scheme = tidy_scheme(scheme_md.read_text()) if scheme_md.is_file() else ""
+        scheme = scheme_body(scheme_md.read_text()) if scheme_md.is_file() else ""
         row = {
             "i": question["id"],
             "y": question["year"],
@@ -407,12 +407,29 @@ def load_library() -> tuple[list[dict], dict[str, Path], list[list[str]], dict[s
     return _library_cache
 
 
+# Other subjects ship from this exam year on. Physics, Economics, and Math AA stay complete.
+SHIP_FROM_YEAR = 2025
+
+
+def session_year(path: Path) -> int | None:
+    for part in path.parts:
+        if len(part) >= 7 and part[:4].isdigit() and part[4] == "-":
+            return int(part[:4])
+    return None
+
+
 def shipped_paper_files() -> dict[str, Path]:
-    """Math, Physics, and Economics only. The rest of the library stays on this machine."""
-    files = dict(paper_files())
-    for paper_id in load_library()[1]:
-        files.pop(paper_id, None)
-    return files
+    """Papers the public site copies. The full library stays on this machine."""
+    library = load_library()[1]
+    kept = {}
+    for paper_id, path in paper_files().items():
+        if paper_id not in library or "mathematics-analysis-and-approaches" in path.parts:
+            kept[paper_id] = path
+            continue
+        year = session_year(path)
+        if year is not None and year >= SHIP_FROM_YEAR:
+            kept[paper_id] = path
+    return kept
 
 
 def physics_papers(payload: dict, counts: dict[str, int]) -> list[dict]:

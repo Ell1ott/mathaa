@@ -599,6 +599,9 @@ def write_schemes(questions: list[dict]) -> tuple[int, int]:
         dest.write_bytes(stitch(pages))
         written += 1
     for old in SCHEMES.glob("*.png"):
+        # Physics crops share this folder and are rewritten by physics_scheme.py.
+        if old.name.startswith("phy-"):
+            continue
         if old.name not in kept:
             old.unlink()
     return written, skipped
@@ -782,6 +785,17 @@ def tidy_scheme(text: str) -> str:
             continue
         kept.append(plain)
     return "\n".join(kept).strip()
+
+
+def scheme_body(text: str) -> str:
+    """Markscheme text for the scheme tab. A multiple-choice key is the letter."""
+    cleaned = tidy_scheme(text)
+    if cleaned:
+        return cleaned
+    letter = text.strip()
+    if re.fullmatch(r"[A-D]", letter):
+        return letter
+    return ""
 
 
 def tidy_question(text: str, number: int) -> str:
