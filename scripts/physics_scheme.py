@@ -77,6 +77,10 @@ def _spans(anchors: list[tuple]) -> dict:
         page, top, key = item[0], item[1], item[2]
         if index + 1 < len(chosen):
             page_end, bottom = chosen[index + 1][0], chosen[index + 1][1]
+            # The next question starts under the running header, so that page is not this question.
+            if page_end > page and bottom < 160:
+                page_end -= 1
+                bottom = None
         else:
             page_end, bottom = None, None
         spans[key] = {"page_start": page, "page_end": page_end, "top": top, "bottom": bottom}
